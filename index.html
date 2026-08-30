@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>A 股每日复盘决策卡</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="回到顶部"><span class="brand-mark">复</span><span>每日复盘</span></a>
+    <div class="top-actions">
+      <span id="data-badge" class="data-badge">读取数据中</span>
+      <button id="toggle-all" class="icon-button" type="button" title="收起或展开非核心章节" aria-label="收起或展开非核心章节">⌃</button>
+      <button id="print" class="print-button" type="button"><span aria-hidden="true">▣</span> 打印 / 导出 PDF</button>
+    </div>
+  </header>
+
+  <main id="top" class="page" aria-live="polite">
+    <section class="hero-band">
+      <div>
+        <p class="eyebrow">A-SHARE DAILY REVIEW</p>
+        <h1>A 股每日复盘决策卡</h1>
+        <p id="hero-summary" class="hero-summary">正在加载本地数据…</p>
+      </div>
+      <div id="status-panel" class="status-panel"></div>
+    </section>
+
+    <aside id="demo-warning" class="demo-warning"><strong>演示数据，不构成投资建议</strong><span>本页不会联网，所有结论由本地 JSON 和确定性规则生成。</span></aside>
+    <div id="error" class="error" hidden></div>
+
+    <section class="core-section">
+      <div class="section-heading"><span>00</span><div><p>DECISION</p><h2>今日核心裁决</h2></div></div>
+      <div id="verdicts" class="verdict-grid"></div>
+    </section>
+
+    <div class="dashboard-grid">
+      <div>
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>01</span><span><small>MARKET PULSE</small><b>近五日市场</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body"><div class="table-wrap"><table><thead><tr><th>日期</th><th>上证</th><th>创业板</th><th>科创 50</th><th>成交额</th><th>涨停/跌停</th><th>盘面特征</th></tr></thead><tbody id="market-table"></tbody></table></div></div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>02</span><span><small>CAPITAL FLOW</small><b>资金流向与持续性</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body"><div class="table-wrap"><table><thead><tr><th>行业</th><th>当日</th><th>5 日</th><th>20 日</th><th>分类</th></tr></thead><tbody id="flow-table"></tbody></table></div><p class="unit-note">单位：亿元。颜色仅表示正负，不代表投资评级。</p></div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>03</span><span><small>EVENT RADAR</small><b>热点事件卡</b></span></span><span class="chevron">⌃</span></button>
+          <div id="events" class="section-body event-list"></div>
+        </section>
+      </div>
+
+      <aside class="side-column">
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>04</span><span><small>BREADTH</small><b>市场广度</b></span></span><span class="chevron">⌃</span></button>
+          <div id="breadth" class="section-body"></div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>05</span><span><small>WATCHLIST</small><b>蓄力观察池</b></span></span><span class="chevron">⌃</span></button>
+          <div id="pool" class="section-body pool-list"></div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>06</span><span><small>PLAYBOOK</small><b>次日情景预案</b></span></span><span class="chevron">⌃</span></button>
+          <div id="scenarios" class="section-body scenario-list"></div>
+        </section>
+      </aside>
+    </div>
+
+    <section class="collapsible sources" data-section>
+      <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>07</span><span><small>DISCLOSURE</small><b>来源与风险提示</b></span></span><span class="chevron">⌃</span></button>
+      <div id="sources" class="section-body sources-grid"></div>
+    </section>
+  </main>
+  <footer>本地数据驱动 · 无实时行情连接 · 请独立判断并承担风险</footer>
+  <script src="app.js" defer></script>
+</body>
+</html>
