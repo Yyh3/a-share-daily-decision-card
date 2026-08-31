@@ -364,7 +364,11 @@ def main() -> None:
     breadth_history[market_date] = {s["code"]: s["price"] for s in stocks}
     prior_dates = [d for d in sorted(breadth_history) if d < market_date][-4:]
     new_high = new_low = None
+    bootstrap_note: str | None = None
     if len(prior_dates) >= 2:
+        if len(prior_dates) < 4:
+            bootstrap_note = (f"本次新高/新低仅基于 {len(prior_dates)} 个历史交易日计算"
+                              "（收盘价缓存积累中，连续运行数个交易日后为完整口径）。")
         new_high = new_low = 0
         for s in stocks:
             priors = [breadth_history[d].get(s["code"]) for d in prior_dates
@@ -452,6 +456,8 @@ def main() -> None:
         })
 
     notes = list(RISK_NOTES)
+    if bootstrap_note:
+        notes.append(bootstrap_note)
     if flow_status != "ok":
         notes.insert(0, "本次采集时东方财富行业资金流接口不可用（IP 限流或网络异常），资金流向与观察池章节为空，"
                         "请稍后重跑 scripts/collect_data.py 补齐。")
