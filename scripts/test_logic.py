@@ -30,44 +30,34 @@ DATES = [f"2026-08-{d:02d}" for d in range(3, 29) if d not in (8, 9, 15, 16, 22,
 MARKET = DATES[-1]
 
 
-def sector_today(code: str, name: str, pct: float, today: float | None) -> dict:
-    return {"code": code, "name": name, "pct": pct, "today_yuan": today}
-
-
-# ---------------------------------------------------------------- flow_coverage
-daily_full = {d: 1.0e8 for d in DATES}
-cov5, cov20 = cd.flow_coverage(daily_full, DATES)
-check("flow_coverage full history -> 5/5 and 20/20", cov5 == 5 and cov20 == 20, f"got {cov5}/{cov20}")
-
-daily_sparse = {d: 1.0e8 for d in DATES[:15]}  # only oldest 15 days
-cov5, cov20 = cd.flow_coverage(daily_sparse, DATES)
-check("flow_coverage sparse -> 0/5 and 15/20", cov5 == 0 and cov20 == 15, f"got {cov5}/{cov20}")
-
 # ---------------------------------------------------------------- build_flow_rows
+# day5/day10 now come straight from the ranking fields (f164/f174); the cache
+# only backstops sectors whose ranking fields are missing.
+def sec(code, name, pct, today, d5, d10):
+    return {"code": code, "name": name, "pct": pct, "today": today, "day5": d5, "day10": d10}
+
 history = {
     "BK01": {"name": "板块一", "daily": {d: 1.0e8 for d in DATES[:-1]}},   # 19d cached
     "BK02": {"name": "板块二", "daily": {d: -2.0e8 for d in DATES[:18]}},  # stale, misses today
+    "BK03": {"name": "板块三", "daily": {d: 1.0e8 for d in DATES[:-1]}},   # 19d cached
 }
 sectors = [
-    sector_today("BK01", "板块一", 1.5, 3.0e8),      # today merged over cache
-    sector_today("BK02", "板块二", -0.5, None),        # no today flow -> excluded
-    sector_today("BK03", "板块三", 2.0, 5.0e8),        # no cache -> coverage fail -> excluded
+    sec("BK01", "板块一", 1.5, 3.0e8, 7.0e8, 12.0e8),   # full ranking data
+    sec("BK02", "板块二", -0.5, None, None, None),        # no data at all -> excluded
+    sec("BK03", "板块三", 2.0, 5.0e8, None, None),        # ranking fields missing -> cache fallback
 ]
 rows = cd.build_flow_rows(sectors, history, DATES, {"板块一": 2})
-check("build_flow_rows: only covered sector included", len(rows) == 1, f"got {len(rows)}")
-if rows:
-    r = rows[0]
-    check("today value comes from ranking (over cache)", r["today"] == 3.0, f"got {r['today']}")
-    check("day5 = sum of last 5 (today 3 + 4x1)", r["day5"] == 7.0, f"got {r['day5']}")
-    check("day20 = sum of 20 days (19x1 + 3)", r["day20"] == 22.0, f"got {r['day20']}")
-    check("limit_up attributed from ZT pool", r["limit_up"] == 2)
-    check("change_pct from ranking pct", r["change_pct"] == 1.5)
-
-# today merged into cache even when cache is empty for the date
-hist2 = {"BK01": {"name": "板块一", "daily": {d: 1.0e8 for d in DATES}}}
-rows2 = cd.build_flow_rows([sector_today("BK01", "板块一", 0.0, -5.0e8)], hist2, DATES, {})
-check("today wins over cache", rows2 and rows2[0]["today"] == -5.0,
-      f"got {rows2[0]['today'] if rows2 else None}")
+check("build_flow_rows: sectors without any data excluded", len(rows) == 2, f"got {len(rows)}")
+by_name = {r["sector"]: r for r in rows}
+r1 = by_name.get("板块一", {})
+check("today from ranking", r1.get("today") == 3.0, f"got {r1.get('today')}")
+check("day5 from ranking f164", r1.get("day5") == 7.0, f"got {r1.get('day5')}")
+check("day10 from ranking f174", r1.get("day10") == 12.0, f"got {r1.get('day10')}")
+check("limit_up attributed from ZT pool", r1.get("limit_up") == 2)
+check("change_pct from ranking pct", r1.get("change_pct") == 1.5)
+r3 = by_name.get("板块三", {})
+check("fallback: day5 summed from cache (today 5 + 4x1)", r3.get("day5") == 9.0, f"got {r3.get('day5')}")
+check("fallback: day10 summed from cache (today 5 + 9x1)", r3.get("day10") == 14.0, f"got {r3.get('day10')}")
 
 # ---------------------------------------------------------------- day_feature
 check("放量上攻", cd.day_feature(1.0, 1.0, 1.0, 0.1, 30) == "放量上攻")
@@ -76,10 +66,10 @@ check("指数弱题材活跃", cd.day_feature(-0.2, -0.3, -0.2, -0.01, 70) == "�
 check("窄幅震荡", cd.day_feature(0.1, -0.1, 0.0, 0.0, 10) == "窄幅震荡")
 
 # ---------------------------------------------------------------- classify_flow
-check("持续流入", build_data.classify_flow({"day5": 1, "day20": 1}) == "持续流入")
-check("拐点回流", build_data.classify_flow({"day5": 1, "day20": -1}) == "拐点回流")
-check("拐点撤退", build_data.classify_flow({"day5": -1, "day20": 1}) == "拐点撤退")
-check("持续流出", build_data.classify_flow({"day5": -1, "day20": -1}) == "持续流出")
+check("持续流入", build_data.classify_flow({"day5": 1, "day10": 1}) == "持续流入")
+check("拐点回流", build_data.classify_flow({"day5": 1, "day10": -1}) == "拐点回流")
+check("拐点撤退", build_data.classify_flow({"day5": -1, "day10": 1}) == "拐点撤退")
+check("持续流出", build_data.classify_flow({"day5": -1, "day10": -1}) == "持续流出")
 
 # ---------------------------------------------------------------- emotion
 breadth = {"up": 3200, "down": 1800, "flat": 200, "limit_up": 90, "limit_down": 5}

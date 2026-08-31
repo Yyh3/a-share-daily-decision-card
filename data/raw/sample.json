@@ -17,20 +17,20 @@
   ],
   "breadth": {"up":3013,"down":2390,"flat":148,"new_high":2627,"new_low":279,"limit_up":82,"limit_down":3},
   "flows": [
-    {"sector":"元件/PCB","today":-24.4,"day5":64.2,"day20":56.3,"change_pct":-0.78,"limit_up":0},
-    {"sector":"专用设备","today":-8.2,"day5":24.6,"day20":60.5,"change_pct":-1.23,"limit_up":1},
-    {"sector":"工业金属","today":6.4,"day5":32.8,"day20":-20.0,"change_pct":0.85,"limit_up":0},
-    {"sector":"化学原料","today":10.4,"day5":13.9,"day20":13.1,"change_pct":0.62,"limit_up":1},
-    {"sector":"软件开发","today":22.5,"day5":41.0,"day20":-157.4,"change_pct":1.10,"limit_up":4},
-    {"sector":"种植业","today":3.0,"day5":14.6,"day20":28.9,"change_pct":3.20,"limit_up":7},
-    {"sector":"通信设备","today":-59.2,"day5":-85.8,"day20":69.1,"change_pct":-1.56,"limit_up":0},
-    {"sector":"半导体","today":-122.6,"day5":-149.5,"day20":-560.7,"change_pct":-2.12,"limit_up":1},
-    {"sector":"医疗服务","today":-14.8,"day5":-30.5,"day20":-55.6,"change_pct":-2.40,"limit_up":0}
+    {"sector":"元件/PCB","today":-24.4,"day5":64.2,"day10":56.3,"change_pct":-0.78,"limit_up":0},
+    {"sector":"专用设备","today":-8.2,"day5":24.6,"day10":60.5,"change_pct":-1.23,"limit_up":1},
+    {"sector":"工业金属","today":6.4,"day5":32.8,"day10":-20.0,"change_pct":0.85,"limit_up":0},
+    {"sector":"化学原料","today":10.4,"day5":13.9,"day10":13.1,"change_pct":0.62,"limit_up":1},
+    {"sector":"软件开发","today":22.5,"day5":41.0,"day10":-157.4,"change_pct":1.10,"limit_up":4},
+    {"sector":"种植业","today":3.0,"day5":14.6,"day10":28.9,"change_pct":3.20,"limit_up":7},
+    {"sector":"通信设备","today":-59.2,"day5":-85.8,"day10":69.1,"change_pct":-1.56,"limit_up":0},
+    {"sector":"半导体","today":-122.6,"day5":-149.5,"day10":-560.7,"change_pct":-2.12,"limit_up":1},
+    {"sector":"医疗服务","today":-14.8,"day5":-30.5,"day10":-55.6,"change_pct":-2.40,"limit_up":0}
   ],
   "events": [
     {"title":"农业链情绪扩散","level":"关注","direction":"正向","summary":"示例盘面中种植业涨停家数较多，短线辨识度提升。","transmission":"政策预期 → 种业 → 农化与加工","evidence":"种植业当日涨幅 3.20%，涨停 7 家","risk":"情绪交易拥挤，次日高开兑现风险较高"},
     {"title":"海外科技波动映射","level":"风险","direction":"负向","summary":"示例隔夜科技资产波动，可能影响高估值成长开盘风险偏好。","transmission":"海外波动 → 风险偏好 → 半导体与算力","evidence":"本地示例中半导体当日资金净流出 122.6 亿元","risk":"海外信息为演示摘要，不可据此交易"},
-    {"title":"工业金属资金拐点观察","level":"观察","direction":"中性","summary":"5 日资金转正但 20 日仍负，属于早期回流而非趋势确认。","transmission":"价格预期 → 上游资源 → 加工环节","evidence":"5 日 +32.8 亿元，20 日 -20.0 亿元","risk":"若 5 日资金再度转负，则拐点假设失效"}
+    {"title":"工业金属资金拐点观察","level":"观察","direction":"中性","summary":"5 日资金转正但 10 日仍负，属于早期回流而非趋势确认。","transmission":"价格预期 → 上游资源 → 加工环节","evidence":"5 日 +32.8 亿元，10 日 -20.0 亿元","risk":"若 5 日资金再度转负，则拐点假设失效"}
   ],
   "scenarios": [
     {"name":"放量修复","probability":30,"trigger":"成交额高于 2.30 万亿元，且上涨家数占比超过 60%","action":"只关注有资金持续性的方向，避免开盘追高"},

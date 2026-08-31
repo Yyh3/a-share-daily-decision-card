@@ -1,7 +1,7 @@
 {
   "meta": {
     "market_date": "2026-08-31",
-    "updated_at": "2026-08-31 23:47",
+    "updated_at": "2026-09-01 00:10",
     "demo": false,
     "sources": [
       {
@@ -28,6 +28,11 @@
         "name": "新浪财经 A 股全列表接口（涨跌家数）",
         "as_of": "2026-08-31 收盘",
         "note": "沪深北全市场；停牌个股（无有效报价）不计入。"
+      },
+      {
+        "name": "东方财富 行业板块主力资金流接口（clist 排行，实时集群不可用时自动切换延时集群）",
+        "as_of": "2026-08-31 收盘",
+        "note": "当日/5日/10日主力净流入均来自板块资金排行的东财官方聚合字段（f62/f164/f174），单次请求全量。主力=超大单+大单（东财单因子口径）。"
       }
     ]
   },
@@ -92,17 +97,3986 @@
     "limit_up": 88,
     "limit_down": 11
   },
-  "flows": [],
+  "flows": [
+    {
+      "sector": "传媒",
+      "today": 58.7,
+      "day5": 75.8,
+      "day10": 5.1,
+      "change_pct": 4.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "计算机",
+      "today": 34.0,
+      "day5": 120.0,
+      "day10": -149.5,
+      "change_pct": 1.82,
+      "limit_up": 0
+    },
+    {
+      "sector": "数字芯片设计",
+      "today": 31.4,
+      "day5": 56.9,
+      "day10": -355.7,
+      "change_pct": 3.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "电子",
+      "today": 29.5,
+      "day5": 266.4,
+      "day10": -1104.0,
+      "change_pct": 2.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "机械设备",
+      "today": 25.8,
+      "day5": 86.0,
+      "day10": -98.6,
+      "change_pct": 1.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "数字媒体",
+      "today": 25.5,
+      "day5": 30.1,
+      "day10": 15.2,
+      "change_pct": 6.78,
+      "limit_up": 3
+    },
+    {
+      "sector": "消费电子零部件及组装",
+      "today": 22.8,
+      "day5": 74.5,
+      "day10": -64.3,
+      "change_pct": 2.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "消费电子",
+      "today": 22.6,
+      "day5": 74.9,
+      "day10": -60.8,
+      "change_pct": 2.8,
+      "limit_up": 2
+    },
+    {
+      "sector": "IT服务Ⅲ",
+      "today": 20.4,
+      "day5": 33.0,
+      "day10": -90.2,
+      "change_pct": 2.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "IT服务Ⅱ",
+      "today": 20.4,
+      "day5": 33.0,
+      "day10": -90.2,
+      "change_pct": 2.02,
+      "limit_up": 2
+    },
+    {
+      "sector": "银行",
+      "today": 18.8,
+      "day5": -16.7,
+      "day10": -19.3,
+      "change_pct": 1.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "银行Ⅱ",
+      "today": 18.8,
+      "day5": -16.7,
+      "day10": -19.3,
+      "change_pct": 1.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "计算机设备",
+      "today": 18.3,
+      "day5": 37.9,
+      "day10": -33.2,
+      "change_pct": 2.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他计算机设备",
+      "today": 18.2,
+      "day5": 36.2,
+      "day10": -28.4,
+      "change_pct": 1.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "印制电路板",
+      "today": 16.5,
+      "day5": 135.9,
+      "day10": -92.6,
+      "change_pct": 3.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "光学光电子",
+      "today": 15.6,
+      "day5": 15.5,
+      "day10": -64.8,
+      "change_pct": 1.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "文字媒体",
+      "today": 13.1,
+      "day5": 15.1,
+      "day10": 11.8,
+      "change_pct": 15.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "影视院线",
+      "today": 12.7,
+      "day5": 13.1,
+      "day10": 3.7,
+      "change_pct": 6.69,
+      "limit_up": 4
+    },
+    {
+      "sector": "影视动漫制作",
+      "today": 12.5,
+      "day5": 13.0,
+      "day10": 5.3,
+      "change_pct": 7.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "通用设备",
+      "today": 12.4,
+      "day5": 30.4,
+      "day10": -34.4,
+      "change_pct": 2.33,
+      "limit_up": 7
+    },
+    {
+      "sector": "自动化设备",
+      "today": 11.6,
+      "day5": -1.0,
+      "day10": -82.4,
+      "change_pct": 2.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "国有大型银行Ⅲ",
+      "today": 10.6,
+      "day5": -2.4,
+      "day10": 9.9,
+      "change_pct": 3.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "激光设备",
+      "today": 10.4,
+      "day5": -0.0,
+      "day10": -46.4,
+      "change_pct": 2.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "面板",
+      "today": 10.4,
+      "day5": 3.6,
+      "day10": -33.9,
+      "change_pct": 1.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "元件",
+      "today": 9.9,
+      "day5": 142.1,
+      "day10": -176.4,
+      "change_pct": 2.99,
+      "limit_up": 3
+    },
+    {
+      "sector": "煤炭开采",
+      "today": 9.7,
+      "day5": 1.2,
+      "day10": 7.3,
+      "change_pct": 2.46,
+      "limit_up": 1
+    },
+    {
+      "sector": "动力煤",
+      "today": 9.6,
+      "day5": 6.4,
+      "day10": 11.1,
+      "change_pct": 2.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "家用电器",
+      "today": 9.5,
+      "day5": -0.3,
+      "day10": -15.8,
+      "change_pct": 1.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "煤炭",
+      "today": 9.3,
+      "day5": -1.3,
+      "day10": 12.7,
+      "change_pct": 2.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "石油石化",
+      "today": 8.9,
+      "day5": -0.7,
+      "day10": 2.8,
+      "change_pct": 0.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "轻工制造",
+      "today": 8.5,
+      "day5": 13.0,
+      "day10": 0.2,
+      "change_pct": 1.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "门户网站",
+      "today": 8.1,
+      "day5": 10.1,
+      "day10": 2.2,
+      "change_pct": 3.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "营销代理",
+      "today": 7.6,
+      "day5": 17.1,
+      "day10": -15.2,
+      "change_pct": 4.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "广告营销",
+      "today": 7.6,
+      "day5": 17.2,
+      "day10": -14.1,
+      "change_pct": 4.01,
+      "limit_up": 1
+    },
+    {
+      "sector": "电视广播Ⅲ",
+      "today": 6.9,
+      "day5": 6.6,
+      "day10": 5.0,
+      "change_pct": 6.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "电视广播Ⅱ",
+      "today": 6.9,
+      "day5": 6.6,
+      "day10": 5.0,
+      "change_pct": 6.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "光学元件",
+      "today": 5.9,
+      "day5": 17.6,
+      "day10": -11.4,
+      "change_pct": 2.72,
+      "limit_up": 0
+    },
+    {
+      "sector": "玻纤制造",
+      "today": 5.9,
+      "day5": 15.6,
+      "day10": -71.7,
+      "change_pct": 1.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "炼化及贸易",
+      "today": 5.6,
+      "day5": 8.5,
+      "day10": 17.3,
+      "change_pct": 0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "装修装饰Ⅲ",
+      "today": 5.5,
+      "day5": 7.0,
+      "day10": -2.2,
+      "change_pct": 3.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "装修装饰Ⅱ",
+      "today": 5.5,
+      "day5": 7.0,
+      "day10": -2.2,
+      "change_pct": 3.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "包装印刷",
+      "today": 5.5,
+      "day5": 8.7,
+      "day10": 3.4,
+      "change_pct": 1.59,
+      "limit_up": 3
+    },
+    {
+      "sector": "其他自动化设备",
+      "today": 5.4,
+      "day5": 11.9,
+      "day10": 5.1,
+      "change_pct": 2.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "玻璃玻纤",
+      "today": 5.1,
+      "day5": 15.3,
+      "day10": -72.5,
+      "change_pct": 0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "白色家电",
+      "today": 5.1,
+      "day5": -1.1,
+      "day10": -0.4,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "炼油化工",
+      "today": 5.1,
+      "day5": 8.6,
+      "day10": 16.2,
+      "change_pct": 1.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "股份制银行Ⅲ",
+      "today": 5.1,
+      "day5": -12.1,
+      "day10": -13.1,
+      "change_pct": 0.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空装备Ⅲ",
+      "today": 4.6,
+      "day5": 15.4,
+      "day10": -10.4,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空装备Ⅱ",
+      "today": 4.6,
+      "day5": 15.4,
+      "day10": -10.4,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "空调",
+      "today": 4.1,
+      "day5": -2.0,
+      "day10": 0.6,
+      "change_pct": 0.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属制品",
+      "today": 3.9,
+      "day5": 1.0,
+      "day10": -26.9,
+      "change_pct": 2.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "制冷空调设备",
+      "today": 3.8,
+      "day5": 9.6,
+      "day10": 4.1,
+      "change_pct": 2.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "建筑材料",
+      "today": 3.4,
+      "day5": 15.9,
+      "day10": -75.4,
+      "change_pct": 0.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "塑料包装",
+      "today": 3.4,
+      "day5": 5.6,
+      "day10": 5.6,
+      "change_pct": 1.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "家居用品",
+      "today": 3.4,
+      "day5": 3.3,
+      "day10": 0.7,
+      "change_pct": 1.55,
+      "limit_up": 4
+    },
+    {
+      "sector": "通信服务",
+      "today": 3.3,
+      "day5": -1.8,
+      "day10": -38.0,
+      "change_pct": 2.44,
+      "limit_up": 1
+    },
+    {
+      "sector": "城商行Ⅲ",
+      "today": 3.2,
+      "day5": 0.7,
+      "day10": -13.8,
+      "change_pct": 1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "游戏Ⅲ",
+      "today": 3.2,
+      "day5": 6.2,
+      "day10": -6.5,
+      "change_pct": 2.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "游戏Ⅱ",
+      "today": 3.2,
+      "day5": 6.2,
+      "day10": -6.5,
+      "change_pct": 2.37,
+      "limit_up": 1
+    },
+    {
+      "sector": "视频媒体",
+      "today": 3.0,
+      "day5": 2.9,
+      "day10": 2.1,
+      "change_pct": 20.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "出版",
+      "today": 2.8,
+      "day5": 2.6,
+      "day10": 1.8,
+      "change_pct": 3.61,
+      "limit_up": 3
+    },
+    {
+      "sector": "机床工具",
+      "today": 2.7,
+      "day5": 0.4,
+      "day10": -3.5,
+      "change_pct": 3.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电子Ⅲ",
+      "today": 2.6,
+      "day5": 16.2,
+      "day10": -8.0,
+      "change_pct": 2.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电子Ⅱ",
+      "today": 2.6,
+      "day5": 16.2,
+      "day10": -8.0,
+      "change_pct": 2.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电源设备Ⅱ",
+      "today": 2.6,
+      "day5": 11.2,
+      "day10": -22.1,
+      "change_pct": 1.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "锂",
+      "today": 2.5,
+      "day5": 5.0,
+      "day10": -3.5,
+      "change_pct": -0.36,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产服务",
+      "today": 2.4,
+      "day5": 5.5,
+      "day10": 7.7,
+      "change_pct": 1.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "底盘与发动机系统",
+      "today": 2.3,
+      "day5": 11.8,
+      "day10": 8.0,
+      "change_pct": 1.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车零部件",
+      "today": 2.3,
+      "day5": 12.3,
+      "day10": -8.6,
+      "change_pct": 1.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "家电零部件Ⅲ",
+      "today": 2.2,
+      "day5": 0.9,
+      "day10": -9.0,
+      "change_pct": 1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "家电零部件Ⅱ",
+      "today": 2.2,
+      "day5": 0.9,
+      "day10": -9.0,
+      "change_pct": 1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "氮肥",
+      "today": 2.2,
+      "day5": 7.7,
+      "day10": 11.1,
+      "change_pct": 4.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "大众出版",
+      "today": 2.1,
+      "day5": 2.0,
+      "day10": 1.9,
+      "change_pct": 4.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "油服工程",
+      "today": 2.1,
+      "day5": -4.9,
+      "day10": -7.6,
+      "change_pct": 0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他通用设备",
+      "today": 2.1,
+      "day5": 7.4,
+      "day10": 5.6,
+      "change_pct": 2.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信应用增值服务",
+      "today": 2.1,
+      "day5": -2.4,
+      "day10": -32.8,
+      "change_pct": 3.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专用设备",
+      "today": 2.0,
+      "day5": 61.2,
+      "day10": 39.6,
+      "change_pct": 1.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "服装家纺",
+      "today": 2.0,
+      "day5": 1.9,
+      "day10": -3.9,
+      "change_pct": 1.45,
+      "limit_up": 2
+    },
+    {
+      "sector": "锂电池",
+      "today": 2.0,
+      "day5": -20.8,
+      "day10": -74.2,
+      "change_pct": 0.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "非金属材料Ⅲ",
+      "today": 1.8,
+      "day5": 10.7,
+      "day10": -1.0,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "非金属材料Ⅱ",
+      "today": 1.8,
+      "day5": 10.7,
+      "day10": -1.0,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "固废治理",
+      "today": 1.7,
+      "day5": 4.8,
+      "day10": 1.3,
+      "change_pct": 0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "生猪养殖",
+      "today": 1.7,
+      "day5": 6.1,
+      "day10": 6.2,
+      "change_pct": 0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气及炼化工程",
+      "today": 1.7,
+      "day5": -0.9,
+      "day10": -4.5,
+      "change_pct": 0.09,
+      "limit_up": 0
+    },
+    {
+      "sector": "文娱用品",
+      "today": 1.7,
+      "day5": 1.2,
+      "day10": 0.6,
+      "change_pct": 2.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "纸包装",
+      "today": 1.6,
+      "day5": 3.2,
+      "day10": 0.0,
+      "change_pct": 2.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "集成电路制造",
+      "today": 1.6,
+      "day5": 11.3,
+      "day10": -65.2,
+      "change_pct": 2.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨房电器",
+      "today": 1.5,
+      "day5": 0.9,
+      "day10": 1.1,
+      "change_pct": 2.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨卫电器",
+      "today": 1.4,
+      "day5": 1.1,
+      "day10": 2.7,
+      "change_pct": 2.05,
+      "limit_up": 1
+    },
+    {
+      "sector": "房产租赁经纪",
+      "today": 1.4,
+      "day5": 4.8,
+      "day10": 6.4,
+      "change_pct": 3.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保设备Ⅲ",
+      "today": 1.4,
+      "day5": 2.9,
+      "day10": -3.8,
+      "change_pct": 1.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保设备Ⅱ",
+      "today": 1.4,
+      "day5": 2.9,
+      "day10": -3.8,
+      "change_pct": 1.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "娱乐用品",
+      "today": 1.4,
+      "day5": 1.0,
+      "day10": 0.4,
+      "change_pct": 1.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "定制家居",
+      "today": 1.3,
+      "day5": 1.8,
+      "day10": 3.3,
+      "change_pct": 1.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "改性塑料",
+      "today": 1.3,
+      "day5": 5.5,
+      "day10": 6.1,
+      "change_pct": 1.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气开采Ⅲ",
+      "today": 1.3,
+      "day5": -4.3,
+      "day10": -6.9,
+      "change_pct": -0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气开采Ⅱ",
+      "today": 1.3,
+      "day5": -4.3,
+      "day10": -6.9,
+      "change_pct": -0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "养殖业",
+      "today": 1.2,
+      "day5": 4.5,
+      "day10": 4.5,
+      "change_pct": 0.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械整机",
+      "today": 1.2,
+      "day5": -2.7,
+      "day10": -6.1,
+      "change_pct": 0.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁路公路",
+      "today": 1.2,
+      "day5": -1.7,
+      "day10": -3.0,
+      "change_pct": 0.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "社会服务",
+      "today": 1.2,
+      "day5": 7.0,
+      "day10": -4.1,
+      "change_pct": 0.74,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织化学制品",
+      "today": 1.2,
+      "day5": 3.6,
+      "day10": 1.8,
+      "change_pct": 0.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械",
+      "today": 1.1,
+      "day5": -4.3,
+      "day10": -9.6,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电源设备Ⅲ",
+      "today": 1.1,
+      "day5": 9.8,
+      "day10": -16.0,
+      "change_pct": 1.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他数字媒体",
+      "today": 1.1,
+      "day5": 1.6,
+      "day10": -0.1,
+      "change_pct": 6.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "稀土",
+      "today": 1.1,
+      "day5": -3.6,
+      "day10": -29.2,
+      "change_pct": 1.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合电力设备商",
+      "today": 1.0,
+      "day5": 0.9,
+      "day10": -5.3,
+      "change_pct": 0.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "横向通用软件",
+      "today": 1.0,
+      "day5": 25.6,
+      "day10": -2.6,
+      "change_pct": 1.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "冰洗",
+      "today": 1.0,
+      "day5": 0.9,
+      "day10": -1.0,
+      "change_pct": 0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他汽车零部件",
+      "today": 1.0,
+      "day5": 1.6,
+      "day10": -5.3,
+      "change_pct": 2.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "专用设备",
+      "today": 1.0,
+      "day5": 57.8,
+      "day10": 27.6,
+      "change_pct": 0.99,
+      "limit_up": 2
+    },
+    {
+      "sector": "物业管理",
+      "today": 1.0,
+      "day5": 0.8,
+      "day10": 1.3,
+      "change_pct": 1.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "纯碱",
+      "today": 1.0,
+      "day5": 0.8,
+      "day10": 0.7,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "鞋帽及其他",
+      "today": 1.0,
+      "day5": 0.9,
+      "day10": -0.5,
+      "change_pct": 1.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "钾肥",
+      "today": 0.9,
+      "day5": -0.2,
+      "day10": 7.0,
+      "change_pct": -1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "保险Ⅲ",
+      "today": 0.9,
+      "day5": 0.2,
+      "day10": 4.9,
+      "change_pct": 1.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "保险Ⅱ",
+      "today": 0.9,
+      "day5": 0.2,
+      "day10": 4.9,
+      "change_pct": 1.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "国防军工",
+      "today": 0.8,
+      "day5": -0.2,
+      "day10": -94.0,
+      "change_pct": 1.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "民爆制品",
+      "today": 0.8,
+      "day5": 0.9,
+      "day10": -0.9,
+      "change_pct": -0.44,
+      "limit_up": 0
+    },
+    {
+      "sector": "公交",
+      "today": 0.8,
+      "day5": 0.7,
+      "day10": -0.9,
+      "change_pct": 1.7,
+      "limit_up": 0
+    },
+    {
+      "sector": "能源金属",
+      "today": 0.8,
+      "day5": -0.4,
+      "day10": -16.0,
+      "change_pct": -0.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "成品家居",
+      "today": 0.7,
+      "day5": -0.6,
+      "day10": -0.5,
+      "change_pct": 2.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "航运",
+      "today": 0.7,
+      "day5": -24.2,
+      "day10": -8.6,
+      "change_pct": -0.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "水产饲料",
+      "today": 0.7,
+      "day5": -1.1,
+      "day10": -1.6,
+      "change_pct": 1.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "果蔬加工",
+      "today": 0.7,
+      "day5": 2.0,
+      "day10": 2.1,
+      "change_pct": -2.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁路运输",
+      "today": 0.7,
+      "day5": -0.2,
+      "day10": 0.5,
+      "change_pct": 0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "非运动服装",
+      "today": 0.7,
+      "day5": -1.0,
+      "day10": -2.2,
+      "change_pct": 1.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "水力发电",
+      "today": 0.7,
+      "day5": -4.5,
+      "day10": -3.0,
+      "change_pct": -0.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "教育出版",
+      "today": 0.7,
+      "day5": 0.6,
+      "day10": -0.2,
+      "change_pct": 2.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电零部件",
+      "today": 0.6,
+      "day5": -2.3,
+      "day10": -7.5,
+      "change_pct": 1.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "电信运营商",
+      "today": 0.6,
+      "day5": 1.3,
+      "day10": 0.1,
+      "change_pct": 0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "印刷包装机械",
+      "today": 0.6,
+      "day5": 0.2,
+      "day10": 0.0,
+      "change_pct": 1.82,
+      "limit_up": 0
+    },
+    {
+      "sector": "黑色家电",
+      "today": 0.6,
+      "day5": -0.8,
+      "day10": -5.0,
+      "change_pct": 3.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "氨纶",
+      "today": 0.6,
+      "day5": 0.7,
+      "day10": 2.0,
+      "change_pct": -0.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "体外诊断",
+      "today": 0.6,
+      "day5": 4.1,
+      "day10": -3.4,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游综合",
+      "today": 0.6,
+      "day5": 2.4,
+      "day10": 3.5,
+      "change_pct": 0.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "煤化工",
+      "today": 0.6,
+      "day5": 0.4,
+      "day10": 5.2,
+      "change_pct": 1.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "冶钢原料",
+      "today": 0.6,
+      "day5": 1.2,
+      "day10": 2.0,
+      "change_pct": -0.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "特钢Ⅲ",
+      "today": 0.6,
+      "day5": 0.5,
+      "day10": -1.0,
+      "change_pct": 0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "特钢Ⅱ",
+      "today": 0.6,
+      "day5": 0.5,
+      "day10": -1.0,
+      "change_pct": 0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "彩电",
+      "today": 0.6,
+      "day5": -0.8,
+      "day10": -4.8,
+      "change_pct": 1.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "资产管理",
+      "today": 0.5,
+      "day5": 1.5,
+      "day10": 1.5,
+      "change_pct": -0.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信工程及服务",
+      "today": 0.5,
+      "day5": -0.7,
+      "day10": -5.3,
+      "change_pct": 1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织服装设备",
+      "today": 0.5,
+      "day5": 1.2,
+      "day10": -0.8,
+      "change_pct": 0.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "瓷砖地板",
+      "today": 0.5,
+      "day5": -0.9,
+      "day10": -3.2,
+      "change_pct": 1.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "教育",
+      "today": 0.5,
+      "day5": 1.3,
+      "day10": -1.3,
+      "change_pct": 1.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业服务",
+      "today": 0.5,
+      "day5": 1.1,
+      "day10": -6.7,
+      "change_pct": 0.9,
+      "limit_up": 0
+    },
+    {
+      "sector": "火电设备",
+      "today": 0.5,
+      "day5": 0.5,
+      "day10": -0.8,
+      "change_pct": 2.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "运动服装",
+      "today": 0.5,
+      "day5": 2.0,
+      "day10": -1.1,
+      "change_pct": 0.7,
+      "limit_up": 0
+    },
+    {
+      "sector": "卫浴制品",
+      "today": 0.5,
+      "day5": 0.7,
+      "day10": 0.6,
+      "change_pct": 3.36,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他石化",
+      "today": 0.5,
+      "day5": 0.0,
+      "day10": 1.8,
+      "change_pct": 0.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "航运港口",
+      "today": 0.4,
+      "day5": -25.1,
+      "day10": -9.9,
+      "change_pct": -0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁矿石",
+      "today": 0.4,
+      "day5": 0.9,
+      "day10": 2.9,
+      "change_pct": -1.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属包装",
+      "today": 0.4,
+      "day5": -0.3,
+      "day10": -2.1,
+      "change_pct": -0.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "油田服务",
+      "today": 0.4,
+      "day5": -4.0,
+      "day10": -3.1,
+      "change_pct": 1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "休闲食品",
+      "today": 0.4,
+      "day5": 3.2,
+      "day10": 3.2,
+      "change_pct": -0.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "车身附件及饰件",
+      "today": 0.4,
+      "day5": 2.6,
+      "day10": -3.0,
+      "change_pct": 0.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "教育运营及其他",
+      "today": 0.4,
+      "day5": 1.8,
+      "day10": 1.6,
+      "change_pct": 10.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "零食",
+      "today": 0.4,
+      "day5": 3.1,
+      "day10": 3.1,
+      "change_pct": -0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "楼宇设备",
+      "today": 0.4,
+      "day5": -0.1,
+      "day10": -0.4,
+      "change_pct": 0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游及景区",
+      "today": 0.4,
+      "day5": 3.3,
+      "day10": 2.9,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "磨具磨料",
+      "today": 0.4,
+      "day5": 7.2,
+      "day10": -2.0,
+      "change_pct": 1.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电设备",
+      "today": 0.3,
+      "day5": -10.4,
+      "day10": -28.6,
+      "change_pct": 1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车服务",
+      "today": 0.3,
+      "day5": -0.0,
+      "day10": 0.5,
+      "change_pct": 0.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "电机Ⅲ",
+      "today": 0.3,
+      "day5": -1.0,
+      "day10": -13.0,
+      "change_pct": 1.79,
+      "limit_up": 0
+    },
+    {
+      "sector": "电机Ⅱ",
+      "today": 0.3,
+      "day5": -1.0,
+      "day10": -13.0,
+      "change_pct": 1.79,
+      "limit_up": 0
+    },
+    {
+      "sector": "钢结构",
+      "today": 0.3,
+      "day5": 0.4,
+      "day10": 1.6,
+      "change_pct": 1.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "租赁",
+      "today": 0.3,
+      "day5": 0.6,
+      "day10": -1.7,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家居用品",
+      "today": 0.3,
+      "day5": 2.3,
+      "day10": 0.5,
+      "change_pct": 0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "摩托车",
+      "today": 0.3,
+      "day5": 0.2,
+      "day10": 0.1,
+      "change_pct": 0.79,
+      "limit_up": 0
+    },
+    {
+      "sector": "文化用品",
+      "today": 0.3,
+      "day5": 0.2,
+      "day10": 0.2,
+      "change_pct": 2.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "海洋捕捞",
+      "today": 0.3,
+      "day5": 0.8,
+      "day10": 1.2,
+      "change_pct": -1.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "会展服务",
+      "today": 0.3,
+      "day5": 0.5,
+      "day10": -1.1,
+      "change_pct": 1.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "蓄电池及其他电池",
+      "today": 0.3,
+      "day5": -4.4,
+      "day10": -4.0,
+      "change_pct": 0.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学原料",
+      "today": 0.2,
+      "day5": 3.4,
+      "day10": 7.5,
+      "change_pct": 0.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "图片媒体",
+      "today": 0.2,
+      "day5": 0.3,
+      "day10": -0.8,
+      "change_pct": 4.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "互联网电商",
+      "today": 0.2,
+      "day5": 0.6,
+      "day10": 1.4,
+      "change_pct": 2.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "血液制品",
+      "today": 0.2,
+      "day5": 0.7,
+      "day10": 0.2,
+      "change_pct": -1.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "跨境电商",
+      "today": 0.2,
+      "day5": 0.0,
+      "day10": -0.0,
+      "change_pct": 2.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合乘用车",
+      "today": 0.2,
+      "day5": -0.8,
+      "day10": 0.1,
+      "change_pct": -1.44,
+      "limit_up": 0
+    },
+    {
+      "sector": "院线",
+      "today": 0.2,
+      "day5": 0.1,
+      "day10": -1.5,
+      "change_pct": 2.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "合成树脂",
+      "today": 0.2,
+      "day5": 1.6,
+      "day10": -6.3,
+      "change_pct": 0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车经销商",
+      "today": 0.2,
+      "day5": -0.1,
+      "day10": 0.0,
+      "change_pct": 0.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "跨境物流",
+      "today": 0.2,
+      "day5": -0.5,
+      "day10": -0.9,
+      "change_pct": -0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "大气治理",
+      "today": 0.2,
+      "day5": -0.2,
+      "day10": 0.1,
+      "change_pct": 1.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业连锁Ⅲ",
+      "today": 0.2,
+      "day5": -0.1,
+      "day10": -0.7,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业连锁Ⅱ",
+      "today": 0.2,
+      "day5": -0.1,
+      "day10": -0.7,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "小家电",
+      "today": 0.2,
+      "day5": 0.2,
+      "day10": -2.0,
+      "change_pct": 0.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车综合服务",
+      "today": 0.2,
+      "day5": 0.0,
+      "day10": 0.4,
+      "change_pct": 1.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "动物保健Ⅲ",
+      "today": 0.2,
+      "day5": -0.0,
+      "day10": -1.5,
+      "change_pct": -0.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "动物保健Ⅱ",
+      "today": 0.2,
+      "day5": -0.0,
+      "day10": -1.5,
+      "change_pct": -0.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "人力资源服务",
+      "today": 0.1,
+      "day5": 0.1,
+      "day10": 0.0,
+      "change_pct": -0.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合电商",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": -0.4,
+      "change_pct": 0.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "清洁小家电",
+      "today": 0.1,
+      "day5": 0.6,
+      "day10": -1.0,
+      "change_pct": -0.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "冶钢辅料",
+      "today": 0.1,
+      "day5": 0.3,
+      "day10": -0.8,
+      "change_pct": 1.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "管材",
+      "today": 0.1,
+      "day5": 0.1,
+      "day10": 0.1,
+      "change_pct": 1.79,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦煤",
+      "today": 0.1,
+      "day5": -5.2,
+      "day10": -3.8,
+      "change_pct": 2.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "检测服务",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": -5.6,
+      "change_pct": 1.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "期货",
+      "today": 0.1,
+      "day5": 2.4,
+      "day10": 1.9,
+      "change_pct": -1.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "培训教育",
+      "today": 0.1,
+      "day5": -0.4,
+      "day10": -2.9,
+      "change_pct": 0.64,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织鞋类制造",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": 0.1,
+      "change_pct": -1.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "电工仪器仪表",
+      "today": 0.1,
+      "day5": 2.0,
+      "day10": 0.6,
+      "change_pct": 0.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "个护用品",
+      "today": 0.1,
+      "day5": 0.3,
+      "day10": 0.8,
+      "change_pct": 0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "仓储物流",
+      "today": 0.1,
+      "day5": -0.0,
+      "day10": -0.7,
+      "change_pct": -0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学纤维",
+      "today": 0.1,
+      "day5": -0.2,
+      "day10": -3.8,
+      "change_pct": 1.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "园林工程",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": -1.2,
+      "change_pct": 0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "安防设备",
+      "today": 0.1,
+      "day5": 1.7,
+      "day10": -4.8,
+      "change_pct": 3.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "棉纺",
+      "today": 0.1,
+      "day5": 0.6,
+      "day10": -0.6,
+      "change_pct": 0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "熟食",
+      "today": 0.1,
+      "day5": 0.3,
+      "day10": 0.2,
+      "change_pct": 0.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "肉鸡养殖",
+      "today": 0.1,
+      "day5": -0.4,
+      "day10": -0.8,
+      "change_pct": 0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他黑色家电",
+      "today": 0.1,
+      "day5": -0.0,
+      "day10": -0.3,
+      "change_pct": 4.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "餐饮",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": 0.2,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥制品",
+      "today": 0.1,
+      "day5": -0.2,
+      "day10": -0.4,
+      "change_pct": -0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "生活用纸",
+      "today": 0.1,
+      "day5": 0.3,
+      "day10": 0.9,
+      "change_pct": 0.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗耗材",
+      "today": 0.1,
+      "day5": -2.7,
+      "day10": -11.1,
+      "change_pct": -0.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合包装",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": -0.0,
+      "change_pct": 1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "印刷",
+      "today": 0.1,
+      "day5": -0.2,
+      "day10": -0.1,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "个护小家电",
+      "today": 0.0,
+      "day5": -0.2,
+      "day10": 0.0,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "渔业",
+      "today": 0.0,
+      "day5": 0.5,
+      "day10": 1.0,
+      "change_pct": -1.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "体育Ⅲ",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.6,
+      "change_pct": 0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "体育Ⅱ",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.6,
+      "change_pct": 0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "炭黑",
+      "today": 0.0,
+      "day5": -0.0,
+      "day10": -1.2,
+      "change_pct": 0.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "油品石化贸易",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.6,
+      "change_pct": 0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "人工景区",
+      "today": 0.0,
+      "day5": 0.3,
+      "day10": -0.2,
+      "change_pct": 0.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "洗护用品",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": 0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他能源发电",
+      "today": 0.0,
+      "day5": 0.0,
+      "day10": -0.1,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他橡胶制品",
+      "today": 0.0,
+      "day5": -0.5,
+      "day10": -0.8,
+      "change_pct": 2.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃料电池",
+      "today": 0.0,
+      "day5": -0.0,
+      "day10": -0.1,
+      "change_pct": 2.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "农业综合Ⅲ",
+      "today": 0.0,
+      "day5": -0.2,
+      "day10": -0.1,
+      "change_pct": -2.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "农业综合Ⅱ",
+      "today": 0.0,
+      "day5": -0.2,
+      "day10": -0.1,
+      "change_pct": -2.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "医美服务",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "涂料油墨",
+      "today": 0.0,
+      "day5": -1.0,
+      "day10": -5.7,
+      "change_pct": 0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "长材",
+      "today": 0.0,
+      "day5": -0.2,
+      "day10": -0.2,
+      "change_pct": -1.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家电Ⅲ",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.0,
+      "change_pct": 0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家电Ⅱ",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": -0.0,
+      "change_pct": 0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "学历教育",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": -0.0,
+      "change_pct": 1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产综合服务",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": 0.0,
+      "change_pct": -1.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨房小家电",
+      "today": -0.0,
+      "day5": -0.2,
+      "day10": -1.1,
+      "change_pct": 1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "集成电路封测",
+      "today": -0.0,
+      "day5": 6.2,
+      "day10": -96.9,
+      "change_pct": 2.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "卫浴电器",
+      "today": -0.0,
+      "day5": 0.2,
+      "day10": 1.6,
+      "change_pct": 2.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "农商行Ⅲ",
+      "today": -0.0,
+      "day5": -2.8,
+      "day10": -2.2,
+      "change_pct": 0.8,
+      "limit_up": 0
+    },
+    {
+      "sector": "照明设备Ⅲ",
+      "today": -0.0,
+      "day5": -0.6,
+      "day10": -2.0,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "照明设备Ⅱ",
+      "today": -0.0,
+      "day5": -0.6,
+      "day10": -2.0,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "肉制品",
+      "today": -0.0,
+      "day5": 0.9,
+      "day10": 2.8,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他饰品",
+      "today": -0.0,
+      "day5": 0.0,
+      "day10": -0.0,
+      "change_pct": -1.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "耐火材料",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.8,
+      "change_pct": 0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "烘焙食品",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": 0.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "品牌化妆品",
+      "today": -0.1,
+      "day5": -0.6,
+      "day10": -0.3,
+      "change_pct": -0.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械器件",
+      "today": -0.1,
+      "day5": -1.6,
+      "day10": -3.5,
+      "change_pct": 1.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专业服务",
+      "today": -0.1,
+      "day5": 0.3,
+      "day10": -0.0,
+      "change_pct": 0.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "地面兵装Ⅲ",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -8.8,
+      "change_pct": 0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "地面兵装Ⅱ",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -8.8,
+      "change_pct": 0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "宠物食品",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -1.0,
+      "change_pct": -0.95,
+      "limit_up": 0
+    },
+    {
+      "sector": "线下药店",
+      "today": -0.1,
+      "day5": 0.2,
+      "day10": -1.5,
+      "change_pct": -0.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "广告媒体",
+      "today": -0.1,
+      "day5": 0.1,
+      "day10": 1.2,
+      "change_pct": 2.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "原材料供应链服务",
+      "today": -0.1,
+      "day5": 0.8,
+      "day10": 0.5,
+      "change_pct": -1.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "啤酒",
+      "today": -0.1,
+      "day5": -0.5,
+      "day10": -1.5,
+      "change_pct": -0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "食用菌",
+      "today": -0.1,
+      "day5": 0.6,
+      "day10": 1.7,
+      "change_pct": -1.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "印染",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -0.9,
+      "change_pct": 1.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "饲料",
+      "today": -0.1,
+      "day5": -1.5,
+      "day10": -1.0,
+      "change_pct": 0.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合Ⅲ",
+      "today": -0.1,
+      "day5": 1.0,
+      "day10": -1.6,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合",
+      "today": -0.1,
+      "day5": 1.0,
+      "day10": -1.6,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合Ⅱ",
+      "today": -0.1,
+      "day5": 1.0,
+      "day10": -1.6,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "家纺",
+      "today": -0.1,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": -0.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "摩托车及其他",
+      "today": -0.1,
+      "day5": -1.1,
+      "day10": -2.8,
+      "change_pct": 0.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "电商服务",
+      "today": -0.1,
+      "day5": 0.3,
+      "day10": 1.9,
+      "change_pct": 1.92,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他纺织",
+      "today": -0.1,
+      "day5": -1.4,
+      "day10": -2.6,
+      "change_pct": 0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "航天装备Ⅲ",
+      "today": -0.1,
+      "day5": -5.6,
+      "day10": -22.5,
+      "change_pct": 1.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "航天装备Ⅱ",
+      "today": -0.1,
+      "day5": -5.6,
+      "day10": -22.5,
+      "change_pct": 1.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "公路货运",
+      "today": -0.1,
+      "day5": -0.5,
+      "day10": -1.2,
+      "change_pct": -0.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他医疗服务",
+      "today": -0.1,
+      "day5": -0.2,
+      "day10": -0.1,
+      "change_pct": -1.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他酒类",
+      "today": -0.1,
+      "day5": -1.4,
+      "day10": -0.1,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "端到端供应链服务",
+      "today": -0.2,
+      "day5": 0.1,
+      "day10": -0.6,
+      "change_pct": 0.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "酒店餐饮",
+      "today": -0.2,
+      "day5": 1.3,
+      "day10": 1.5,
+      "change_pct": -0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "风力发电",
+      "today": -0.2,
+      "day5": 0.3,
+      "day10": -11.6,
+      "change_pct": -0.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "钢铁管材",
+      "today": -0.2,
+      "day5": -0.9,
+      "day10": -1.1,
+      "change_pct": -0.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "非白酒",
+      "today": -0.2,
+      "day5": -1.9,
+      "day10": -1.6,
+      "change_pct": -0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "酒店",
+      "today": -0.2,
+      "day5": 1.2,
+      "day10": 1.3,
+      "change_pct": -1.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "化妆品制造及其他",
+      "today": -0.2,
+      "day5": -0.2,
+      "day10": -0.9,
+      "change_pct": 0.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "水产养殖",
+      "today": -0.2,
+      "day5": -0.3,
+      "day10": -0.2,
+      "change_pct": -2.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用载客车",
+      "today": -0.2,
+      "day5": -0.8,
+      "day10": 0.5,
+      "change_pct": -0.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "品牌消费电子",
+      "today": -0.2,
+      "day5": 0.3,
+      "day10": 3.5,
+      "change_pct": 2.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "诊断服务",
+      "today": -0.3,
+      "day5": -1.6,
+      "day10": 1.2,
+      "change_pct": -1.64,
+      "limit_up": 0
+    },
+    {
+      "sector": "自然景区",
+      "today": -0.3,
+      "day5": 0.6,
+      "day10": -0.4,
+      "change_pct": 0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "高速公路",
+      "today": -0.3,
+      "day5": -2.3,
+      "day10": -2.6,
+      "change_pct": -0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "涂料",
+      "today": -0.3,
+      "day5": -0.2,
+      "day10": -0.9,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "钴",
+      "today": -0.3,
+      "day5": -1.0,
+      "day10": -1.8,
+      "change_pct": -1.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "化妆品",
+      "today": -0.3,
+      "day5": -0.8,
+      "day10": -1.2,
+      "change_pct": 0.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "锦纶",
+      "today": -0.3,
+      "day5": -0.9,
+      "day10": -1.4,
+      "change_pct": -0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "涤纶",
+      "today": -0.3,
+      "day5": 1.0,
+      "day10": 0.1,
+      "change_pct": 1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗美容",
+      "today": -0.3,
+      "day5": -0.4,
+      "day10": -2.4,
+      "change_pct": -1.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "港口",
+      "today": -0.3,
+      "day5": -0.9,
+      "day10": -1.3,
+      "change_pct": 0.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电整机",
+      "today": -0.3,
+      "day5": -8.1,
+      "day10": -21.1,
+      "change_pct": -1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "医美耗材",
+      "today": -0.3,
+      "day5": -0.3,
+      "day10": -2.3,
+      "change_pct": -1.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品及饲料添加剂",
+      "today": -0.3,
+      "day5": -0.1,
+      "day10": -3.2,
+      "change_pct": 0.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "多业态零售",
+      "today": -0.3,
+      "day5": 1.5,
+      "day10": 1.4,
+      "change_pct": -1.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "胶黏剂及胶带",
+      "today": -0.3,
+      "day5": 0.7,
+      "day10": -0.2,
+      "change_pct": 0.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "轨交设备Ⅲ",
+      "today": -0.3,
+      "day5": 3.2,
+      "day10": 0.2,
+      "change_pct": 0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "轨交设备Ⅱ",
+      "today": -0.3,
+      "day5": 3.2,
+      "day10": 0.2,
+      "change_pct": 0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦炭Ⅲ",
+      "today": -0.4,
+      "day5": -2.6,
+      "day10": 5.4,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦炭Ⅱ",
+      "today": -0.4,
+      "day5": -2.6,
+      "day10": 5.4,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "机场",
+      "today": -0.4,
+      "day5": -0.1,
+      "day10": -0.5,
+      "change_pct": -0.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "仪器仪表",
+      "today": -0.4,
+      "day5": 4.8,
+      "day10": -11.7,
+      "change_pct": 1.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃气Ⅲ",
+      "today": -0.4,
+      "day5": -0.4,
+      "day10": -2.6,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃气Ⅱ",
+      "today": -0.4,
+      "day5": -0.4,
+      "day10": -2.6,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "产业地产",
+      "today": -0.4,
+      "day5": -0.4,
+      "day10": -4.1,
+      "change_pct": -0.72,
+      "limit_up": 0
+    },
+    {
+      "sector": "信托",
+      "today": -0.4,
+      "day5": -1.4,
+      "day10": -1.4,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "热力服务",
+      "today": -0.4,
+      "day5": -2.9,
+      "day10": -4.6,
+      "change_pct": 0.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产",
+      "today": -0.4,
+      "day5": 0.2,
+      "day10": -3.2,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "辅料",
+      "today": -0.4,
+      "day5": -1.4,
+      "day10": -1.0,
+      "change_pct": 2.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥",
+      "today": -0.4,
+      "day5": 0.2,
+      "day10": -0.4,
+      "change_pct": -0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他通信设备",
+      "today": -0.4,
+      "day5": -0.8,
+      "day10": -0.9,
+      "change_pct": 1.09,
+      "limit_up": 0
+    },
+    {
+      "sector": "配电设备",
+      "today": -0.4,
+      "day5": -1.9,
+      "day10": -4.4,
+      "change_pct": 0.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "国际工程",
+      "today": -0.4,
+      "day5": -0.3,
+      "day10": -0.4,
+      "change_pct": 0.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他运输设备",
+      "today": -0.4,
+      "day5": -1.3,
+      "day10": -2.9,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "农用机械",
+      "today": -0.4,
+      "day5": 2.0,
+      "day10": 1.7,
+      "change_pct": -1.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织制造",
+      "today": -0.4,
+      "day5": -2.3,
+      "day10": -5.0,
+      "change_pct": 0.97,
+      "limit_up": 1
+    },
+    {
+      "sector": "航空运输",
+      "today": -0.4,
+      "day5": -1.2,
+      "day10": -2.1,
+      "change_pct": -1.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥制造",
+      "today": -0.4,
+      "day5": 0.4,
+      "day10": -0.0,
+      "change_pct": -0.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他建材Ⅲ",
+      "today": -0.5,
+      "day5": 0.3,
+      "day10": -1.3,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "美容护理",
+      "today": -0.5,
+      "day5": -0.9,
+      "day10": -2.9,
+      "change_pct": -0.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "保健品",
+      "today": -0.5,
+      "day5": -1.1,
+      "day10": -2.0,
+      "change_pct": -1.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "住宅开发",
+      "today": -0.5,
+      "day5": -1.4,
+      "day10": -2.2,
+      "change_pct": -0.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他养殖",
+      "today": -0.6,
+      "day5": -1.1,
+      "day10": -0.9,
+      "change_pct": -3.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "氯碱",
+      "today": -0.6,
+      "day5": 2.2,
+      "day10": 0.1,
+      "change_pct": -0.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "贸易Ⅲ",
+      "today": -0.6,
+      "day5": -0.4,
+      "day10": -1.5,
+      "change_pct": -1.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "贸易Ⅱ",
+      "today": -0.6,
+      "day5": -0.4,
+      "day10": -1.5,
+      "change_pct": -1.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "有机硅",
+      "today": -0.6,
+      "day5": -0.8,
+      "day10": -5.5,
+      "change_pct": 1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学纤维",
+      "today": -0.6,
+      "day5": 0.3,
+      "day10": -3.5,
+      "change_pct": 0.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "钛白粉",
+      "today": -0.6,
+      "day5": 0.2,
+      "day10": -1.4,
+      "change_pct": -2.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "橡胶",
+      "today": -0.6,
+      "day5": -2.0,
+      "day10": -1.6,
+      "change_pct": 1.7,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车电子电气系统",
+      "today": -0.6,
+      "day5": -1.6,
+      "day10": -4.3,
+      "change_pct": 0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "商业物业经营",
+      "today": -0.6,
+      "day5": 0.1,
+      "day10": 3.1,
+      "change_pct": -1.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "橡胶助剂",
+      "today": -0.6,
+      "day5": -1.5,
+      "day10": 0.4,
+      "change_pct": 0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "乳品",
+      "today": -0.7,
+      "day5": -3.0,
+      "day10": -1.3,
+      "change_pct": -0.98,
+      "limit_up": 0
+    },
+    {
+      "sector": "防水材料",
+      "today": -0.7,
+      "day5": 0.3,
+      "day10": 0.3,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "粘胶",
+      "today": -0.7,
+      "day5": -0.4,
+      "day10": -0.4,
+      "change_pct": -0.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "林业Ⅲ",
+      "today": -0.7,
+      "day5": 3.7,
+      "day10": 3.8,
+      "change_pct": 1.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "林业Ⅱ",
+      "today": -0.7,
+      "day5": 3.7,
+      "day10": 3.8,
+      "change_pct": 1.85,
+      "limit_up": 1
+    },
+    {
+      "sector": "大宗用纸",
+      "today": -0.7,
+      "day5": -0.3,
+      "day10": -1.9,
+      "change_pct": -0.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "玻璃制造",
+      "today": -0.7,
+      "day5": -0.2,
+      "day10": -0.8,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "畜禽饲料",
+      "today": -0.7,
+      "day5": -0.1,
+      "day10": 1.6,
+      "change_pct": -0.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "LED",
+      "today": -0.8,
+      "day5": -5.7,
+      "day10": -19.5,
+      "change_pct": 2.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "医院",
+      "today": -0.8,
+      "day5": -4.8,
+      "day10": -14.6,
+      "change_pct": -1.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "轮胎轮毂",
+      "today": -0.8,
+      "day5": -2.1,
+      "day10": -3.9,
+      "change_pct": 0.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空机场",
+      "today": -0.8,
+      "day5": -1.3,
+      "day10": -2.6,
+      "change_pct": -1.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "预加工食品",
+      "today": -0.8,
+      "day5": 0.6,
+      "day10": 0.2,
+      "change_pct": -1.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "软饮料",
+      "today": -0.8,
+      "day5": 0.1,
+      "day10": -5.0,
+      "change_pct": -1.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "金融信息服务",
+      "today": -0.8,
+      "day5": -5.0,
+      "day10": -1.6,
+      "change_pct": -0.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "医药流通",
+      "today": -0.8,
+      "day5": -0.7,
+      "day10": -4.9,
+      "change_pct": -2.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学工程",
+      "today": -0.9,
+      "day5": -1.2,
+      "day10": -1.5,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "粮食种植",
+      "today": -0.9,
+      "day5": -1.1,
+      "day10": 3.2,
+      "change_pct": -3.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "交通运输",
+      "today": -0.9,
+      "day5": -28.9,
+      "day10": -21.0,
+      "change_pct": -0.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织服饰",
+      "today": -0.9,
+      "day5": -1.3,
+      "day10": -5.9,
+      "change_pct": 0.39,
+      "limit_up": 0
+    },
+    {
+      "sector": "农化制品",
+      "today": -0.9,
+      "day5": 1.4,
+      "day10": 5.2,
+      "change_pct": -0.64,
+      "limit_up": 2
+    },
+    {
+      "sector": "医药商业",
+      "today": -0.9,
+      "day5": -0.4,
+      "day10": -6.4,
+      "change_pct": -1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游零售Ⅲ",
+      "today": -0.9,
+      "day5": 0.8,
+      "day10": -2.9,
+      "change_pct": -3.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游零售Ⅱ",
+      "today": -0.9,
+      "day5": 0.8,
+      "day10": -2.9,
+      "change_pct": -3.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "钼",
+      "today": -1.0,
+      "day5": -1.7,
+      "day10": 0.7,
+      "change_pct": -1.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他塑料制品",
+      "today": -1.1,
+      "day5": 2.6,
+      "day10": 0.7,
+      "change_pct": 0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏辅材",
+      "today": -1.1,
+      "day5": -3.3,
+      "day10": -13.2,
+      "change_pct": -1.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程咨询服务Ⅲ",
+      "today": -1.1,
+      "day5": -4.1,
+      "day10": -19.7,
+      "change_pct": 1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程咨询服务Ⅱ",
+      "today": -1.1,
+      "day5": -4.1,
+      "day10": -19.7,
+      "change_pct": 1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "航海装备Ⅲ",
+      "today": -1.1,
+      "day5": 2.1,
+      "day10": -3.1,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "航海装备Ⅱ",
+      "today": -1.1,
+      "day5": 2.1,
+      "day10": -3.1,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用载货车",
+      "today": -1.1,
+      "day5": 0.1,
+      "day10": -4.6,
+      "change_pct": -1.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "复合肥",
+      "today": -1.2,
+      "day5": -0.9,
+      "day10": -1.0,
+      "change_pct": -2.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "农药",
+      "today": -1.3,
+      "day5": -0.6,
+      "day10": -2.8,
+      "change_pct": -1.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "电能综合服务",
+      "today": -1.3,
+      "day5": -1.5,
+      "day10": -3.2,
+      "change_pct": -0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏发电",
+      "today": -1.3,
+      "day5": -3.6,
+      "day10": -9.9,
+      "change_pct": -0.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "百货",
+      "today": -1.3,
+      "day5": -0.1,
+      "day10": -3.7,
+      "change_pct": -0.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "特种纸",
+      "today": -1.3,
+      "day5": 0.2,
+      "day10": -2.5,
+      "change_pct": -1.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "装修建材",
+      "today": -1.3,
+      "day5": 0.4,
+      "day10": -2.6,
+      "change_pct": 0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品加工",
+      "today": -1.3,
+      "day5": 0.4,
+      "day10": 1.0,
+      "change_pct": -1.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "锂电专用设备",
+      "today": -1.4,
+      "day5": -3.5,
+      "day10": -9.0,
+      "change_pct": 0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用车",
+      "today": -1.4,
+      "day5": -0.7,
+      "day10": -4.0,
+      "change_pct": -1.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "磁性材料",
+      "today": -1.4,
+      "day5": -0.7,
+      "day10": -6.4,
+      "change_pct": 0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "核力发电",
+      "today": -1.4,
+      "day5": -1.0,
+      "day10": 0.1,
+      "change_pct": -0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "超市",
+      "today": -1.4,
+      "day5": 1.5,
+      "day10": 0.7,
+      "change_pct": -1.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "工控设备",
+      "today": -1.4,
+      "day5": 5.7,
+      "day10": -3.2,
+      "change_pct": 1.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "镍",
+      "today": -1.5,
+      "day5": -4.3,
+      "day10": -10.7,
+      "change_pct": -1.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "饮料乳品",
+      "today": -1.5,
+      "day5": -3.0,
+      "day10": -6.3,
+      "change_pct": -1.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "磷肥及磷化工",
+      "today": -1.5,
+      "day5": -4.6,
+      "day10": -9.1,
+      "change_pct": -0.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他种植业",
+      "today": -1.5,
+      "day5": 1.7,
+      "day10": 7.1,
+      "change_pct": -0.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他农产品加工",
+      "today": -1.5,
+      "day5": -2.1,
+      "day10": 1.1,
+      "change_pct": -1.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "快递",
+      "today": -1.6,
+      "day5": -0.6,
+      "day10": -2.6,
+      "change_pct": -1.39,
+      "limit_up": 0
+    },
+    {
+      "sector": "水务及水治理",
+      "today": -1.6,
+      "day5": 2.2,
+      "day10": 2.6,
+      "change_pct": 0.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学制品",
+      "today": -1.6,
+      "day5": 3.9,
+      "day10": 2.8,
+      "change_pct": 0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专业工程",
+      "today": -1.6,
+      "day5": -1.1,
+      "day10": -7.7,
+      "change_pct": 0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保",
+      "today": -1.7,
+      "day5": 4.7,
+      "day10": -6.7,
+      "change_pct": 0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "物流",
+      "today": -1.7,
+      "day5": -0.8,
+      "day10": -5.5,
+      "change_pct": -0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏加工设备",
+      "today": -1.7,
+      "day5": -3.1,
+      "day10": -2.9,
+      "change_pct": -0.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "基础建设",
+      "today": -1.8,
+      "day5": -4.3,
+      "day10": -12.0,
+      "change_pct": -0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "模拟芯片设计",
+      "today": -1.8,
+      "day5": 12.8,
+      "day10": -16.8,
+      "change_pct": 3.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "基建市政工程",
+      "today": -1.8,
+      "day5": -4.5,
+      "day10": -10.9,
+      "change_pct": -0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "商业地产",
+      "today": -1.9,
+      "day5": -3.5,
+      "day10": -4.6,
+      "change_pct": -1.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学原料",
+      "today": -1.9,
+      "day5": 7.5,
+      "day10": 23.6,
+      "change_pct": -0.2,
+      "limit_up": 2
+    },
+    {
+      "sector": "医疗器械",
+      "today": -2.0,
+      "day5": 4.4,
+      "day10": -13.0,
+      "change_pct": -0.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "造纸",
+      "today": -2.0,
+      "day5": -0.2,
+      "day10": -4.5,
+      "change_pct": -1.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "塑料",
+      "today": -2.0,
+      "day5": 13.4,
+      "day10": -3.2,
+      "change_pct": 1.05,
+      "limit_up": 1
+    },
+    {
+      "sector": "钢铁",
+      "today": -2.0,
+      "day5": -5.9,
+      "day10": -9.0,
+      "change_pct": -0.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "能源及重型设备",
+      "today": -2.1,
+      "day5": -6.8,
+      "day10": -12.4,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "建筑装饰",
+      "today": -2.1,
+      "day5": -8.8,
+      "day10": -44.9,
+      "change_pct": 0.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "电网自动化设备",
+      "today": -2.2,
+      "day5": -8.3,
+      "day10": -19.5,
+      "change_pct": 1.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "房屋建设Ⅲ",
+      "today": -2.2,
+      "day5": -5.2,
+      "day10": -3.0,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "房屋建设Ⅱ",
+      "today": -2.2,
+      "day5": -5.2,
+      "day10": -3.0,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "金融控股",
+      "today": -2.2,
+      "day5": -5.1,
+      "day10": -5.1,
+      "change_pct": -0.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "膜材料",
+      "today": -2.4,
+      "day5": 3.7,
+      "day10": -3.7,
+      "change_pct": 0.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "钟表珠宝",
+      "today": -2.4,
+      "day5": -0.9,
+      "day10": 3.1,
+      "change_pct": -4.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "军工电子Ⅲ",
+      "today": -2.4,
+      "day5": -12.0,
+      "day10": -49.2,
+      "change_pct": 2.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "军工电子Ⅱ",
+      "today": -2.4,
+      "day5": -12.0,
+      "day10": -49.2,
+      "change_pct": 2.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "饰品",
+      "today": -2.5,
+      "day5": -0.9,
+      "day10": 3.0,
+      "change_pct": -4.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "多元金融",
+      "today": -2.5,
+      "day5": -7.0,
+      "day10": -6.5,
+      "change_pct": -0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "硅料硅片",
+      "today": -2.5,
+      "day5": -2.3,
+      "day10": -3.9,
+      "change_pct": -2.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "输变电设备",
+      "today": -2.5,
+      "day5": -9.2,
+      "day10": -34.2,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "无机盐",
+      "today": -2.6,
+      "day5": 0.6,
+      "day10": 11.6,
+      "change_pct": -0.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业工程",
+      "today": -2.6,
+      "day5": -2.2,
+      "day10": -8.0,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信终端及配件",
+      "today": -2.6,
+      "day5": 5.8,
+      "day10": -16.3,
+      "change_pct": 2.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗设备",
+      "today": -2.7,
+      "day5": 3.0,
+      "day10": 1.6,
+      "change_pct": 0.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他小金属",
+      "today": -2.7,
+      "day5": -7.7,
+      "day10": -47.8,
+      "change_pct": -0.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产开发",
+      "today": -2.8,
+      "day5": -5.3,
+      "day10": -10.9,
+      "change_pct": -0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "机器人",
+      "today": -2.8,
+      "day5": -18.6,
+      "day10": -38.0,
+      "change_pct": 1.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏主材",
+      "today": -2.9,
+      "day5": -3.1,
+      "day10": -8.5,
+      "change_pct": -2.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "板材",
+      "today": -2.9,
+      "day5": -6.5,
+      "day10": -8.8,
+      "change_pct": -1.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "环境治理",
+      "today": -3.0,
+      "day5": 1.8,
+      "day10": -3.0,
+      "change_pct": 0.55,
+      "limit_up": 1
+    },
+    {
+      "sector": "其他金属新材料",
+      "today": -3.1,
+      "day5": -2.9,
+      "day10": -23.5,
+      "change_pct": 0.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "普钢",
+      "today": -3.2,
+      "day5": -7.6,
+      "day10": -10.0,
+      "change_pct": -1.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏电池组件",
+      "today": -3.2,
+      "day5": -4.1,
+      "day10": -8.2,
+      "change_pct": -2.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "聚氨酯",
+      "today": -3.3,
+      "day5": 8.2,
+      "day10": 7.1,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "种子",
+      "today": -3.3,
+      "day5": 4.6,
+      "day10": 10.6,
+      "change_pct": -2.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合环境治理",
+      "today": -3.3,
+      "day5": -5.0,
+      "day10": -7.0,
+      "change_pct": -0.64,
+      "limit_up": 0
+    },
+    {
+      "sector": "调味发酵品Ⅲ",
+      "today": -3.4,
+      "day5": -6.1,
+      "day10": -17.4,
+      "change_pct": -0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "调味发酵品Ⅱ",
+      "today": -3.4,
+      "day5": -6.1,
+      "day10": -17.4,
+      "change_pct": -0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "中药Ⅲ",
+      "today": -3.6,
+      "day5": -6.6,
+      "day10": -25.6,
+      "change_pct": -1.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "中药Ⅱ",
+      "today": -3.6,
+      "day5": -6.6,
+      "day10": -25.6,
+      "change_pct": -1.69,
+      "limit_up": 2
+    },
+    {
+      "sector": "疫苗",
+      "today": -3.6,
+      "day5": -6.6,
+      "day10": -2.6,
+      "change_pct": -2.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "一般零售",
+      "today": -3.7,
+      "day5": 3.1,
+      "day10": 1.5,
+      "change_pct": -1.22,
+      "limit_up": 1
+    },
+    {
+      "sector": "粮油加工",
+      "today": -3.8,
+      "day5": 0.4,
+      "day10": 2.2,
+      "change_pct": -0.82,
+      "limit_up": 0
+    },
+    {
+      "sector": "证券Ⅲ",
+      "today": -3.8,
+      "day5": 41.2,
+      "day10": -23.0,
+      "change_pct": 0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "证券Ⅱ",
+      "today": -3.8,
+      "day5": 41.2,
+      "day10": -23.0,
+      "change_pct": 0.5,
+      "limit_up": 2
+    },
+    {
+      "sector": "铅锌",
+      "today": -4.0,
+      "day5": -5.3,
+      "day10": -6.9,
+      "change_pct": -1.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "原料药",
+      "today": -4.2,
+      "day5": -4.7,
+      "day10": -6.9,
+      "change_pct": -0.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属新材料",
+      "today": -4.5,
+      "day5": -3.5,
+      "day10": -29.9,
+      "change_pct": 0.9,
+      "limit_up": 0
+    },
+    {
+      "sector": "白银",
+      "today": -4.5,
+      "day5": -11.1,
+      "day10": 20.9,
+      "change_pct": -5.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "铝",
+      "today": -4.5,
+      "day5": -1.5,
+      "day10": -12.6,
+      "change_pct": -0.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "农产品加工",
+      "today": -4.6,
+      "day5": 0.3,
+      "day10": 5.5,
+      "change_pct": -1.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "软件开发",
+      "today": -4.6,
+      "day5": 49.1,
+      "day10": -26.1,
+      "change_pct": 1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "商贸零售",
+      "today": -4.8,
+      "day5": 3.9,
+      "day10": -2.2,
+      "change_pct": -0.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他生物制品",
+      "today": -5.1,
+      "day5": -13.5,
+      "day10": -29.2,
+      "change_pct": -1.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "白酒Ⅲ",
+      "today": -5.3,
+      "day5": -14.7,
+      "day10": -37.3,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "白酒Ⅱ",
+      "today": -5.3,
+      "day5": -14.7,
+      "day10": -37.3,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "钨",
+      "today": -5.4,
+      "day5": -8.7,
+      "day10": -31.3,
+      "change_pct": -1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "非银金融",
+      "today": -5.4,
+      "day5": 34.4,
+      "day10": -24.6,
+      "change_pct": 0.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "垂直应用软件",
+      "today": -5.6,
+      "day5": 23.5,
+      "day10": -23.5,
+      "change_pct": 1.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "种植业",
+      "today": -5.8,
+      "day5": 5.9,
+      "day10": 22.6,
+      "change_pct": -1.81,
+      "limit_up": 2
+    },
+    {
+      "sector": "电子化学品Ⅲ",
+      "today": -5.9,
+      "day5": 16.0,
+      "day10": -59.0,
+      "change_pct": 1.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "电子化学品Ⅱ",
+      "today": -5.9,
+      "day5": 16.0,
+      "day10": -59.0,
+      "change_pct": 1.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "电池",
+      "today": -6.2,
+      "day5": -48.5,
+      "day10": -133.0,
+      "change_pct": -0.11,
+      "limit_up": 1
+    },
+    {
+      "sector": "被动元件",
+      "today": -6.6,
+      "day5": 6.1,
+      "day10": -83.8,
+      "change_pct": 1.58,
+      "limit_up": 0
+    },
+    {
+      "sector": "氟化工",
+      "today": -6.9,
+      "day5": -2.8,
+      "day10": -40.0,
+      "change_pct": -0.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "电池化学品",
+      "today": -7.0,
+      "day5": -19.8,
+      "day10": -45.7,
+      "change_pct": -0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "火力发电",
+      "today": -7.8,
+      "day5": -13.5,
+      "day10": -52.2,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "小金属",
+      "today": -8.0,
+      "day5": -21.7,
+      "day10": -107.7,
+      "change_pct": -0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "生物制品",
+      "today": -8.5,
+      "day5": -19.4,
+      "day10": -31.5,
+      "change_pct": -1.92,
+      "limit_up": 0
+    },
+    {
+      "sector": "黄金",
+      "today": -9.0,
+      "day5": -32.5,
+      "day10": 8.1,
+      "change_pct": -3.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "线缆部件及其他",
+      "today": -9.6,
+      "day5": 0.6,
+      "day10": -0.5,
+      "change_pct": -0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体材料",
+      "today": -9.7,
+      "day5": -37.2,
+      "day10": -116.4,
+      "change_pct": 1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "农林牧渔",
+      "today": -9.8,
+      "day5": 13.2,
+      "day10": 34.8,
+      "change_pct": -0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "分立器件",
+      "today": -10.2,
+      "day5": -18.9,
+      "day10": -15.1,
+      "change_pct": -0.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制品",
+      "today": -11.1,
+      "day5": 12.6,
+      "day10": -43.8,
+      "change_pct": 0.26,
+      "limit_up": 1
+    },
+    {
+      "sector": "通信网络设备及器件",
+      "today": -11.2,
+      "day5": -4.1,
+      "day10": -310.2,
+      "change_pct": 1.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品饮料",
+      "today": -11.4,
+      "day5": -22.1,
+      "day10": -58.4,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "电力",
+      "today": -11.8,
+      "day5": -26.6,
+      "day10": -84.5,
+      "change_pct": -0.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车",
+      "today": -12.1,
+      "day5": 3.4,
+      "day10": -19.1,
+      "change_pct": 0.95,
+      "limit_up": 0
+    },
+    {
+      "sector": "公用事业",
+      "today": -12.1,
+      "day5": -27.0,
+      "day10": -87.1,
+      "change_pct": -0.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗研发外包",
+      "today": -12.4,
+      "day5": -14.2,
+      "day10": -75.1,
+      "change_pct": -1.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "乘用车",
+      "today": -13.3,
+      "day5": -7.1,
+      "day10": -4.2,
+      "change_pct": -1.8,
+      "limit_up": 0
+    },
+    {
+      "sector": "电动乘用车",
+      "today": -13.5,
+      "day5": -6.3,
+      "day10": -4.3,
+      "change_pct": -2.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "贵金属",
+      "today": -13.5,
+      "day5": -43.6,
+      "day10": 29.0,
+      "change_pct": -3.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗服务",
+      "today": -13.6,
+      "day5": -20.8,
+      "day10": -88.6,
+      "change_pct": -1.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "电网设备",
+      "today": -14.6,
+      "day5": -16.9,
+      "day10": -58.0,
+      "change_pct": 0.44,
+      "limit_up": 1
+    },
+    {
+      "sector": "逆变器",
+      "today": -14.6,
+      "day5": -30.3,
+      "day10": -44.5,
+      "change_pct": -3.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体",
+      "today": -15.2,
+      "day5": 1.8,
+      "day10": -735.1,
+      "change_pct": 2.36,
+      "limit_up": 2
+    },
+    {
+      "sector": "基础化工",
+      "today": -15.2,
+      "day5": 43.7,
+      "day10": -24.1,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制剂",
+      "today": -18.3,
+      "day5": -6.9,
+      "day10": -71.0,
+      "change_pct": -1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信线缆及配套",
+      "today": -20.2,
+      "day5": 12.1,
+      "day10": -75.5,
+      "change_pct": -0.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制药",
+      "today": -22.5,
+      "day5": -11.6,
+      "day10": -77.8,
+      "change_pct": -1.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "铜",
+      "today": -23.8,
+      "day5": -2.1,
+      "day10": 31.5,
+      "change_pct": -1.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏设备",
+      "today": -26.1,
+      "day5": -46.1,
+      "day10": -81.2,
+      "change_pct": -1.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体设备",
+      "today": -26.4,
+      "day5": -29.4,
+      "day10": -69.0,
+      "change_pct": 0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信",
+      "today": -31.2,
+      "day5": 11.2,
+      "day10": -440.9,
+      "change_pct": 1.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "工业金属",
+      "today": -32.4,
+      "day5": -8.9,
+      "day10": 12.0,
+      "change_pct": -1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信设备",
+      "today": -34.4,
+      "day5": 13.0,
+      "day10": -402.8,
+      "change_pct": 1.51,
+      "limit_up": 3
+    },
+    {
+      "sector": "电力设备",
+      "today": -43.5,
+      "day5": -111.7,
+      "day10": -336.0,
+      "change_pct": 0.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "医药生物",
+      "today": -51.1,
+      "day5": -54.4,
+      "day10": -242.9,
+      "change_pct": -1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "有色金属",
+      "today": -57.6,
+      "day5": -78.1,
+      "day10": -112.6,
+      "change_pct": -0.67,
+      "limit_up": 0
+    }
+  ],
   "events": [],
   "scenarios": [],
   "risk_notes": [
-    "本次采集时东方财富行业资金流接口不可用（IP 限流或网络异常），资金流向与观察池章节为空，请稍后重跑 scripts/collect_data.py 补齐。",
     "主力资金净流入为东方财富单因子口径（超大单+大单），非交易所统一披露字段，不同供应商数值不可直接混用。",
     "行业分类为东方财富行业板块体系，与其他平台的申万/中信行业分类不一致。",
     "涨跌停家数以东财涨停池为准；上市首日等无涨跌幅限制个股不计入。",
     "5日新高/新低基于本地收盘价缓存计算，缓存不足时该指标显示为「—」，连续运行数日后生效。",
     "两市成交额 = 中证指数官网披露的上证指数成交额 + 深交所官网披露的深市股票成交额，与行情软件口径可能略有差异。",
     "本页为数据整理与规则演示，不构成投资建议。",
-    "本次新高/新低仅基于 2 个历史交易日计算（收盘价缓存积累中，连续运行数个交易日后为完整口径）。"
+    "本次新高/新低仅基于 2 个历史交易日计算（收盘价缓存积累中，连续运行数个交易日后为完整口径）。",
+    "当日涨停池中有 11 个行业归属（光学光电、其他电源、家电零部、房地产开、房地产服、汽车零部等）未匹配到行业板块列表，未计入分行业涨停家数。"
   ]
 }

@@ -9,19 +9,24 @@ Request budget (steady state, once per trading day):
     SZSE official (SZ turnover)          1 request   (today only; history cached)
     Eastmoney push2ex (ZT/DT pools)      2 requests  (today only; history cached)
     Sina hs_a list (breadth/closes)    ~56 requests  (paged at 100, 0.12s apart)
-    Eastmoney push2 (sector flow rank)   1 request   (today only; history cached)
+    Eastmoney sector flow rank           1 request   (today + 5d + 10d in one call)
 
     Eastmoney total: 3 requests/day  (was ~97 in the naive design, which
     triggered IP-level throttling within minutes).
 
-Caches under data/cache/ make this possible:
+The sector-flow ranking tries the realtime cluster (push2) first and falls
+back to the delayed cluster (push2delay) - after market close the values are
+identical, and the delayed cluster sits outside the IP-throttling applied to
+push2/push2his.
+
+Caches under data/cache/:
     daily_stats.json          per-date ZT/DT counts + SZ turnover
-    sector_flow_history.json  per-sector daily main-force net inflow (yuan)
+    sector_flow_history.json  per-sector daily main-force net inflow (yuan;
+                              raw material for longer custom windows later)
     breadth_history.json      per-date close prices (5d new-high/low)
 
-On a fresh install the sector-flow history is backfilled once (~86 requests,
-paced); afterwards it is never re-fetched. Every Eastmoney call degrades
-gracefully: the snapshot is still emitted with an explicit note.
+Every Eastmoney call degrades gracefully: the snapshot is still emitted with
+an explicit note.
 
 Standard library only. Run:  python -X utf8 scripts/collect_data.py
 """
@@ -50,8 +55,6 @@ SSL_CTX.verify_mode = ssl.CERT_NONE
 
 TENCENT_INDEXES = [("sh000001", "shanghai"), ("sz399006", "chinext"), ("sh000688", "star50")]
 KEEP_DAYS = 40          # trading days retained in caches
-BACKFILL_COVER5 = 4     # a sector needs >=4 of last 5 days to be shown
-BACKFILL_COVER20 = 16   # and >=16 of last 20 days
 
 REQUEST_COUNTS: dict[str, int] = {}
 
@@ -184,70 +187,84 @@ def fetch_all_stocks() -> list[dict[str, Any]]:
 
 
 def fetch_sector_today() -> list[dict[str, Any]]:
-    """Eastmoney sector ranking: ALL sectors' today main-force flow in ONE request.
+    """Eastmoney sector ranking: ALL sectors' flow figures, one request per page.
 
-    f62 today main net inflow (yuan) - verified identical to the per-sector
-    fflow/daykline endpoint. f3 sector pct change.
+    f62 today / f164 5-day / f174 10-day main-force net inflow (yuan), f3 pct.
+    The board universe (~500) mixes industry levels (一/二/三级, e.g. 电子 ⊃
+    消费电子 ⊃ 消费电子零部件及组装); all levels are kept - the decision-card
+    layer decides what to display. Tries the realtime cluster first, then falls
+    back to the delayed cluster (push2delay) - after market close the values
+    are identical, and the delayed cluster sits outside the IP-throttling
+    applied to push2/push2his.
     """
-    url = ("https://push2.eastmoney.com/api/qt/clist/get?"
-           "pn=1&pz=200&po=1&np=1&fltt=2&invt=2&fid=f62&fs=m:90+t:2&"
-           "fields=f12,f14,f3,f62")
-    diff = (get_json(url, retries=2).get("data") or {}).get("diff", [])
-    out = []
+    fields = "f12,f14,f3,f62,f164,f174"
+    diff: list[dict[str, Any]] = []
+    last_exc: Exception | None = None
+    for host in ("push2.eastmoney.com", "push2delay.eastmoney.com"):
+        try:
+            page, total = 1, 1
+            while (page - 1) * 100 < total:
+                query = (f"pn={page}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f62"
+                         f"&fs=m:90+t:2&fields={fields}")
+                url = f"https://{host}/api/qt/clist/get?{query}"
+                data = get_json(url, retries=1).get("data") or {}
+                total = int(data.get("total") or 0)
+                diff.extend(data.get("diff") or [])
+                page += 1
+                time.sleep(0.2)
+            if diff:
+                break
+        except Exception as exc:  # noqa: BLE001 - try the next cluster
+            diff = []
+            last_exc = exc
+    if not diff:
+        raise RuntimeError(f"sector ranking unavailable on all clusters: {last_exc!r}")
+    out, seen = [], set()
     for item in diff:
-        if not isinstance(item, dict) or not item.get("f12"):
+        if not isinstance(item, dict) or not item.get("f12") or item["f12"] in seen:
             continue
-        flow = item.get("f62")
+        seen.add(item["f12"])
+        vals = {}
+        for key, field in (("today", "f62"), ("day5", "f164"), ("day10", "f174")):
+            raw = item.get(field)
+            vals[key] = float(raw) if isinstance(raw, (int, float)) else None
         out.append({
             "code": item["f12"], "name": item["f14"],
             "pct": float(item["f3"]) if isinstance(item.get("f3"), (int, float)) else 0.0,
-            "today_yuan": float(flow) if isinstance(flow, (int, float)) else None,
+            **vals,
         })
     return out
 
 
-def backfill_sector_history(code: str) -> dict[str, float]:
-    """One-time per sector: full fflow daykline -> {date: main_net_inflow_yuan}."""
-    url = ("https://push2his.eastmoney.com/api/qt/stock/fflow/daykline/get?"
-           f"lmt=0&klt=101&secid=90.{code}&fields1=f1,f2,f3,f7&"
-           "fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61,f62,f63,f64,f65")
-    data = get_json(url, retries=2).get("data") or {}
-    return {line.split(",")[0]: float(line.split(",")[1])
-            for line in data.get("klines", [])}
-
-
 # ---------------------------------------------------------------- pure logic
-def flow_coverage(daily: dict[str, float], trading_dates: list[str]) -> tuple[int, int]:
-    """(covered_5d, covered_20d) for a sector's cached daily map."""
-    window5, window20 = trading_dates[-5:], trading_dates[-20:]
-    return (sum(1 for d in window5 if d in daily),
-            sum(1 for d in window20 if d in daily))
-
-
 def build_flow_rows(sectors_today: list[dict[str, Any]],
                     history: dict[str, dict[str, Any]],
                     trading_dates: list[str],
                     zt_sector: dict[str, int]) -> list[dict[str, Any]]:
-    """Assemble schema flows[] from today's ranking + cached history. Pure."""
+    """Assemble schema flows[].
+
+    day5/day10 come straight from the ranking (EM's own aggregation); the
+    cached daily history (f62 per day) only serves sectors where the ranking
+    fields are missing, and accumulates toward longer custom windows later.
+    Pure function.
+    """
     market_date = trading_dates[-1]
     rows = []
     for sec in sectors_today:
-        entry = history.get(sec["code"]) or {}
-        daily = entry.get("daily", {})
-        if sec["today_yuan"] is not None:
-            daily = dict(daily)
-            daily[market_date] = sec["today_yuan"]  # today wins over cache
-        cov5, cov20 = flow_coverage(daily, trading_dates)
+        daily = dict((history.get(sec["code"]) or {}).get("daily", {}))
+        if sec["today"] is not None:
+            daily[market_date] = sec["today"]  # today's ranking value wins
         if market_date not in daily:
-            continue
-        if cov5 < BACKFILL_COVER5 or cov20 < BACKFILL_COVER20:
-            continue
-        window5, window20 = trading_dates[-5:], trading_dates[-20:]
+            continue  # no data at all for this sector
+        day5 = sec["day5"] if sec["day5"] is not None else sum(
+            daily.get(d, 0.0) for d in trading_dates[-5:])
+        day10 = sec["day10"] if sec["day10"] is not None else sum(
+            daily.get(d, 0.0) for d in trading_dates[-10:])
         rows.append({
             "sector": sec["name"],
             "today": round(daily[market_date] / 1e8, 1),
-            "day5": round(sum(daily.get(d, 0.0) for d in window5) / 1e8, 1),
-            "day20": round(sum(daily.get(d, 0.0) for d in window20) / 1e8, 1),
+            "day5": round(day5 / 1e8, 1),
+            "day10": round(day10 / 1e8, 1),
             "change_pct": round(sec["pct"], 2),
             "limit_up": zt_sector.get(sec["name"], 0),
         })
@@ -399,28 +416,12 @@ def main() -> None:
         flow_status = "throttled"
 
     if sectors_today:
-        # merge today's flow into cache
+        # cache today's f62 per sector (raw material for longer custom windows)
         for sec in sectors_today:
             entry = sector_history.setdefault(sec["code"], {"name": sec["name"], "daily": {}})
             entry["name"] = sec["name"]
-            if sec["today_yuan"] is not None:
-                entry["daily"][market_date] = sec["today_yuan"]
-        # one-time backfill for sectors lacking 20d coverage (paced, best effort)
-        need = [s for s in sectors_today
-                if flow_coverage(sector_history.get(s["code"], {}).get("daily", {}), dates_all)[1]
-                < BACKFILL_COVER20]
-        if need:
-            print(f"[5/6] backfilling {len(need)} sector(s) history (one-time)...")
-            for i, sec in enumerate(need):
-                try:
-                    daily = backfill_sector_history(sec["code"])
-                    if daily:
-                        sector_history.setdefault(sec["code"], {"name": sec["name"], "daily": {}})
-                        sector_history[sec["code"]]["daily"].update(daily)
-                except Exception:  # noqa: BLE001 - throttled mid-backfill
-                    print(f"  WARN backfill stopped at {i + 1}/{len(need)} (throttled)")
-                    break
-                time.sleep(0.35)
+            if sec["today"] is not None:
+                entry["daily"][market_date] = sec["today"]
         prune_history({c: e["daily"] for c, e in sector_history.items()}, keep_dates)
         save_cache(SECTOR_FLOW_CACHE, sector_history)
         flows = build_flow_rows(sectors_today, sector_history, dates_all, zt_sector)
@@ -430,9 +431,10 @@ def main() -> None:
     if flow_status == "ok":
         print(f"[5/6] sector flows: {len(flows)} sectors")
         sources.append({
-            "name": "东方财富 行业板块主力资金流接口",
+            "name": "东方财富 行业板块主力资金流接口（clist 排行，实时集群不可用时自动切换延时集群）",
             "as_of": f"{market_date} 收盘",
-            "note": "当日净流入来自板块资金排行（单次请求全量）；5日/20日为本地缓存逐日累加。主力=超大单+大单（东财单因子口径）。",
+            "note": "当日/5日/10日主力净流入均来自板块资金排行的东财官方聚合字段（f62/f164/f174），"
+                    "单次请求全量。主力=超大单+大单（东财单因子口径）。",
         })
     else:
         print("[5/6] sector flows: UNAVAILABLE -> empty with note")

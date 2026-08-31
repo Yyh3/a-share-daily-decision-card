@@ -12,6 +12,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 OUTPUT = ROOT / "data" / "market-card.json"
+FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
+POOL_ROWS = 10        # displayed rows in the accumulation pool
 
 
 def load_documents() -> list[dict[str, Any]]:
@@ -28,12 +30,12 @@ def load_documents() -> list[dict[str, Any]]:
 
 
 def classify_flow(row: dict[str, Any]) -> str:
-    day5, day20 = float(row["day5"]), float(row["day20"])
-    if day5 > 0 and day20 > 0:
+    day5, day10 = float(row["day5"]), float(row["day10"])
+    if day5 > 0 and day10 > 0:
         return "持续流入"
-    if day5 > 0 >= day20:
+    if day5 > 0 >= day10:
         return "拐点回流"
-    if day5 < 0 <= day20:
+    if day5 < 0 <= day10:
         return "拐点撤退"
     return "持续流出"
 
@@ -74,11 +76,12 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
     pool = []
     for row in flows:
         if row["day5"] > 0 and abs(row["change_pct"]) < 2 and row["limit_up"] < 3:
-            score = round(row["day5"] + max(row["day20"], 0) * 0.25 - abs(row["change_pct"]) * 5, 1)
+            score = round(row["day5"] + max(row["day10"], 0) * 0.25 - abs(row["change_pct"]) * 5, 1)
             pool.append({"sector":row["sector"], "score":score, "reason":
-                         f"5日 {row['day5']:+.1f}亿 / 20日 {row['day20']:+.1f}亿，"
+                         f"5日 {row['day5']:+.1f}亿 / 10日 {row['day10']:+.1f}亿，"
                          f"当日 {row['change_pct']:+.2f}%，涨停 {row['limit_up']} 家"})
     pool.sort(key=lambda row: (-row["score"], row["sector"]))
+    pool = pool[:POOL_ROWS]
 
     mood = emotion(source["breadth"], days)
     latest = days[-1]
@@ -92,7 +95,7 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         weakest = min(flows, key=lambda row: row["today"])
         verdicts.append(
             {"tag":"资金线索", "title":f"{strongest['sector']}的 5 日净流入居样本首位",
-             "evidence":f"5 日 {strongest['day5']:+.1f} 亿元，20 日 {strongest['day20']:+.1f} 亿元；分类为{strongest['classification']}。",
+             "evidence":f"5 日 {strongest['day5']:+.1f} 亿元，10 日 {strongest['day10']:+.1f} 亿元；分类为{strongest['classification']}。",
              "action":"进入观察池，需等待量价与板块广度共同确认。"})
         verdicts.append(
             {"tag":"风险约束", "title":f"{weakest['sector']}当日资金流出最明显",
@@ -105,9 +108,13 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
              "action":"重跑 scripts/collect_data.py 补齐后再参考资金相关结论。"})
     meta = dict(source["meta"])
     meta["input_file"] = source["_file"]
+    # The board universe mixes industry levels (~500 boards); the table keeps
+    # only the top flows so the card stays readable. Verdicts and the pool are
+    # computed on the FULL flow list above, so capping does not skew them.
+    display_flows = flows[:FLOW_TABLE_ROWS]
     return {"meta":meta, "status":{"emotion":mood, "market_tone":latest["feature"],
             "turnover":latest["turnover"]}, "verdicts":verdicts, "market_days":days,
-            "breadth":source["breadth"], "flows":flows, "accumulation_pool":pool,
+            "breadth":source["breadth"], "flows":display_flows, "accumulation_pool":pool,
             "events":source.get("events", []), "scenarios":source.get("scenarios", []),
             "risk_notes":source.get("risk_notes", [])}
 
