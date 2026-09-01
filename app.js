@@ -214,11 +214,23 @@ $("#toggle-all").addEventListener("click", () => {
 });
 $("#print").addEventListener("click", () => window.print());
 
-fetch("data/market-card.json", { cache: "no-store" })
-  .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
-  .then(render)
-  .catch(error => {
+// Prefer data injected inline (self-contained build), otherwise fetch it.
+const EMBEDDED = window.__CARD_DATA__ || null;
+if (EMBEDDED) {
+  try {
+    render(EMBEDDED);
+  } catch (error) {
     $("#error").hidden = false;
-    $("#error").innerHTML = `<strong>数据加载失败：</strong>${escapeHtml(error.message)}。请通过本地 HTTP 服务器打开页面，不要直接双击 index.html。`;
+    $("#error").innerHTML = `<strong>渲染失败：</strong>${escapeHtml(error.message)}。`;
     $("#data-badge").textContent = "数据不可用";
-  });
+  }
+} else {
+  fetch("data/market-card.json", { cache: "no-store" })
+    .then(response => { if (!response.ok) throw new Error(`HTTP ${response.status}`); return response.json(); })
+    .then(render)
+    .catch(error => {
+      $("#error").hidden = false;
+      $("#error").innerHTML = `<strong>数据加载失败：</strong>${escapeHtml(error.message)}。请通过本地 HTTP 服务器打开页面，或直接打开内置数据版的 market-card-view.html。`;
+      $("#data-badge").textContent = "数据不可用";
+    });
+}
