@@ -60,6 +60,43 @@
     "new_low": 1043,
     "up": 3387
   },
+  "calendar": [
+    {
+      "date": "2026-09-01",
+      "name": "财新制造业PMI",
+      "note": "每月 1 日前后，规则按 1 日推算",
+      "source": "rule"
+    },
+    {
+      "date": "2026-09-04",
+      "name": "美国非农就业报告",
+      "note": "每月首个周五",
+      "source": "rule"
+    },
+    {
+      "date": "2026-09-10",
+      "name": "中国CPI/PPI",
+      "note": "通常 9-12 日公布，规则按 10 日推算",
+      "source": "rule"
+    },
+    {
+      "date": "2026-09-15",
+      "name": "美国CPI",
+      "note": "每月中旬，规则按 15 日推算",
+      "source": "rule"
+    }
+  ],
+  "divergence": [
+    {
+      "gap": 2.92,
+      "global_name": "恒生科技",
+      "global_pct": -1.49,
+      "note": "同向应为共振，一涨一跌且差距达阈值记为背离",
+      "sector": "计算机",
+      "sector_pct": 1.43,
+      "theme": "科技成长"
+    }
+  ],
   "dragon_tiger": {
     "as_of": "2026-09-01",
     "broker_count": 108,
@@ -1566,25 +1603,25 @@
     {
       "as_of": null,
       "category": "美股",
-      "close": 53185.9,
+      "close": 53152.62,
       "name": "道琼斯",
-      "pct": -0.7,
+      "pct": -0.06,
       "unit": "点"
     },
     {
       "as_of": null,
       "category": "美股",
-      "close": 26370.89,
+      "close": 26145.54,
       "name": "纳斯达克",
-      "pct": -0.12,
+      "pct": -0.85,
       "unit": "点"
     },
     {
       "as_of": null,
       "category": "美股",
-      "close": 7686.14,
+      "close": 7654.36,
       "name": "标普500",
-      "pct": -0.33,
+      "pct": -0.41,
       "unit": "点"
     },
     {
@@ -1622,79 +1659,79 @@
     {
       "as_of": null,
       "category": "欧洲",
-      "close": 10717.01,
+      "close": 10800.63,
       "name": "英国富时100",
-      "pct": -0.99,
+      "pct": -0.22,
       "unit": "点"
     },
     {
       "as_of": null,
       "category": "欧洲",
-      "close": 25960.69,
+      "close": 25985.26,
       "name": "德国DAX",
-      "pct": -1.13,
+      "pct": -1.04,
       "unit": "点"
     },
     {
       "as_of": null,
       "category": "汇率",
-      "close": 99.58,
+      "close": 99.55,
       "name": "美元指数",
-      "pct": 0.17,
+      "pct": 0.14,
       "unit": "点"
     },
     {
       "as_of": "2026-09-01",
       "category": "美股",
-      "close": 11535.0511,
+      "close": 11198.2534,
       "lagged": false,
       "name": "费城半导体",
-      "pct": 0.57,
+      "pct": -2.92,
       "unit": null
     },
     {
       "as_of": "2026-09-01",
       "category": "商品",
-      "close": 4378.5,
+      "close": 4369.24,
       "lagged": false,
       "name": "伦敦金现货",
-      "pct": -1.58,
+      "pct": -1.79,
       "unit": null
     },
     {
       "as_of": "2026-09-01",
       "category": "商品",
-      "close": 64.89,
+      "close": 64.95,
       "lagged": false,
       "name": "伦敦银现货",
-      "pct": -2.47,
+      "pct": -2.37,
       "unit": null
     },
     {
       "as_of": "2026-09-01",
       "category": "商品",
-      "close": 88.003,
+      "close": 87.674,
       "lagged": false,
       "name": "纽约原油",
-      "pct": 2.62,
+      "pct": 2.23,
       "unit": null
     },
     {
       "as_of": "2026-09-01",
       "category": "商品",
-      "close": 14213.465,
+      "close": 14243.12,
       "lagged": false,
       "name": "LME铜",
-      "pct": -0.56,
+      "pct": -0.36,
       "unit": null
     },
     {
       "as_of": "2026-09-01",
       "category": "汇率",
-      "close": 6.724,
+      "close": 6.721,
       "lagged": false,
       "name": "离岸人民币",
-      "pct": 0.09,
+      "pct": 0.05,
       "unit": null
     },
     {
@@ -1780,6 +1817,28 @@
       "ret60": 1.52
     }
   ],
+  "intraday": {
+    "events": [
+      {
+        "text": "平开 -0.16%（首 30 分钟开盘价）",
+        "time": "10:00"
+      },
+      {
+        "text": "盘中高点 +0.06%",
+        "time": "14:00"
+      },
+      {
+        "text": "盘中低点 -0.17%",
+        "time": "11:00"
+      },
+      {
+        "text": "全日最大 30 分钟成交时段",
+        "time": "10:00"
+      }
+    ],
+    "method": "30 分钟线规则检测：开盘定性、±0.5pct 阈值穿越、高低点时点、上下午摆幅 ≥0.5pct 的拐点、尾盘 ±0.2pct 动作、最大量时段。指数级（上证）。",
+    "summary": "平开，收盘 -0.16%（收绿）"
+  },
   "lift_unlock": {
     "by_date": [
       {
@@ -2229,7 +2288,7 @@
       "limit_up": 83,
       "shanghai": -0.16,
       "star50": -2.19,
-      "turnover": 1.09
+      "turnover": 2.03
     }
   ],
   "meta": {
@@ -2268,6 +2327,11 @@
         "note": "当日/5日/10日主力净流入均来自板块资金排行的东财官方聚合字段（f62/f164/f174），单次请求全量。主力=超大单+大单（东财单因子口径）。"
       },
       {
+        "as_of": "2026-09-01 收盘",
+        "name": "腾讯行情 ifzq 30 分钟线（上证指数）",
+        "note": "盘中节奏为 30 分钟线规则检测：阈值穿越、高低点、上下午摆幅与尾盘动作；指数级口径，不含板块分时。"
+      },
+      {
         "as_of": "2026-08-31（T+1 披露）",
         "name": "东方财富数据中心 融资融券历史汇总（RPTA_RZRQ_LSHJ）",
         "note": "沪深两市合计融资融券余额，单位亿元；交易所 T+1 披露，数据日期落后卡片市场日。"
@@ -2288,9 +2352,9 @@
         "note": "constant-maturity 收益率，单位为百分比；美东时间当日下午发布，对应北京时间次日凌晨，故日期通常落后卡片市场日 1 个自然日。"
       },
       {
-        "as_of": "2026-08-31 收盘",
+        "as_of": "2026-09-01 收盘",
         "name": "中证指数有限公司官网 index-perf（指数市盈率 peg 序列，自算分位）",
-        "note": "近 10 年 PE 历史百分位，样本 2427 个交易日；历史序列本地缓存、每日增量追加（冷启动一次取全窗口）。"
+        "note": "近 10 年 PE 历史百分位，样本 2428 个交易日；历史序列本地缓存、每日增量追加（冷启动一次取全窗口）。"
       },
       {
         "as_of": "2026-09-01 ~ 2026-09-08（预告口径）",
@@ -2298,14 +2362,9 @@
         "note": "卡片市场日起 7 个自然日内的限售解禁事件；市值为披露值（数据源更新时点价格），非最新收盘价。"
       }
     ],
-    "updated_at": "2026-09-01 18:13"
+    "updated_at": "2026-09-01 22:29"
   },
   "noise": [
-    {
-      "change_pct": 20.02,
-      "sector": "视频媒体",
-      "today_yi": 3.7
-    },
     {
       "change_pct": 7.42,
       "sector": "粮食种植",
@@ -2330,6 +2389,169 @@
       "change_pct": 5.75,
       "sector": "农用机械",
       "today_yi": 0.4
+    },
+    {
+      "change_pct": 5.08,
+      "sector": "超市",
+      "today_yi": 3.9
+    }
+  ],
+  "pool_grid": [
+    {
+      "action": "重点观察",
+      "change_pct": -0.32,
+      "day5_yi": -134.0,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "电力设备",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.43,
+      "day5_yi": 97.8,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "计算机",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.91,
+      "day5_yi": 61.2,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "非银金融",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 2.68,
+      "day5_yi": 59.7,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "传媒",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.16,
+      "day5_yi": 55.9,
+      "invalid": "5 日净流入转负",
+      "limit_up": 1,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "证券Ⅱ",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.16,
+      "day5_yi": 55.9,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "证券Ⅲ",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.73,
+      "day5_yi": 43.3,
+      "invalid": "5 日净流入转负",
+      "limit_up": 1,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "软件开发",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 1.66,
+      "day5_yi": 33.4,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "IT服务Ⅲ",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": -1.79,
+      "day5_yi": -33.1,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "数字芯片设计",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": -0.45,
+      "day5_yi": 29.6,
+      "invalid": "5 日净流入转负",
+      "limit_up": 2,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "消费电子",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": -0.63,
+      "day5_yi": 29.6,
+      "invalid": "5 日净流入转负",
+      "limit_up": 0,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "消费电子零部件及组装",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
+    },
+    {
+      "action": "重点观察",
+      "change_pct": 3.46,
+      "day5_yi": 29.0,
+      "invalid": "5 日净流入转负",
+      "limit_up": 2,
+      "position": "积累中",
+      "position_note": "板块日涨跌样本 1/20，满样本前不判位置",
+      "ret20": null,
+      "sector": "数字媒体",
+      "state": "持续流入",
+      "trigger": "放量大涨且板块涨停 ≥3 家，升级候选主线"
     }
   ],
   "risk_notes": [
@@ -2342,7 +2564,7 @@
     "估值分位（PE 历史百分位）基于中证官网 index-perf 的 peg 字段序列自算，窗口 10 年；该口径与申万/Choice 等第三方估值口径存在差异，分位仅作相对位置参考。",
     "解禁市值取自东财数据中心 RPT_LIFT_STAGE 披露值（按数据源更新时点价格计算，非最新收盘价），解禁数量与占比以交易所公告为准。",
     "本页为数据整理与规则演示，不构成投资建议。",
-    "采集时刻（北京时间 2026-09-01 18:13）美股 2026-09-01 交易时段尚未收盘（美东 16:00 收盘，约北京时间次日 05:00），全球市场章节中的美股数值为最新盘中价，不是收盘价；需要收盘口径请在次日 05:00 后重跑采集。",
+    "采集时刻（北京时间 2026-09-01 22:29）美股 2026-09-01 交易时段尚未收盘（美东 16:00 收盘，约北京时间次日 05:00），全球市场章节中的美股数值为最新盘中价，不是收盘价；需要收盘口径请在次日 05:00 后重跑采集。",
     "本次新高/新低仅基于 3 个历史交易日计算（收盘价缓存积累中，连续运行数个交易日后为完整口径）。",
     "当日涨停池中有 6 个行业归属（光学光电、农产品加、地面兵装、房地产服、汽车零部、照明设备）未匹配到行业板块列表，未计入分行业涨停家数。"
   ],
@@ -2424,7 +2646,7 @@
       "label": "高潮",
       "method": "上涨占比、涨跌停差与成交额环比的固定阈值评分",
       "score": 4,
-      "turnover_change": -1.04,
+      "turnover_change": -0.1,
       "up_ratio": 61.1
     },
     "market_tone": "缩量回调",
@@ -2439,7 +2661,7 @@
       ],
       "stage": "高潮区顶部（分歧显现）"
     },
-    "turnover": 1.09
+    "turnover": 2.03
   },
   "style": {
     "method": "20 日区间收益之差，按 ±1.0pct 阈值归类；规则生成，非叙事判断。",
@@ -2560,37 +2782,37 @@
   },
   "valuation": [
     {
-      "as_of": "2026-08-31",
+      "as_of": "2026-09-01",
       "code": "000985",
       "name": "中证全指",
-      "pe": 18.27,
-      "percentile": 65.3,
-      "samples": 2427,
+      "pe": 18.08,
+      "percentile": 63.7,
+      "samples": 2428,
       "window_years": 10
     },
     {
-      "as_of": "2026-08-31",
+      "as_of": "2026-09-01",
       "code": "000300",
       "name": "沪深300",
-      "pe": 14.53,
-      "percentile": 78.1,
-      "samples": 2426,
+      "pe": 13.8,
+      "percentile": 61.1,
+      "samples": 2427,
       "window_years": 10
     },
     {
-      "as_of": "2026-08-31",
+      "as_of": "2026-09-01",
       "code": "000922",
       "name": "中证红利",
-      "pe": 8.75,
-      "percentile": 77.1,
-      "samples": 2427,
+      "pe": 8.7,
+      "percentile": 76.4,
+      "samples": 2428,
       "window_years": 10
     }
   ],
   "verdicts": [
     {
       "action": "以确认信号为先，不把单日涨停数量等同于趋势。",
-      "evidence": "上涨占比 61.1%，涨停/跌停 83/0，成交额环比 -1.04 万亿元。",
+      "evidence": "上涨占比 61.1%，涨停/跌停 83/0，成交额环比 -0.10 万亿元。",
       "invalid": "涨停家数跌破 40 家或上涨占比跌破 40%。",
       "tag": "市场定性",
       "title": "情绪处于“高潮”，指数与题材表现分化",
@@ -2651,9 +2873,9 @@
       {
         "id": "2026-09-01-turnover",
         "params": {
-          "floor": 1.04
+          "floor": 1.93
         },
-        "statement": "两市成交能否守住 1.04 万亿（低于则缩量防御）",
+        "statement": "两市成交能否守住 1.93 万亿（低于则缩量防御）",
         "type": "turnover_floor"
       },
       {
@@ -2675,6 +2897,73 @@
         "type": "promotion_floor"
       }
     ],
-    "retro": null
+    "retro": {
+      "date": "2026-08-28",
+      "evaluated_on": "2026-09-01",
+      "rows": [
+        {
+          "id": "2026-08-28-pool-元件/PCB",
+          "params": {
+            "sector": "元件/PCB"
+          },
+          "result": "?",
+          "statement": "元件/PCB 5 日净流入是否仍为正（蓄力池存亡判据）",
+          "type": "sector_day5_positive"
+        },
+        {
+          "id": "2026-08-28-pool-专用设备",
+          "params": {
+            "sector": "专用设备"
+          },
+          "result": "✓",
+          "statement": "专用设备 5 日净流入是否仍为正（蓄力池存亡判据）",
+          "type": "sector_day5_positive"
+        },
+        {
+          "id": "2026-08-28-payoff-软件开发",
+          "params": {
+            "sector": "软件开发"
+          },
+          "result": "?",
+          "statement": "今日领涨的软件开发明日是否兑现（✗ 即失败）",
+          "type": "rotation_payoff"
+        },
+        {
+          "id": "2026-08-28-turnover",
+          "params": {
+            "floor": 1.99
+          },
+          "result": "✓",
+          "statement": "两市成交能否守住 1.99 万亿（低于则缩量防御）",
+          "type": "turnover_floor"
+        },
+        {
+          "id": "2026-08-28-board-000017",
+          "params": {
+            "board": 7,
+            "code": "000017",
+            "name": "深中华A"
+          },
+          "result": "✗",
+          "statement": "深中华A（7板）是否继续涨停",
+          "type": "board_continue"
+        },
+        {
+          "id": "2026-08-28-promo",
+          "params": {
+            "floor": 40
+          },
+          "result": "✗",
+          "statement": "涨停晋级率能否守住 40%（低于则退潮预警）",
+          "type": "promotion_floor"
+        }
+      ],
+      "tally": {
+        "?": 2,
+        "△": 0,
+        "✓": 2,
+        "✗": 2
+      }
+    }
   }
 }

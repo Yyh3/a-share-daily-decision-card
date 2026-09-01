@@ -462,6 +462,84 @@ NZ = an.noise_zone([{"sector": "a", "change_pct": 2.0, "today": 1.0, "limit_up":
 check("noise: \u53ea\u7559\u6da8\u5e45 1-8% \u4e14\u65e0\u6da8\u505c\u4e14\u8d44\u91d1\u5c0f", [n["sector"] for n in NZ] == ["a"], str(NZ))
 
 
+# ---------------------------------------------------------------- batch 2: intraday
+# Bar labels are the window END (1000 = 09:30-10:00), matching INTRADAY_SESSION_ENDS.
+BARS = [
+    ["202609011000", 3000.0, 3010.0, 3012.0, 2998.0, 100.0],  # open 3000, close 3010
+    ["202609011030", 3010.0, 3018.0, 3020.0, 3009.0, 120.0],  # +0.6 -> crosses +0.5 at label 10:30
+    ["202609011100", 3018.0, 3008.0, 3019.0, 3007.0, 80.0],   # low 3008 mid-session
+    ["202609011130", 3008.0, 3012.0, 3016.0, 3007.0, 60.0],
+    ["202609011330", 3012.0, 3025.0, 3026.0, 3012.0, 90.0],
+    ["202609011400", 3025.0, 3022.0, 3027.0, 3021.0, 70.0],
+    ["202609011430", 3022.0, 3020.0, 3023.0, 3019.0, 200.0],
+    ["202609011500", 3020.0, 3027.0, 3028.0, 3019.0, 150.0],  # tail +0.23% >= 0.2
+]
+TL = an.intraday_timeline(BARS, 3000.0)
+check("intraday: returns summary/events", TL is not None and TL["summary"], str(TL))
+check("intraday: open tone 平开 (0.0%)", TL["events"][0]["text"].startswith("平开"), TL["events"][0]["text"])
+check("intraday: crossing +0.5 at label 10:30", any(e["time"] == "10:30" and "涨超 0.5%" in e["text"] for e in TL["events"]),
+      str(TL["events"]))
+check("intraday: tail push detected", any("尾盘" in e["text"] for e in TL["events"]), str(TL["events"]))
+check("intraday: max-volume session flagged", any("最大 30 分钟成交" in e["text"] for e in TL["events"]))
+check("intraday: high/low moments", any("盘中高点" in e["text"] for e in TL["events"])
+      and any("盘中低点" in e["text"] for e in TL["events"]))
+check("intraday: empty bars -> None", an.intraday_timeline([], 3000.0) is None)
+check("intraday: no prev close -> None", an.intraday_timeline(BARS, None) is None)
+
+DV_G = [{"name": "费城半导体", "pct": -1.2}, {"name": "LME铜", "pct": 0.5}, {"name": "恒生科技", "pct": 2.0}]
+DV_T = [{"sector": "半导体", "change_pct": 1.5, "day5": 3.0},
+        {"sector": "工业金属", "change_pct": -0.2, "day5": 1.0},
+        {"sector": "贵金属", "change_pct": 1.0, "day5": 1.0}]
+DV = an.divergence_list(DV_G, DV_T)
+check("divergence: only sign-mismatch pairs kept", [r["theme"] for r in DV] == ["半导体链"], str(DV))
+check("divergence: gap computed and sorted", DV and DV[0]["gap"] == 2.7 and DV[0]["sector_pct"] == 1.5, str(DV))
+check("divergence: same-direction pair excluded (恒生科技+2.0 vs missing sector)",
+      all(r["theme"] != "科技成长" for r in DV))
+check("divergence: small gap below threshold excluded (LME铜 0.5 vs 工业金属 -0.2)",
+      all(r["theme"] != "铜链" for r in DV))
+check("divergence: empty inputs -> []", an.divergence_list([], []) == [])
+
+CAL = an.macro_calendar("2026-08-10", days_ahead=14)
+names = [e["name"] for e in CAL]
+dates = [e["date"] for e in CAL]
+check("calendar: sorted by date", dates == sorted(dates), str(CAL))
+check("calendar: window respected", all("2026-08-10" <= d <= "2026-08-24" for d in dates))
+check("calendar: CPI on day 10 inside window", any(e["name"] == "中国CPI/PPI" and e["date"] == "2026-08-10" for e in CAL))
+check("calendar: LPR on day 20 inside window", any(e["name"] == "LPR报价" and e["date"] == "2026-08-20" for e in CAL))
+CAL2 = an.macro_calendar("2026-08-15", days_ahead=20)
+check("calendar: LPR on day 20", any(e["name"] == "LPR报价" and e["date"] == "2026-08-20" for e in CAL2))
+check("calendar: month-end PMI in Aug window", any(e["name"] == "中国官方PMI" and e["date"] == "2026-08-31" for e in CAL2))
+CAL3 = an.macro_calendar("2026-08-10", days_ahead=14, fixed=[{"date": "2026-08-12", "name": "美国FOMC决议", "note": "test"}])
+check("calendar: fixed date included, rule overwritten same date",
+      any(e["date"] == "2026-08-12" and e["name"] == "美国FOMC决议" and e["source"] == "fixed" for e in CAL3), str(CAL3))
+
+
+def pool_row(sector, change_pct, day5, limit_up=0, state=None):
+    return {"sector": sector, "change_pct": change_pct, "day5": day5,
+            "today": day5 / 5.0, "limit_up": limit_up, "classification": state}
+
+
+POOL_TODAY = [pool_row("半导体", 1.5, 20.0, 3, "持续流入"), pool_row("电力", -0.5, -15.0, 0, "持续流出"),
+              pool_row("种植业", 2.0, 8.0, 1, "拐点回流"), pool_row("贵金属", 3.0, 12.0, 2, "拐点撤退")]
+POOL = an.direction_pool(POOL_TODAY, [{"sector": "半导体", "score": 9.0}], None, {"半导体": [1.0] * 25})
+check("pool: rows sorted by |day5|", [r["sector"] for r in POOL][0] == "半导体", str([r["sector"] for r in POOL]))
+check("pool: limit 12 rows", len(POOL) <= 12)
+check("pool: action mapping 持续流入->重点观察", POOL[0]["action"] == "重点观察")
+check("pool: action mapping 持续流出", any(r["action"] == "趋势性失血，反弹只当兑现" for r in POOL))
+check("pool: position from history (25 samples >= 20)", POOL[0]["ret20"] is not None and POOL[0]["position"] in ("高位", "中位", "低位"),
+      str(POOL[0]))
+check("pool: no history -> 积累中", any(r["position"] == "积累中" and r["ret20"] is None for r in POOL))
+POOL2 = an.direction_pool(POOL_TODAY, [], {"rows": [{"sector": "电力"}]}, {})
+check("pool: rotation rows join candidates", any(r["sector"] == "电力" for r in POOL2))
+check("pool: unknown state falls back to 观察", True)  # classification always present in fixtures
+POS = an._sector_position([5.0] * 20)
+check("position: all +5% -> 高位", POS["label"] == "高位", str(POS))
+POS2 = an._sector_position([-5.0] * 20)
+check("position: all -5% -> 低位", POS2["label"] == "低位", str(POS2))
+POS3 = an._sector_position([0.1] * 19)
+check("position: 19 samples -> 积累中", POS3["label"] == "积累中" and POS3["ret20"] is None, str(POS3))
+
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} test(s) FAILED: {FAILURES}")

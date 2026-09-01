@@ -5,6 +5,7 @@
 Request budget (steady state, once per trading day):
 
     Tencent fqkline (7 index klines)      7 requests
+    Tencent ifzq m30 (盘中节奏)            1 request   (sh000001, 20 bars)
     CSIndex official (SH turnover)        1 request   (range query)
     SZSE official (SZ turnover)           1 request   (today only; history cached)
     Eastmoney push2ex (ZT/DT/ZB pools)    3 requests  (today only; history cached)
@@ -59,6 +60,9 @@ from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "scripts"))
+import analysis  # noqa: E402  (pure rules; keeps the m30 timeline testable)
+
 RAW_DIR = ROOT / "data" / "raw"
 CACHE_DIR = ROOT / "data" / "cache"
 DAILY_STATS_CACHE = CACHE_DIR / "daily_stats.json"
@@ -238,6 +242,22 @@ def fetch_index_klines() -> dict[str, list[dict[str, Any]]]:
             series[i]["pct"] = round((series[i]["close"] / prev - 1) * 100, 2) if prev else 0.0
         out[key] = series
     return out
+
+
+def fetch_intraday_m30(symbol: str = "sh000001", count: int = 20) -> list[list]:
+    """Tencent 30-minute bars for one session: [YYYYMMDDHHMM, open, close,
+    high, low, volume], ascending. Covers today plus the tail of yesterday.
+
+    ifzq.gtimg.cn serves mkline; web.ifzq.gtimg.cn only has fqkline (its
+    mkline path does not resolve), so this uses the bare host on purpose.
+    """
+    url = (f"https://ifzq.gtimg.cn/appstock/app/kline/mkline?"
+           f"param={symbol},m30,,{count}")
+    node = (get_json(url).get("data") or {}).get(symbol) or {}
+    bars = node.get("m30") or []
+    if not bars:
+        raise RuntimeError(f"empty m30 bars for {symbol}")
+    return bars
 
 
 def fetch_sh_turnover(start: str, end: str) -> dict[str, float]:
@@ -1313,13 +1333,17 @@ def main() -> None:
         flow_status = "throttled"
 
     if sectors_today:
-        # cache today's f62 per sector (raw material for longer custom windows)
+        # cache today's f62 per sector (raw material for longer custom windows);
+        # pct accumulates toward the direction-pool 20-day position label
         for sec in sectors_today:
             entry = sector_history.setdefault(sec["code"], {"name": sec["name"], "daily": {}})
             entry["name"] = sec["name"]
             if sec["today"] is not None:
                 entry["daily"][market_date] = sec["today"]
+            if sec.get("pct") is not None:
+                entry.setdefault("pct", {})[market_date] = float(sec["pct"])
         prune_history({c: e["daily"] for c, e in sector_history.items()}, keep_dates)
+        prune_history({c: e.get("pct") or {} for c, e in sector_history.items()}, keep_dates)
         save_cache(SECTOR_FLOW_CACHE, sector_history)
         flows = build_flow_rows(sectors_today, sector_history, dates_all, zt_sector)
         if not flows:
@@ -1366,6 +1390,28 @@ def main() -> None:
     m = limit_ladder["metrics"]
     print(f"[6/8] ladder: ZT={m['limit_up']} ZB={m['zha_ban']} "
           f"seal={m['seal_rate']}% promote={m['promotion_rate']}% max={m['max_board']}板")
+
+    # 6c. Intraday rhythm (Tencent m30, Shanghai index) - soft dependency
+    intraday: dict[str, Any] | None = None
+    try:
+        ymd = market_date.replace("-", "")
+        bars = [b for b in fetch_intraday_m30() if str(b[0]).startswith(ymd)]
+        sh_series = klines["shanghai"]
+        prev_close = sh_series[-2]["close"] if len(sh_series) >= 2 else None
+        intraday = analysis.intraday_timeline(bars, prev_close)
+        if intraday:
+            print(f"[6c] intraday: {intraday['summary']} ({len(intraday['events'])} events)")
+            sources.append({
+                "name": "腾讯行情 ifzq 30 分钟线（上证指数）",
+                "as_of": f"{market_date} 收盘",
+                "note": "盘中节奏为 30 分钟线规则检测：阈值穿越、高低点、上下午摆幅与尾盘动作；"
+                        "指数级口径，不含板块分时。",
+            })
+        else:
+            print("[6c] intraday: bars/prev_close incomplete -> skipped")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[6c] intraday unavailable ({type(exc).__name__}) -> block degraded")
+        notes.append("盘中节奏本次未采集成功（腾讯分钟线接口异常），该栏留空，下次运行时自动补齐。")
 
     # 7. Margin (T+1) + global markets - both soft dependencies
     notes = list(RISK_NOTES)
@@ -1540,6 +1586,7 @@ def main() -> None:
         "flows": flows,
         "index_panel": index_panel,
         "limit_ladder": limit_ladder,
+        "intraday": intraday,
         "margin": margin,
         "global_markets": global_markets,
         "global_as_of": global_as_of,

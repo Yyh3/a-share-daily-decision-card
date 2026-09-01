@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>A 股每日复盘决策卡</title>
-  <link rel="stylesheet" href="styles.css?v=20260901c">
+  <link rel="stylesheet" href="styles.css?v=20260901d">
 </head>
 <body>
   <header class="topbar">
@@ -49,7 +49,8 @@
 
         <section class="collapsible" data-section>
           <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>02</span><span><small>MARKET PULSE</small><b>近五日市场</b></span></span><span class="chevron">⌃</span></button>
-          <div class="section-body"><div class="table-wrap"><table><thead><tr><th>日期</th><th>上证</th><th>创业板</th><th>科创 50</th><th>成交额</th><th>涨停/跌停</th><th>盘面特征</th></tr></thead><tbody id="market-table"></tbody></table></div></div>
+          <div class="section-body"><div class="table-wrap"><table><thead><tr><th>日期</th><th>上证</th><th>创业板</th><th>科创 50</th><th>成交额</th><th>涨停/跌停</th><th>盘面特征</th></tr></thead><tbody id="market-table"></tbody></table></div>
+            <div id="intraday" class="intraday-block"></div></div>
         </section>
 
         <section class="collapsible" data-section>
@@ -94,6 +95,8 @@
           <div class="section-body">
             <div id="ust-block" class="ust-block"></div>
             <div class="table-wrap"><table><thead><tr><th>类别</th><th>标的</th><th>收盘</th><th>涨跌幅</th></tr></thead><tbody id="global-table"></tbody></table></div>
+            <div class="table-wrap divergence-table"><table><thead><tr><th>主题</th><th>全球资产</th><th>涨跌</th><th>A股板块</th><th>涨跌</th><th>差值</th></tr></thead><tbody id="divergence-table"></tbody></table></div>
+            <p id="divergence-note" class="unit-note"></p>
             <p id="global-notes" class="unit-note"></p>
           </div>
         </section>
@@ -115,12 +118,19 @@
 
         <section class="collapsible" data-section>
           <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>08</span><span><small>WATCHLIST</small><b>蓄力观察池</b></span></span><span class="chevron">⌃</span></button>
-          <div id="pool" class="section-body pool-list"></div>
+          <div class="section-body">
+            <div class="table-wrap"><table><thead><tr><th>方向</th><th>位置</th><th>20日</th><th>资金状态</th><th>当日</th><th>5日(亿)</th><th>涨停</th><th>动作语义</th></tr></thead><tbody id="pool-grid-table"></tbody></table></div>
+            <p id="pool-grid-note" class="unit-note"></p>
+            <div id="pool" class="pool-list"></div>
+          </div>
         </section>
 
         <section class="collapsible" data-section>
           <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>09</span><span><small>PLAYBOOK</small><b>次日情景预案</b></span></span><span class="chevron">⌃</span></button>
-          <div id="scenarios" class="section-body scenario-list"></div>
+          <div class="section-body">
+            <div id="calendar" class="calendar-block"></div>
+            <div id="scenarios" class="scenario-list"></div>
+          </div>
         </section>
         <section class="collapsible" data-section>
           <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>09B</span><span><small>VERIFY</small><b>次日验证清单</b></span></span><span class="chevron">⌃</span></button>
@@ -138,6 +148,6 @@
     </section>
   </main>
   <footer>本地数据驱动 · 无实时行情连接 · 请独立判断并承担风险</footer>
-  <script src="app.js?v=20260901c" defer></script>
+  <script src="app.js?v=20260901d" defer></script>
 </body>
 </html>

@@ -422,3 +422,272 @@ def noise_zone(today_rows: list[dict[str, Any]], top_n: int = NOISE_TOP_N) -> li
     rows.sort(key=lambda r: -(r.get("change_pct") or 0))
     return [{"sector": r["sector"], "change_pct": r["change_pct"],
              "today_yi": _round(float(r.get("today") or 0), 2)} for r in rows[:top_n]]
+
+
+# ------------------------------------------------------------- intraday rhythm
+# Tencent m30 bar: [YYYYMMDDHHMM, open, close, high, low, volume]. The label is
+# the END of the 30-minute window (1000 = 09:30-10:00). Bars for one A-share
+# session: 1000 1030 1100 1130 1330 1400 1430 1500.
+INTRADAY_SESSION_ENDS = ("1000", "1030", "1100", "1130", "1330", "1400", "1430", "1500")
+INTRADAY_STEP = 0.5        # pct: announce a threshold crossing at every step
+INTRADAY_TAIL_STEP = 0.2   # pct between the last two bars that counts as a tail move
+INTRADAY_AM_PM_SWING = 0.5 # pct: afternoon reversal versus the morning close
+INTRADAY_FLAT = 0.2        # pct: open within this band of prev close = 平开
+
+
+def _pct_from(prev: float, value: float) -> float:
+    return (value / prev - 1) * 100 if prev else 0.0
+
+
+def intraday_timeline(bars: list[list], prev_close: float | None) -> dict[str, Any] | None:
+    """Rule-based intraday rhythm for one session from m30 bars.
+
+    Reports only what the bars show: how the session opened, every
+    ±0.5pct threshold crossing with its time, the high/low moments, the
+    morning-versus-afternoon balance and the final 30 minutes. No narrative.
+    """
+    if not bars or not prev_close:
+        return None
+    events: list[dict[str, str]] = []
+    closes = [float(b[2]) for b in bars]
+    times = [str(b[0])[8:10] + ":" + str(b[0])[10:12] for b in bars]
+
+    open_pct = _pct_from(prev_close, float(bars[0][1]))
+    if open_pct >= INTRADAY_FLAT:
+        tone = "高开"
+    elif open_pct <= -INTRADAY_FLAT:
+        tone = "低开"
+    else:
+        tone = "平开"
+    events.append({"time": times[0], "text": f"{tone} {open_pct:+.2f}%（首 30 分钟开盘价）"})
+
+    crossed = 0
+    for i, close in enumerate(closes):
+        pct = _pct_from(prev_close, close)
+        step = int(pct / INTRADAY_STEP)
+        if step != crossed:
+            direction = "涨超" if step > crossed else "跌超"
+            level = abs(step) * INTRADAY_STEP
+            events.append({"time": times[i], "text": f"较昨收{direction} {level:.1f}%"})
+            crossed = step
+
+    hi = closes.index(max(closes))
+    lo = closes.index(min(closes))
+    if hi != 0:
+        events.append({"time": times[hi],
+                       "text": f"盘中高点 {_pct_from(prev_close, closes[hi]):+.2f}%"})
+    if lo != 0:
+        events.append({"time": times[lo],
+                       "text": f"盘中低点 {_pct_from(prev_close, closes[lo]):+.2f}%"})
+
+    am_end = closes[3] if len(closes) > 3 else closes[0]
+    pm_end = closes[-1]
+    am_pct = _pct_from(prev_close, am_end)
+    pm_pct = _pct_from(prev_close, pm_end)
+    if am_pct - pm_pct >= INTRADAY_AM_PM_SWING:
+        events.append({"time": times[-1], "text": f"午后回落（上午收 {am_pct:+.2f}% → 收盘 {pm_pct:+.2f}%）"})
+    elif pm_pct - am_pct >= INTRADAY_AM_PM_SWING:
+        events.append({"time": times[-1], "text": f"午后回升（上午收 {am_pct:+.2f}% → 收盘 {pm_pct:+.2f}%）"})
+
+    if len(closes) >= 2:
+        tail = _pct_from(closes[-2], closes[-1])
+        if tail >= INTRADAY_TAIL_STEP:
+            events.append({"time": times[-1], "text": f"尾盘 30 分钟拉升 {tail:+.2f}%"})
+        elif tail <= -INTRADAY_TAIL_STEP:
+            events.append({"time": times[-1], "text": f"尾盘 30 分钟跳水 {tail:+.2f}%"})
+
+    vols = [float(b[5]) for b in bars]
+    peak = vols.index(max(vols))
+    if vols[peak] > 0 and peak != len(vols) - 1:
+        events.append({"time": times[peak], "text": "全日最大 30 分钟成交时段"})
+
+    if pm_pct >= 0:
+        close_word = "收红"
+    else:
+        close_word = "收绿"
+    open_part = "" if tone == "平开" else f" {open_pct:+.2f}%"
+    return {"summary": f"{tone}{open_part}，收盘 {pm_pct:+.2f}%（{close_word}）",
+            "events": events,
+            "method": "30 分钟线规则检测：开盘定性、±0.5pct 阈值穿越、高低点时点、"
+                      "上下午摆幅 ≥0.5pct 的拐点、尾盘 ±0.2pct 动作、最大量时段。指数级（上证）。"}
+
+
+# ----------------------------------------------------------------- divergence
+DIVERGENCE_THRESHOLD = 1.0  # pct gap between the two legs before it counts
+DEFAULT_DIVERGENCE_PAIRS = (
+    {"global": "费城半导体", "sector": "半导体", "theme": "半导体链"},
+    {"global": "LME铜", "sector": "工业金属", "theme": "铜链"},
+    {"global": "伦敦金现货", "sector": "贵金属", "theme": "贵金属链"},
+    {"global": "恒生科技", "sector": "计算机", "theme": "科技成长"},
+)
+
+
+def divergence_list(global_rows: list[dict[str, Any]], today_rows: list[dict[str, Any]],
+                    pairs: tuple[dict[str, str], ...] = DEFAULT_DIVERGENCE_PAIRS,
+                    threshold: float = DIVERGENCE_THRESHOLD) -> list[dict[str, Any]]:
+    """Cross-market sign mismatches: global asset vs the A-share sector it maps to.
+
+    Both legs are same-day close pct where available; the global leg may lag
+    (US close lands the next Beijing morning) and the caller notes that.
+    """
+    by_name = {row["name"]: row["pct"] for row in global_rows or [] if row.get("pct") is not None}
+    by_sector = {row["sector"]: row.get("change_pct") for row in today_rows or []}
+    rows = []
+    for pair in pairs:
+        g = by_name.get(pair["global"])
+        a = by_sector.get(pair["sector"])
+        if g is None or a is None:
+            continue
+        gap = round(a - g, 2)
+        if g * a < 0 and abs(gap) >= threshold:
+            rows.append({"theme": pair["theme"], "global_name": pair["global"],
+                         "global_pct": round(g, 2), "sector": pair["sector"],
+                         "sector_pct": round(a, 2), "gap": gap,
+                         "note": "同向应为共振，一涨一跌且差距达阈值记为背离"})
+    rows.sort(key=lambda r: -abs(r["gap"]))
+    return rows
+
+
+# -------------------------------------------------------------- macro calendar
+# Month-based rules only. Fixed-date events (FOMC, summits) belong in the
+# "fixed" list of data/macro-calendar.json and are maintained by hand.
+DEFAULT_MACRO_RULES = (
+    {"rule": "day_1", "name": "财新制造业PMI", "note": "每月 1 日前后，规则按 1 日推算"},
+    {"rule": "first_friday", "name": "美国非农就业报告", "note": "每月首个周五"},
+    {"rule": "day_10", "name": "中国CPI/PPI", "note": "通常 9-12 日公布，规则按 10 日推算"},
+    {"rule": "day_15", "name": "美国CPI", "note": "每月中旬，规则按 15 日推算"},
+    {"rule": "day_20", "name": "LPR报价", "note": "每月 20 日，遇节假日顺延"},
+    {"rule": "month_end", "name": "中国官方PMI", "note": "当月最后一天（统计局）"},
+)
+
+
+def macro_calendar(market_date: str, days_ahead: int = 14,
+                   rules: tuple[dict[str, str], ...] = DEFAULT_MACRO_RULES,
+                   fixed: list[dict[str, str]] | None = None) -> list[dict[str, Any]]:
+    """Next ``days_ahead`` calendar days of rule-derived macro events.
+
+    Pure: builds candidate dates from the month rules plus any hand-maintained
+    fixed dates, keeps those inside the window, sorted by date. Fixed entries
+    win over rule entries on the same date.
+    """
+    import calendar as _cal
+    import datetime as _dt
+
+    start = _dt.date(int(market_date[:4]), int(market_date[5:7]), int(market_date[8:10]))
+    end = start + _dt.timedelta(days=days_ahead)
+    out: dict[_dt.date, dict[str, str]] = {}
+
+    def month_of(day: _dt.date) -> list[tuple[_dt.date, str, str]]:
+        found = []
+        last = _cal.monthrange(day.year, day.month)[1]
+        for rule in rules:
+            kind = rule["rule"]
+            if kind == "day_1":
+                date = day.replace(day=1)
+            elif kind == "first_friday":
+                date = day.replace(day=1)
+                while date.weekday() != 4:
+                    date += _dt.timedelta(days=1)
+            elif kind == "day_10":
+                date = day.replace(day=10)
+            elif kind == "day_15":
+                date = day.replace(day=15)
+            elif kind == "day_20":
+                date = day.replace(day=20)
+            elif kind == "month_end":
+                date = day.replace(day=last)
+            else:
+                continue
+            found.append((date, rule["name"], rule["note"]))
+        return found
+
+    for offset in range(days_ahead + 1):
+        day = start + _dt.timedelta(days=offset)
+        for date, name, note in month_of(day):
+            if start <= date <= end:
+                out[date] = {"date": date.isoformat(), "name": name, "note": note,
+                             "source": "rule"}
+    for item in fixed or []:
+        try:
+            date = _dt.date.fromisoformat(str(item.get("date", ""))[:10])
+        except ValueError:
+            continue
+        if start <= date <= end:
+            out[date] = {"date": date.isoformat(), "name": item.get("name", ""),
+                         "note": item.get("note", ""), "source": "fixed"}
+    return [out[key] for key in sorted(out)]
+
+
+# -------------------------------------------------------------- direction pool
+POOL_GRID_ROWS = 12
+POSITION_ACCUMULATE_DAYS = 20   # trading days of sector pct history before ret20 shows
+POSITION_HIGH = 5.0             # 20-day sector return pct that counts as 高位
+POSITION_LOW = -5.0
+POOL_ACTION = {
+    "持续流入": ("重点观察", "放量大涨且板块涨停 ≥3 家，升级候选主线", "5 日净流入转负"),
+    "拐点回流": ("刚掉头，真伪待一周验证", "连续 3 日净流入且放量", "5 日净流入转负"),
+    "拐点撤退": ("高位资金撤离进行时", "5 日净流入转正", "10 日净流入也转负"),
+    "持续流出": ("趋势性失血，反弹只当兑现", "5 日净流入转正", "净流出继续扩大"),
+}
+
+
+def _sector_position(pcts: list[float]) -> dict[str, Any]:
+    """20-day compounded return from accumulated daily pct series."""
+    if len(pcts) < POSITION_ACCUMULATE_DAYS:
+        return {"ret20": None, "label": "积累中",
+                "note": f"板块日涨跌样本 {len(pcts)}/{POSITION_ACCUMULATE_DAYS}，满样本前不判位置"}
+    ret = 1.0
+    for pct in pcts[-POSITION_ACCUMULATE_DAYS:]:
+        ret *= 1 + float(pct) / 100
+    ret20 = round((ret - 1) * 100, 2)
+    if ret20 >= POSITION_HIGH:
+        label = "高位"
+    elif ret20 <= POSITION_LOW:
+        label = "低位"
+    else:
+        label = "中位"
+    return {"ret20": ret20, "label": label, "note": f"近 {POSITION_ACCUMULATE_DAYS} 日复利收益 {ret20:+.2f}%"}
+
+
+def direction_pool(today_rows: list[dict[str, Any]], pool: list[dict[str, Any]],
+                   rotation: dict[str, Any] | None, pct_history: dict[str, list[float]],
+                   rows_limit: int = POOL_GRID_ROWS) -> list[dict[str, Any]]:
+    """Direction tracking pool: 资金四分型 × 位置(需积累) → 固定动作语义.
+
+    Candidates = accumulation pool ∪ rotation leaders ∪ today's extremes,
+    scored by |5-day flow| so the strongest capital signals surface first.
+    """
+    candidates: dict[str, dict[str, Any]] = {}
+    order: list[str] = []
+    extremes: list[str | None] = []
+    if today_rows:
+        extremes = [max(today_rows, key=lambda r: r.get("day5") or 0).get("sector"),
+                    min(today_rows, key=lambda r: r.get("day5") or 0).get("sector")]
+    for source in ([p["sector"] for p in pool or []]
+                   + [r["sector"] for r in (rotation or {}).get("rows", []) or []]
+                   + extremes):
+        if not source or source in candidates:
+            continue
+        row = next((r for r in today_rows or [] if r["sector"] == source), None)
+        if not row:
+            continue
+        candidates[source] = row
+        order.append(source)
+    order.sort(key=lambda name: -abs(float(candidates[name].get("day5") or 0)))
+    rows = []
+    for name in order[:rows_limit]:
+        row = candidates[name]
+        state = row.get("classification") or "持续流入"
+        action, trigger, invalid = POOL_ACTION.get(state, ("观察", "资金转正", "资金转负"))
+        position = _sector_position(pct_history.get(name) or [])
+        rows.append({
+            "sector": name,
+            "position": position["label"], "ret20": position["ret20"],
+            "position_note": position["note"],
+            "state": state,
+            "change_pct": row.get("change_pct"),
+            "day5_yi": _round(float(row.get("day5") or 0), 1),
+            "limit_up": int(row.get("limit_up") or 0),
+            "action": action, "trigger": trigger, "invalid": invalid,
+        })
+    return rows

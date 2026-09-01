@@ -1,0 +1,4 @@
+{
+  "_note": "宏观事件日历配置。rules 在 scripts/analysis.py 的 DEFAULT_MACRO_RULES（按月内固定规则推算）；这里只维护无法规则推算的 fixed 固定日期事件（FOMC、峰会等），日期用 ISO 格式。规则推算条目均已标注「以官方为准」。",
+  "fixed": []
+}

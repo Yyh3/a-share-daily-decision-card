@@ -237,12 +237,71 @@ function renderVerify(verify) {
     : "<p class=\"unit-note\">验证清单需要资金流与梯队数据，本次未生成。</p>";
 }
 
+function renderIntraday(intraday) {
+  const box = $("#intraday");
+  if (!box) return;
+  if (!intraday || !(intraday.events || []).length) {
+    box.innerHTML = "<p class=\"unit-note\">盘中节奏为软依赖（腾讯上证 30 分钟线），本次未采集到数据，不影响其余章节。</p>";
+    return;
+  }
+  box.innerHTML = `<h4>盘中节奏时间轴（上证指数 30 分钟级）</h4>`
+    + `<p class="unit-note"><strong>${escapeHtml(intraday.summary)}</strong></p>`
+    + `<ol class="intraday-list">${intraday.events.map(e => `<li><span class="intraday-time">${escapeHtml(e.time)}</span><span>${escapeHtml(e.text)}</span></li>`).join("")}</ol>`
+    + `<p class="unit-note">${escapeHtml(intraday.method)}</p>`;
+}
+
+function renderDivergence(divergence) {
+  const body = $("#divergence-table");
+  if (!body) return;
+  const rows = divergence || [];
+  body.innerHTML = rows.length
+    ? rows.map(r => `<tr><td><strong>${escapeHtml(r.theme)}</strong></td><td>${escapeHtml(r.global_name)}</td><td class="${directionClass(r.global_pct)}">${signed(r.global_pct, "%")}</td><td>${escapeHtml(r.sector)}</td><td class="${directionClass(r.sector_pct)}">${signed(r.sector_pct, "%")}</td><td class="${directionClass(r.gap)}">${signed(r.gap, "%")}</td></tr>`).join("")
+    : `<tr><td colspan="6" class="empty-row">当日无跨市场背离：全球资产与对应 A 股板块同涨同跌，或任一腿缺数据（需全球行情与行业资金流同日齐备）。</td></tr>`;
+  $("#divergence-note").textContent = rows.length
+    ? "判定规则：同日两腿一涨一跌且差值 ≥1.0pct 记为背离。注意时差——美股腿是北京时间次日凌晨的收盘价，对应 A 股前一交易日的板块表现。"
+    : "";
+}
+
+function renderPoolGrid(rows) {
+  const body = $("#pool-grid-table");
+  if (!body) return;
+  const list = rows || [];
+  body.innerHTML = list.length
+    ? list.map(r => `<tr><td><strong>${escapeHtml(r.sector)}</strong></td>`
+        + `<td>${escapeHtml(r.position)}</td>`
+        + `<td class="${classOrDash(r.ret20)}">${r.ret20 === null ? "—" : signed(r.ret20, "%")}</td>`
+        + `<td><span class="flow-label">${escapeHtml(r.state)}</span></td>`
+        + `<td class="${classOrDash(r.change_pct)}">${signedOrDash(r.change_pct, "%")}</td>`
+        + `<td class="${directionClass(r.day5_yi)}">${signed(r.day5_yi, "")}</td>`
+        + `<td>${r.limit_up || "—"}</td>`
+        + `<td><small><strong>${escapeHtml(r.action)}</strong><br>触发：${escapeHtml(r.trigger)}<br>失效：${escapeHtml(r.invalid)}</small></td></tr>`).join("")
+    : `<tr><td colspan="8" class="empty-row">方向池需要行业资金流数据，本次未生成。</td></tr>`;
+  $("#pool-grid-note").textContent = list.length
+    ? "位置 = 本地累积的板块日涨跌序列的 20 日复利收益（≥+5% 高位 / ≤-5% 低位）；样本不足 20 个交易日时显示「积累中」，满样本前不判位置。动作语义由资金四分型规则映射，非主观判断。"
+    : "";
+}
+
+function renderCalendar(calendar) {
+  const box = $("#calendar");
+  if (!box) return;
+  const rows = calendar || [];
+  if (!rows.length) {
+    box.innerHTML = "<p class=\"unit-note\">未来 14 个自然日内无规则推算的宏观数据发布事件。</p>";
+    return;
+  }
+  box.innerHTML = `<h4>宏观事件日历（未来 14 个自然日）</h4>`
+    + `<ul class="calendar-list">${rows.map(e => `<li><span class="calendar-date">${escapeHtml(e.date.slice(5))}</span><strong>${escapeHtml(e.name)}</strong><small class="muted">${escapeHtml(e.note)}${e.source === "fixed" ? " · 人工维护" : ""}</small></li>`).join("")}</ul>`
+    + `<p class="unit-note">来源：月份规则推算（每月 1/10/15/20 日、首个周五、月末）+ data/macro-calendar.json 人工维护的固定日期（FOMC、峰会等）；节假日顺延未建模，遇休市按顺延次日理解。</p>`;
+}
+
 function render(data) {
   const { meta, status, verdicts, market_days: days, breadth, flows, accumulation_pool: pool, events, scenarios, risk_notes: risks,
           index_panel: panel, style, limit_ladder: ladder, margin, global_markets: globals, global_as_of: globalAsOf,
           us_treasury: ust, dragon_tiger: dragon, valuation, lift_unlock: lift } = data;
   const rotation = data.rotation, mainline = data.mainline, forecast = data.forecast,
-        verify = data.verify, noise = data.noise || [];
+        verify = data.verify, noise = data.noise || [],
+        intraday = data.intraday, divergence = data.divergence,
+        calendar = data.calendar, poolGrid = data.pool_grid || [];
   document.title = `A 股每日复盘决策卡 · ${meta.market_date}`;
   $("#data-badge").textContent = `更新 ${meta.updated_at}`;
   $("#demo-warning").innerHTML = meta.demo
@@ -276,6 +335,10 @@ function render(data) {
   renderRotation(rotation, mainline);
   renderForecast(forecast);
   renderVerify(verify);
+  renderIntraday(intraday);
+  renderDivergence(divergence);
+  renderPoolGrid(poolGrid);
+  renderCalendar(calendar);
 
   const total = breadth.up + breadth.down + breadth.flat;
   $("#breadth").innerHTML = `<div class="breadth-bar" title="上涨 / 平盘 / 下跌"><span class="rise" style="width:${breadth.up / total * 100}%"></span><span class="flat" style="width:${breadth.flat / total * 100}%"></span></div><div class="metric-grid">${[["上涨",breadth.up],["下跌",breadth.down],["涨停",breadth.limit_up],["跌停",breadth.limit_down],["5日新高",breadth.new_high],["5日新低",breadth.new_low]].map(([key,value]) => `<div class="metric"><strong>${value ?? "—"}</strong><small>${key}</small></div>`).join("")}</div>`;

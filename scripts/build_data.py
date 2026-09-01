@@ -19,6 +19,8 @@ CACHE_DIR = ROOT / "data" / "cache"
 OUTPUT = ROOT / "data" / "market-card.json"
 VERIFY_LOG = ROOT / "data" / "verify_log.json"
 SEATS_KNOWN = ROOT / "data" / "seats-known.json"
+CALENDAR_CFG = ROOT / "data" / "macro-calendar.json"
+CALENDAR_DAYS_AHEAD = 14
 LIQUIDITY_WINDOW = 10    # sessions behind the turnover ratio
 VERIFY_MAX_AGE = 5       # only backtrack checklists at most this many sessions old
 FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
@@ -278,6 +280,21 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         seat_rows.append(tagged)
     noise = analysis.noise_zone(source["flows"])
 
+    # batch-2 analysis blocks: divergence / macro calendar / direction pool
+    divergence = analysis.divergence_list(source.get("global_markets") or [],
+                                          source["flows"])
+    calendar_cfg = load_json(CALENDAR_CFG, {}) or {}
+    calendar = analysis.macro_calendar(market_date, days_ahead=CALENDAR_DAYS_AHEAD,
+                                       rules=analysis.DEFAULT_MACRO_RULES,
+                                       fixed=calendar_cfg.get("fixed") or [])
+    pct_history: dict[str, list[float]] = {}
+    for entry in flow_history.values():
+        name = (entry or {}).get("name")
+        daily_pct = (entry or {}).get("pct") or {}
+        if name and daily_pct:
+            pct_history[name] = [daily_pct[d] for d in sorted(daily_pct)]
+    pool_grid = analysis.direction_pool(source["flows"], pool, rotation, pct_history)
+
     # verification checklist: backtrack yesterday, file today
     new_checks = analysis.build_verify_checks(market_date, source["flows"], ladder,
                                               latest.get("turnover"), pool)
@@ -349,6 +366,8 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             "limit_ladder":display_ladder, "margin":source.get("margin"),
             "rotation":rotation, "mainline":mainline, "forecast":forecast,
             "verify":verify, "noise":noise,
+            "intraday":source.get("intraday"),
+            "divergence":divergence, "calendar":calendar, "pool_grid":pool_grid,
             "global_markets":source.get("global_markets", []),
             "global_as_of":source.get("global_as_of"),
             "global_us_session":source.get("global_us_session", "unknown"),
