@@ -1,7 +1,7 @@
 {
   "meta": {
     "market_date": "2026-08-31",
-    "updated_at": "2026-09-01 00:10",
+    "updated_at": "2026-09-01 00:59",
     "demo": false,
     "sources": [
       {
@@ -20,9 +20,9 @@
         "note": "每日行情-证券类别统计中「股票」行，单位亿元。两市成交额=沪+深。历史值由本地缓存提供。"
       },
       {
-        "name": "东方财富 涨停/跌停池接口（push2ex）",
+        "name": "东方财富 涨停/跌停/炸板池接口（push2ex）",
         "as_of": "2026-08-31 收盘",
-        "note": "涨跌停家数按东财涨停池判定，行业归属按池内 hybk 字段。"
+        "note": "涨跌停家数按东财涨停池判定，行业归属按池内 hybk 字段；连板数取 lbc、封单额取 fund、炸板次数取 zbc、炸板家数取炸板池。"
       },
       {
         "name": "新浪财经 A 股全列表接口（涨跌家数）",
@@ -33,6 +33,16 @@
         "name": "东方财富 行业板块主力资金流接口（clist 排行，实时集群不可用时自动切换延时集群）",
         "as_of": "2026-08-31 收盘",
         "note": "当日/5日/10日主力净流入均来自板块资金排行的东财官方聚合字段（f62/f164/f174），单次请求全量。主力=超大单+大单（东财单因子口径）。"
+      },
+      {
+        "name": "东方财富数据中心 融资融券历史汇总（RPTA_RZRQ_LSHJ）",
+        "as_of": "2026-08-28（T+1 披露）",
+        "note": "沪深两市合计融资融券余额，单位亿元；交易所 T+1 披露，数据日期落后卡片市场日。"
+      },
+      {
+        "name": "东方财富延时集群 / 新浪财经 / 腾讯行情（全球市场）",
+        "as_of": "2026-09-01",
+        "note": "美股与欧股为北京时间次日凌晨收盘价，亚太与港股为当日收盘；美债收益率无免费稳定源，本章节不列示。"
       }
     ]
   },
@@ -4067,6 +4077,553 @@
       "limit_up": 0
     }
   ],
+  "index_panel": [
+    {
+      "key": "shanghai",
+      "name": "上证指数",
+      "date": "2026-08-31",
+      "close": 3986.3,
+      "pct": 0.86,
+      "ret5": 2.69,
+      "ret20": 4.64,
+      "ret60": -1.03
+    },
+    {
+      "key": "szcheng",
+      "name": "深证成指",
+      "date": "2026-08-31",
+      "close": 14015.0,
+      "pct": 0.44,
+      "ret5": 1.6,
+      "ret20": 4.21,
+      "ret60": -8.49
+    },
+    {
+      "key": "chinext",
+      "name": "创业板指",
+      "date": "2026-08-31",
+      "close": 3438.68,
+      "pct": 0.42,
+      "ret5": 0.2,
+      "ret20": 4.12,
+      "ret60": -13.12
+    },
+    {
+      "key": "star50",
+      "name": "科创50",
+      "date": "2026-08-31",
+      "close": 1684.39,
+      "pct": 1.34,
+      "ret5": 5.12,
+      "ret20": 8.47,
+      "ret60": 0.96
+    },
+    {
+      "key": "hs300",
+      "name": "沪深300",
+      "date": "2026-08-31",
+      "close": 4625.09,
+      "pct": 0.35,
+      "ret5": 1.36,
+      "ret20": 1.8,
+      "ret60": -3.98
+    },
+    {
+      "key": "zz1000",
+      "name": "中证1000",
+      "date": "2026-08-31",
+      "close": 7770.42,
+      "pct": 0.85,
+      "ret5": 3.72,
+      "ret20": 9.76,
+      "ret60": -6.84
+    },
+    {
+      "key": "zzdiv",
+      "name": "中证红利",
+      "date": "2026-08-31",
+      "close": 5718.42,
+      "pct": 0.47,
+      "ret5": 1.15,
+      "ret20": 3.05,
+      "ret60": 0.61
+    }
+  ],
+  "limit_ladder": {
+    "date": "2026-08-31",
+    "ladder": [
+      {
+        "code": "002084",
+        "stock": "海鸥住工",
+        "sector": "家居用品",
+        "board": 6,
+        "seal_ratio": 8.05,
+        "seal_fund": 3.31,
+        "amount": 0.4,
+        "turnover_rate": 0.97,
+        "zbc": 0,
+        "note": "6连板"
+      },
+      {
+        "code": "600371",
+        "stock": "万向德农",
+        "sector": "种植业",
+        "board": 5,
+        "seal_ratio": 3.82,
+        "seal_fund": 1.42,
+        "amount": 1.74,
+        "turnover_rate": 4.69,
+        "zbc": 0,
+        "note": "10天7板"
+      },
+      {
+        "code": "002855",
+        "stock": "捷荣技术",
+        "sector": "消费电子",
+        "board": 5,
+        "seal_ratio": 0.87,
+        "seal_fund": 0.35,
+        "amount": 5.65,
+        "turnover_rate": 14.49,
+        "zbc": 5,
+        "note": "5连板"
+      },
+      {
+        "code": "000712",
+        "stock": "锦龙股份",
+        "sector": "证券Ⅱ",
+        "board": 4,
+        "seal_ratio": 0.45,
+        "seal_fund": 0.52,
+        "amount": 31.19,
+        "turnover_rate": 27.44,
+        "zbc": 3,
+        "note": "4连板"
+      },
+      {
+        "code": "600540",
+        "stock": "新赛股份",
+        "sector": "种植业",
+        "board": 3,
+        "seal_ratio": 7.63,
+        "seal_fund": 2.47,
+        "amount": 0.4,
+        "turnover_rate": 1.22,
+        "zbc": 0,
+        "note": "3连板"
+      },
+      {
+        "code": "002396",
+        "stock": "星网锐捷",
+        "sector": "通信设备",
+        "board": 3,
+        "seal_ratio": 0.8,
+        "seal_fund": 2.45,
+        "amount": 52.55,
+        "turnover_rate": 18.57,
+        "zbc": 2,
+        "note": "7天4板"
+      },
+      {
+        "code": "002886",
+        "stock": "沃特股份",
+        "sector": "塑料",
+        "board": 3,
+        "seal_ratio": 0.65,
+        "seal_fund": 0.39,
+        "amount": 18.86,
+        "turnover_rate": 31.39,
+        "zbc": 7,
+        "note": "7天4板"
+      },
+      {
+        "code": "603269",
+        "stock": "海鸥股份",
+        "sector": "通用设备",
+        "board": 3,
+        "seal_ratio": 0.28,
+        "seal_fund": 0.29,
+        "amount": 10.89,
+        "turnover_rate": 10.55,
+        "zbc": 4,
+        "note": "3连板"
+      },
+      {
+        "code": "002679",
+        "stock": "福建金森",
+        "sector": "林业Ⅱ",
+        "board": 2,
+        "seal_ratio": 12.79,
+        "seal_fund": 3.54,
+        "amount": 0.59,
+        "turnover_rate": 2.15,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "000560",
+        "stock": "我爱我家",
+        "sector": "房地产服",
+        "board": 2,
+        "seal_ratio": 6.75,
+        "seal_fund": 4.59,
+        "amount": 1.86,
+        "turnover_rate": 2.73,
+        "zbc": 0,
+        "note": "5天3板"
+      },
+      {
+        "code": "003005",
+        "stock": "竞业达",
+        "sector": "IT服务Ⅱ",
+        "board": 2,
+        "seal_ratio": 4.43,
+        "seal_fund": 0.98,
+        "amount": 3.96,
+        "turnover_rate": 18.75,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "000011",
+        "stock": "深物业A",
+        "sector": "房地产开",
+        "board": 2,
+        "seal_ratio": 1.76,
+        "seal_fund": 0.93,
+        "amount": 1.16,
+        "turnover_rate": 2.18,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "601086",
+        "stock": "国芳集团",
+        "sector": "一般零售",
+        "board": 2,
+        "seal_ratio": 1.38,
+        "seal_fund": 0.84,
+        "amount": 2.32,
+        "turnover_rate": 3.81,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "600551",
+        "stock": "时代出版",
+        "sector": "出版",
+        "board": 2,
+        "seal_ratio": 1.31,
+        "seal_fund": 0.73,
+        "amount": 3.41,
+        "turnover_rate": 6.52,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "600227",
+        "stock": "赤天化",
+        "sector": "农化制品",
+        "board": 2,
+        "seal_ratio": 1.18,
+        "seal_fund": 0.76,
+        "amount": 10.45,
+        "turnover_rate": 16.54,
+        "zbc": 2,
+        "note": "4天3板"
+      },
+      {
+        "code": "600722",
+        "stock": "金牛化工",
+        "sector": "化学原料",
+        "board": 2,
+        "seal_ratio": 0.87,
+        "seal_fund": 0.99,
+        "amount": 26.36,
+        "turnover_rate": 23.68,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "603559",
+        "stock": "中通国脉",
+        "sector": "通信服务",
+        "board": 2,
+        "seal_ratio": 0.64,
+        "seal_fund": 0.27,
+        "amount": 4.35,
+        "turnover_rate": 10.77,
+        "zbc": 3,
+        "note": "2连板"
+      },
+      {
+        "code": "600691",
+        "stock": "潞化科技",
+        "sector": "农化制品",
+        "board": 2,
+        "seal_ratio": 0.57,
+        "seal_fund": 0.44,
+        "amount": 4.37,
+        "turnover_rate": 5.81,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "000892",
+        "stock": "欢瑞世纪",
+        "sector": "影视院线",
+        "board": 1,
+        "seal_ratio": 5.2,
+        "seal_fund": 1.59,
+        "amount": 2.26,
+        "turnover_rate": 7.52,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "002830",
+        "stock": "名雕股份",
+        "sector": "装修装饰",
+        "board": 1,
+        "seal_ratio": 4.91,
+        "seal_fund": 0.72,
+        "amount": 0.84,
+        "turnover_rate": 5.93,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "002903",
+        "stock": "宇环数控",
+        "sector": "通用设备",
+        "board": 1,
+        "seal_ratio": 4.83,
+        "seal_fund": 1.66,
+        "amount": 4.88,
+        "turnover_rate": 14.73,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "301218",
+        "stock": "华是科技",
+        "sector": "IT服务Ⅱ",
+        "board": 1,
+        "seal_ratio": 3.38,
+        "seal_fund": 1.41,
+        "amount": 9.41,
+        "turnover_rate": 24.17,
+        "zbc": 2,
+        "note": "1连板"
+      },
+      {
+        "code": "002875",
+        "stock": "安奈儿",
+        "sector": "服装家纺",
+        "board": 1,
+        "seal_ratio": 3.17,
+        "seal_fund": 0.98,
+        "amount": 1.47,
+        "turnover_rate": 4.95,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "002757",
+        "stock": "南兴股份",
+        "sector": "专用设备",
+        "board": 1,
+        "seal_ratio": 2.93,
+        "seal_fund": 1.46,
+        "amount": 4.79,
+        "turnover_rate": 9.96,
+        "zbc": 0,
+        "note": "1连板"
+      }
+    ],
+    "distribution": {
+      "6": 1,
+      "5": 2,
+      "4": 1,
+      "3": 4,
+      "2": 10,
+      "1": 70
+    },
+    "metrics": {
+      "limit_up": 88,
+      "limit_down": 11,
+      "zha_ban": 30,
+      "seal_rate": 74.6,
+      "promotion_rate": 22.0,
+      "promoted": 18,
+      "prev_limit_up": 82,
+      "max_board": 6,
+      "two_board_plus": 18
+    },
+    "notes": [
+      "封板率 = 收盘涨停 /（收盘涨停 + 炸板），采用东财涨停池与炸板池口径；与按「盘中曾触及涨停」统计的口径不同，数值不可直接比较。",
+      "晋级率 = 上一交易日涨停个股中今日仍收涨停的占比，依据东财涨停池个股代码比对，上一交易日名单由本地缓存提供（首次运行会多取一次历史涨停池）。",
+      "连板数取东财涨停池 lbc 字段；「n 天 m 板」取 zttj 字段；封单力度 = 封单金额 / 流通市值。"
+    ]
+  },
+  "margin": {
+    "balance": 26591.11,
+    "change": -60.06,
+    "financing": 26302.5,
+    "securities_loan": 288.61,
+    "financing_net_buy": -61.59,
+    "pct_of_float": 2.62,
+    "as_of": "2026-08-28",
+    "prev_as_of": "2026-08-27",
+    "note": "两融余额为沪深两市合计（东财数据中心历史汇总），交易所 T+1 披露，数据日期通常落后卡片市场日 1 个交易日，请以 as_of 字段为准。"
+  },
+  "global_markets": [
+    {
+      "name": "道琼斯",
+      "category": "美股",
+      "close": 53233.43,
+      "pct": -0.61,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "纳斯达克",
+      "category": "美股",
+      "close": 26313.4,
+      "pct": -0.34,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "标普500",
+      "category": "美股",
+      "close": 7676.74,
+      "pct": -0.45,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "日经225",
+      "category": "亚太",
+      "close": 66311.93,
+      "pct": -0.14,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "韩国KOSPI",
+      "category": "亚太",
+      "close": 6820.02,
+      "pct": 0.46,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "台湾加权",
+      "category": "亚太",
+      "close": 46128.47,
+      "pct": -0.44,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "恒生指数",
+      "category": "亚太",
+      "close": 25566.99,
+      "pct": -0.07,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "英国富时100",
+      "category": "欧洲",
+      "close": 10824.26,
+      "pct": 0.29,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "德国DAX",
+      "category": "欧洲",
+      "close": 26258.11,
+      "pct": -1.17,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "美元指数",
+      "category": "汇率",
+      "close": 99.42,
+      "pct": -0.26,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "费城半导体",
+      "category": "美股",
+      "close": 11503.5304,
+      "pct": 0.3,
+      "as_of": "2026-09-01",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "伦敦金现货",
+      "category": "商品",
+      "close": 4433.14,
+      "pct": -0.47,
+      "as_of": "2026-09-01",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "伦敦银现货",
+      "category": "商品",
+      "close": 66.27,
+      "pct": -0.05,
+      "as_of": "2026-09-01",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "纽约原油",
+      "category": "商品",
+      "close": 85.731,
+      "pct": 2.79,
+      "as_of": "2026-09-01",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "LME铜",
+      "category": "商品",
+      "close": 14278.655,
+      "pct": -0.11,
+      "as_of": "2026-08-29",
+      "unit": null,
+      "lagged": true
+    },
+    {
+      "name": "离岸人民币",
+      "category": "汇率",
+      "close": 6.7185,
+      "pct": -0.17,
+      "as_of": "2026-09-01",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "恒生科技",
+      "category": "亚太",
+      "close": 4619.87,
+      "pct": 0.32,
+      "as_of": "2026-08-31",
+      "unit": "点",
+      "lagged": false
+    }
+  ],
+  "global_as_of": "2026-09-01",
+  "global_us_session": "intraday",
   "events": [],
   "scenarios": [],
   "risk_notes": [
@@ -4075,7 +4632,10 @@
     "涨跌停家数以东财涨停池为准；上市首日等无涨跌幅限制个股不计入。",
     "5日新高/新低基于本地收盘价缓存计算，缓存不足时该指标显示为「—」，连续运行数日后生效。",
     "两市成交额 = 中证指数官网披露的上证指数成交额 + 深交所官网披露的深市股票成交额，与行情软件口径可能略有差异。",
+    "指数区间收益由腾讯行情日线收盘价直接计算（不复权，指数点位本身已含成分调整），60 日窗口需连续日线，缓存重建后首日可能缺失。",
+    "估值分位（PE/PB 历史百分位）无免费稳定数据源，本卡片不列示，不做任何估算。",
     "本页为数据整理与规则演示，不构成投资建议。",
+    "采集时刻（北京时间 2026-09-01 00:59）美股 2026-08-31 交易时段尚未收盘（美东 16:00 收盘，约北京时间次日 05:00），全球市场章节中的美股数值为最新盘中价，不是收盘价；需要收盘口径请在次日 05:00 后重跑采集。",
     "本次新高/新低仅基于 2 个历史交易日计算（收盘价缓存积累中，连续运行数个交易日后为完整口径）。",
     "当日涨停池中有 11 个行业归属（光学光电、其他电源、家电零部、房地产开、房地产服、汽车零部等）未匹配到行业板块列表，未计入分行业涨停家数。"
   ]

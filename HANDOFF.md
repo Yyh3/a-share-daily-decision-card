@@ -1,7 +1,82 @@
 # A 股每日复盘决策卡 — 项目 Handoff
 
-> 更新时间：2026-08-31 02:40（UTC+8）  
-> 项目状态：**P0 完成；资金流已彻底打通（push2delay 延时集群容错 + f164/f174 官方聚合字段），08-31 完整卡片已生成**
+> 更新时间：2026-09-01 01:05（UTC+8）  
+> 项目状态：**P1 缺口补齐完成；四块数据层（涨停梯队 / 指数多窗口+风格坐标 / 两融 / 全球市场）已全部接入并实盘验证 2026-08-31 快照**
+
+## 0.4 决策卡缺口补齐（2026-09-01 凌晨）
+
+对照参考卡（2026-08-28 完全体版），原 30% 覆盖扩到 ~70%。用户决策（2026-08-31）：四块数据层全做，分析层（事件卡全字段、主线判定、情景剧本、验证清单）暂缓。完成项：
+
+### 0.4.1 涨停梯队与情绪结构（数据已有，硬依赖）
+
+- `collect_data.py` 解析 push2ex 涨停池时新增 `lbc`（连板数）、`zttj`（n天m板）、`fund`（封单额）、`zbc`（炸板次数）、`hybk`（行业归属）五个字段；
+- 新增 `fetch_pool("zb", date)` 拉取东财炸板池（1 次/日），构成封板率分母；
+- 每日涨停股代码列表写入 `data/cache/daily_stats.json`（`zt_codes`），与前一日列表求交集即得晋级率；冷启动多取一次历史涨停池；
+- `build_data.py` 调纯函数 `build_limit_ladder` 排序生成天梯（按 board 降序、同板按封单/成交额）、计算 `seal_rate`/`promotion_rate`/`max_board`/`two_board_plus` 四项情绪指标；
+- 页面新增「04 涨停梯队与情绪结构」章节，6 个 metric 卡 + 连板层级 chip + 天梯表格 + 口径说明；
+- 核心裁决增加「情绪结构」条，提示最高连板、封板率、晋级率。
+
+### 0.4.2 指数多窗口 + 风格坐标（硬依赖）
+
+- `TENCENT_INDEXES` 扩到 7 项（上证 / 深证成指 / 创业板 / 科创50 / 沪深300 / 中证1000 / 中证红利）；`KLINE_LIMIT` 从 40 提到 70，60 日窗口需 61 根 K 线；
+- 新增纯函数 `window_returns` 与 `build_index_panel`，输出 `{name, close, pct, ret5, ret20, ret60}`；
+- 风格坐标属确定性规则：放在 `build_data.py` 的 `style_view`，按 20 日 `中证1000 - 沪深300` 与 `中证红利 - 沪深300` 差值，按 ±1.0pct 阈值归类（小盘占优 / 大盘占优 / 红利价值占优 / 成长占优 / 差异不显著），仅输出规则化描述，不做叙事；
+- **明确放弃**：PE/PB 历史分位无免费稳定数据源（参考卡用的是申万 / 中证指数的内部口径），卡片不列示，已在风险栏注明。
+
+### 0.4.3 两融余额（软依赖，T+1）
+
+- 优先东方财富数据中心 `datacenter-web.eastmoney.com` 的 `RPTA_RZRQ_LSHJ` 接口（与被限流的 `push2` / `push2his` 不同域），1 次请求返回近月历史；解析得到 `RZRQYE`（融资融券余额）、`RZYE`（融资余额）、`RQYE`（融券余额）、`RZJME`（融资净买入）、`RZYEZB`（占流通市值比）；
+- 失败时整块降级为空，风险栏标注「下次运行时自动补齐」；
+- 页面在「07 市场广度」下方嵌入两融块：余额 / 环比 / 占流通市值 三张卡 + T+1 披露说明；
+- **明确放弃**：参考卡的「国家队 / 汇金持仓」属公募中报 + ETF 份额公示的人工汇编，两融以外没有免费稳定源，本期不做；龙虎榜席位级解码同理（属 datacenter + 分析层）。
+
+### 0.4.4 全球市场联动（软依赖）
+
+- 三个数据源、3 次请求：
+  1. `push2delay.eastmoney.com/api/qt/ulist.np/get`（批量 secid）→ 10 个美 / 欧 / 亚太 / 汇率指数；
+  2. `hq.sinajs.cn`（批量 list）→ 费城半导体 + 伦敦金 / 银 / 纽约原油 / LME 铜 / 离岸人民币；
+  3. `qt.gtimg.cn/q=` 批量 → 恒生科技；
+- `build_global_rows` 按 `gb_` / `hf_` / `fx_` 前缀分流解析（fx 直接取 `parts[10]`，hf 拿 `parts[0]` 现价 + `parts[7]` 昨收算 pct，gb 拿 `parts[1]`/`parts[2]`）；
+- 时区对齐：纯函数 `global_session_state(market_date, now)` 根据美东 16:00 = 北京时间次日 05:00 的保守边界判断美股是否已收盘，**未收盘则在页面风险栏明示「美股为最新盘中价，非收盘价」**——首次实盘时发现 00:40 北京周一是美股周一午盘，按惯例不应当作收盘报，这是本次补齐里发现并修掉的一处口径陷阱；
+- 数据日期早于卡片市场日的标的（如 LME 铜）会单独标 `[lagged YYYY-MM-DD]`，避免误读为当日行情；
+- **明确放弃**：美债 10 年收益率（东财延时集群所有候选 secid 都返空，新浪 `globalbd_*` 与 `gb_$tnx` 也无数据），已在风险栏注明，不做估算。
+
+### 0.4.5 schema 演进
+
+`data/raw/eod-*.json` 顶层新增字段：
+
+```json
+"index_panel": [ {"key":"shanghai","name":"上证指数","date":"...","close":...,"pct":...,"ret5":...,"ret20":...,"ret60":...} ],
+"limit_ladder": { "date":"...","ladder":[...],"distribution":{...},"metrics":{...},"notes":[...] },
+"margin": { "balance":...,"change":...,"financing":...,"securities_loan":...,"financing_net_buy":...,
+            "pct_of_float":...,"as_of":"...","prev_as_of":"...","note":"..." },
+"global_markets": [ {"name":...,"category":...,"close":...,"pct":...,"as_of":...,"unit":...,"lagged":bool} ],
+"global_as_of": "...",
+"global_us_session": "intraday" | "closed"
+```
+
+### 0.4.6 请求预算（新增后稳态）
+
+| 数据项 | 来源 | 稳态请求数/日 |
+|---|---|---|
+| 7 指数日线（K线 + 多窗口） | 腾讯 fqkline | 7 |
+| 沪市成交额 | 中证指数官网 | 1 |
+| 深市成交额 | 深交所官网 | 1（历史走缓存） |
+| 涨停 / 跌停 / 炸板池 | push2ex | 3（当日 3 次 + 历史走缓存） |
+| 涨跌家数 | 新浪 hs_a | ~58 |
+| 行业主力资金流 | 东财板块排行 | ~6（实时 + 延时集群，paged at 100） |
+| 两融余额 | 东财 datacenter | 1 |
+| 全球 10 指数 | push2delay ulist.np（批量） | 1 |
+| 全球 6 商品/汇率/费半 | 新浪 hq.sinajs.cn（批量） | 1 |
+| 恒生科技 | 腾讯 qt.gtimg.cn | 1 |
+
+合计：新增约 +3 次/日（margin / 全球批次 / 恒生科技）；炸板池 +1；总东财约 12 次/日，**仍以 push2delay 延时集群 + datacenter-web 为主，碰 push2 仅一次且带分页自动切换**。无 push2his。
+
+### 0.4.7 测试与验收
+
+- `scripts/test_logic.py` 扩到 84 项，新增覆盖：window_returns 区间收益与短历史 / build_index_panel 顺序与缺失 / build_limit_ladder 排序、分布、晋级率、零边界 / build_margin_view 单位换算与单行 / _sina_row 三种前缀 / build_global_rows 三源 / style_view 阈值与缺失 / global_session_state 边界 / 老快照降级；
+- 软依赖降级实测（`scripts/_degrade_check.py` 一次性脚本，已删除）：人为将 margin + 全球 4 个 fetcher 替换为 `boom()`，主流程仍写快照，margin 字段 `null`、global_markets `[]`、风险栏两条降级提示，其余章节完整；DEGRADE CHECK PASS；
+- 浏览器实测：本地 http://127.0.0.1:8000 渲染 4 个新章节（截图 648KB 验证完毕）。
 
 ## 0.3 资金流彻底打通（2026-08-31 深夜）
 

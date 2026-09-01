@@ -38,45 +38,74 @@
     <div class="dashboard-grid">
       <div>
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>01</span><span><small>MARKET PULSE</small><b>近五日市场</b></span></span><span class="chevron">⌃</span></button>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>01</span><span><small>INDEX PANEL</small><b>盘面全景与风格坐标</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body">
+            <div class="table-wrap"><table><thead><tr><th>指数</th><th>收盘</th><th>当日</th><th>5 日</th><th>20 日</th><th>60 日</th></tr></thead><tbody id="index-table"></tbody></table></div>
+            <p id="style-note" class="unit-note"></p>
+          </div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>02</span><span><small>MARKET PULSE</small><b>近五日市场</b></span></span><span class="chevron">⌃</span></button>
           <div class="section-body"><div class="table-wrap"><table><thead><tr><th>日期</th><th>上证</th><th>创业板</th><th>科创 50</th><th>成交额</th><th>涨停/跌停</th><th>盘面特征</th></tr></thead><tbody id="market-table"></tbody></table></div></div>
         </section>
 
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>02</span><span><small>CAPITAL FLOW</small><b>资金流向与持续性</b></span></span><span class="chevron">⌃</span></button>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>03</span><span><small>CAPITAL FLOW</small><b>资金流向与持续性</b></span></span><span class="chevron">⌃</span></button>
           <div class="section-body"><div class="table-wrap"><table><thead><tr><th>行业</th><th>当日</th><th>5 日</th><th>10 日</th><th>分类</th></tr></thead><tbody id="flow-table"></tbody></table></div><p class="unit-note">单位：亿元。按 5 日净流入排序，最多展示 20 个板块（含一/二/三级行业）；颜色仅表示正负，不代表投资评级。</p></div>
         </section>
 
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>03</span><span><small>EVENT RADAR</small><b>热点事件卡</b></span></span><span class="chevron">⌃</span></button>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>04</span><span><small>LIMIT LADDER</small><b>涨停梯队与情绪结构</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body">
+            <div id="ladder-metrics" class="metric-grid"></div>
+            <div id="ladder-dist" class="ladder-dist"></div>
+            <div class="table-wrap"><table><thead><tr><th>连板</th><th>个股</th><th>行业</th><th>封单力度</th><th>成交额</th><th>换手</th><th>炸板</th><th>形态</th></tr></thead><tbody id="ladder-table"></tbody></table></div>
+            <p id="ladder-notes" class="unit-note"></p>
+          </div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>05</span><span><small>GLOBAL</small><b>全球市场联动</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body">
+            <div class="table-wrap"><table><thead><tr><th>类别</th><th>标的</th><th>收盘</th><th>涨跌幅</th></tr></thead><tbody id="global-table"></tbody></table></div>
+            <p id="global-notes" class="unit-note"></p>
+          </div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>06</span><span><small>EVENT RADAR</small><b>热点事件卡</b></span></span><span class="chevron">⌃</span></button>
           <div id="events" class="section-body event-list"></div>
         </section>
       </div>
 
       <aside class="side-column">
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>04</span><span><small>BREADTH</small><b>市场广度</b></span></span><span class="chevron">⌃</span></button>
-          <div id="breadth" class="section-body"></div>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>07</span><span><small>BREADTH</small><b>市场广度</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body">
+            <div id="breadth"></div>
+            <div id="margin" class="margin-block"></div>
+          </div>
         </section>
 
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>05</span><span><small>WATCHLIST</small><b>蓄力观察池</b></span></span><span class="chevron">⌃</span></button>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>08</span><span><small>WATCHLIST</small><b>蓄力观察池</b></span></span><span class="chevron">⌃</span></button>
           <div id="pool" class="section-body pool-list"></div>
         </section>
 
         <section class="collapsible" data-section>
-          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>06</span><span><small>PLAYBOOK</small><b>次日情景预案</b></span></span><span class="chevron">⌃</span></button>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>09</span><span><small>PLAYBOOK</small><b>次日情景预案</b></span></span><span class="chevron">⌃</span></button>
           <div id="scenarios" class="section-body scenario-list"></div>
         </section>
       </aside>
     </div>
 
     <section class="collapsible sources" data-section>
-      <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>07</span><span><small>DISCLOSURE</small><b>来源与风险提示</b></span></span><span class="chevron">⌃</span></button>
+      <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>10</span><span><small>DISCLOSURE</small><b>来源与风险提示</b></span></span><span class="chevron">⌃</span></button>
       <div id="sources" class="section-body sources-grid"></div>
     </section>
   </main>
   <footer>本地数据驱动 · 无实时行情连接 · 请独立判断并承担风险</footer>
-  <script src="app.js?v=20260831" defer></script>
+  <script src="app.js?v=20260901a" defer></script>
 </body>
 </html>

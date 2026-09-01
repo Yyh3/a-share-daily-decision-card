@@ -27,6 +27,65 @@
     {"sector":"半导体","today":-122.6,"day5":-149.5,"day10":-560.7,"change_pct":-2.12,"limit_up":1},
     {"sector":"医疗服务","today":-14.8,"day5":-30.5,"day10":-55.6,"change_pct":-2.40,"limit_up":0}
   ],
+  "index_panel": [
+    {"key":"shanghai","name":"上证指数","date":"2026-08-28","close":3952.18,"pct":-0.11,"ret5":1.20,"ret20":3.13,"ret60":-2.60},
+    {"key":"szcheng","name":"深证成指","date":"2026-08-28","close":13105.42,"pct":-0.65,"ret5":0.42,"ret20":2.11,"ret60":-3.40},
+    {"key":"chinext","name":"创业板指","date":"2026-08-28","close":2986.31,"pct":-1.41,"ret5":-0.83,"ret20":1.05,"ret60":-5.10},
+    {"key":"star50","name":"科创50","date":"2026-08-28","close":1420.66,"pct":-1.85,"ret5":-1.94,"ret20":0.36,"ret60":-6.20},
+    {"key":"hs300","name":"沪深300","date":"2026-08-28","close":4490.15,"pct":-0.30,"ret5":0.50,"ret20":0.50,"ret60":-1.10},
+    {"key":"zz1000","name":"中证1000","date":"2026-08-28","close":6520.40,"pct":-0.55,"ret5":1.80,"ret20":8.90,"ret60":2.30},
+    {"key":"zzdiv","name":"中证红利","date":"2026-08-28","close":5820.77,"pct":0.12,"ret5":-0.40,"ret20":-1.20,"ret60":0.80}
+  ],
+  "limit_ladder": {
+    "date": "2026-08-28",
+    "ladder": [
+      {"code":"000017","stock":"深中华A","sector":"饰品","board":7,"seal_ratio":3.12,"seal_fund":0.85,"amount":9.62,"turnover_rate":18.42,"zbc":3,"note":"7天7板"},
+      {"code":"600371","stock":"万向德农","sector":"种植业","board":6,"seal_ratio":6.44,"seal_fund":1.72,"amount":3.88,"turnover_rate":9.15,"zbc":0,"note":"9天6板"},
+      {"code":"002084","stock":"海鸥住工","sector":"家居用品","board":5,"seal_ratio":9.65,"seal_fund":3.97,"amount":1.21,"turnover_rate":4.03,"zbc":0,"note":"5天5板"},
+      {"code":"603XXX","stock":"示例四板","sector":"专用设备","board":4,"seal_ratio":5.10,"seal_fund":1.05,"amount":2.44,"turnover_rate":7.88,"zbc":1,"note":"4天4板"},
+      {"code":"300XXX","stock":"示例三板A","sector":"元件","board":3,"seal_ratio":4.02,"seal_fund":0.93,"amount":5.10,"turnover_rate":12.30,"zbc":0,"note":"3连板"},
+      {"code":"002XXX","stock":"示例三板B","sector":"软件开发","board":3,"seal_ratio":2.71,"seal_fund":0.66,"amount":3.02,"turnover_rate":8.44,"zbc":2,"note":"5天3板"},
+      {"code":"600XXX","stock":"示例二板A","sector":"化学原料","board":2,"seal_ratio":3.33,"seal_fund":0.72,"amount":1.88,"turnover_rate":5.12,"zbc":0,"note":"2连板"},
+      {"code":"001XXX","stock":"示例二板B","sector":"医疗服务","board":2,"seal_ratio":1.95,"seal_fund":0.41,"amount":2.76,"turnover_rate":6.31,"zbc":1,"note":"2连板"}
+    ],
+    "distribution": {"7":1,"6":1,"5":1,"4":1,"3":3,"2":12,"1":63},
+    "metrics": {
+      "limit_up": 82, "limit_down": 3, "zha_ban": 16, "seal_rate": 83.7,
+      "promotion_rate": 26.5, "promoted": 22, "prev_limit_up": 83,
+      "max_board": 7, "two_board_plus": 19
+    },
+    "notes": [
+      "封板率 = 收盘涨停 /（收盘涨停 + 炸板），采用东财涨停池与炸板池口径；与按「盘中曾触及涨停」统计的口径不同，数值不可直接比较。",
+      "晋级率 = 上一交易日涨停个股中今日仍收涨停的占比，依据东财涨停池个股代码比对，上一交易日名单由本地缓存提供。",
+      "连板数取东财涨停池 lbc 字段；「n 天 m 板」取 zttj 字段；封单力度 = 封单金额 / 流通市值。"
+    ]
+  },
+  "margin": {
+    "balance": 26567.87, "change": 118.94, "financing": 26283.45,
+    "securities_loan": 284.42, "financing_net_buy": 121.06, "pct_of_float": 2.61,
+    "as_of": "2026-08-27", "prev_as_of": "2026-08-26",
+    "note": "两融余额为沪深两市合计（东财数据中心历史汇总），交易所 T+1 披露，数据日期通常落后卡片市场日 1 个交易日，请以 as_of 字段为准。"
+  },
+  "global_markets": [
+    {"name":"道琼斯","category":"美股","close":53560.12,"pct":-0.02,"as_of":null,"unit":"点"},
+    {"name":"纳斯达克","category":"美股","close":26380.54,"pct":0.18,"as_of":null,"unit":"点"},
+    {"name":"标普500","category":"美股","close":7711.76,"pct":-0.11,"as_of":null,"unit":"点"},
+    {"name":"费城半导体","category":"美股","close":11529.16,"pct":-3.47,"as_of":"2026-08-28","unit":null},
+    {"name":"日经225","category":"亚太","close":66405.56,"pct":0.45,"as_of":null,"unit":"点"},
+    {"name":"韩国KOSPI","category":"亚太","close":6788.88,"pct":-0.22,"as_of":null,"unit":"点"},
+    {"name":"台湾加权","category":"亚太","close":46331.45,"pct":0.31,"as_of":null,"unit":"点"},
+    {"name":"恒生指数","category":"亚太","close":25584.79,"pct":-0.34,"as_of":null,"unit":"点"},
+    {"name":"恒生科技","category":"亚太","close":4605.15,"pct":0.52,"as_of":"2026/08/28 16:09:08","unit":"点"},
+    {"name":"英国富时100","category":"欧洲","close":10792.54,"pct":0.12,"as_of":null,"unit":"点"},
+    {"name":"德国DAX","category":"欧洲","close":26569.99,"pct":-0.41,"as_of":null,"unit":"点"},
+    {"name":"伦敦金现货","category":"商品","close":4454.23,"pct":-2.95,"as_of":"2026-08-28","unit":null},
+    {"name":"伦敦银现货","category":"商品","close":66.30,"pct":-1.84,"as_of":"2026-08-28","unit":null},
+    {"name":"纽约原油","category":"商品","close":83.40,"pct":1.12,"as_of":"2026-08-28","unit":null},
+    {"name":"LME铜","category":"商品","close":14294.00,"pct":0.36,"as_of":"2026-08-27","unit":null},
+    {"name":"美元指数","category":"汇率","close":99.68,"pct":0.08,"as_of":null,"unit":"点"},
+    {"name":"离岸人民币","category":"汇率","close":6.7302,"pct":-0.16,"as_of":"2026-08-28","unit":null}
+  ],
+  "global_as_of": "2026-08-28",
   "events": [
     {"title":"农业链情绪扩散","level":"关注","direction":"正向","summary":"示例盘面中种植业涨停家数较多，短线辨识度提升。","transmission":"政策预期 → 种业 → 农化与加工","evidence":"种植业当日涨幅 3.20%，涨停 7 家","risk":"情绪交易拥挤，次日高开兑现风险较高"},
     {"title":"海外科技波动映射","level":"风险","direction":"负向","summary":"示例隔夜科技资产波动，可能影响高估值成长开盘风险偏好。","transmission":"海外波动 → 风险偏好 → 半导体与算力","evidence":"本地示例中半导体当日资金净流出 122.6 亿元","risk":"海外信息为演示摘要，不可据此交易"},
@@ -37,5 +96,5 @@
     {"name":"震荡轮动","probability":50,"trigger":"成交额维持 1.90—2.30 万亿元，指数窄幅波动","action":"控制节奏，等待分歧后的确认信号"},
     {"name":"风险释放","probability":20,"trigger":"跌停超过 15 家，且新低家数显著扩大","action":"降低风险暴露，停止新增试错"}
   ],
-  "risk_notes": ["所有行情、资讯与概率均为演示数据，不是实时联网结果。","规则输出只用于展示数据处理方法，不构成投资建议。","真实使用前应校验交易日、复权口径、行业分类及资金统计口径。"]
+  "risk_notes": ["所有行情、资讯与概率均为演示数据，不是实时联网结果。","规则输出只用于展示数据处理方法，不构成投资建议。","真实使用前应校验交易日、复权口径、行业分类及资金统计口径。","盘面全景、涨停梯队、两融与全球市场四块同样为手工构造的演示数值，仅用于演示 schema 与页面渲染。"]
 }

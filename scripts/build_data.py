@@ -14,6 +14,48 @@ RAW_DIR = ROOT / "data" / "raw"
 OUTPUT = ROOT / "data" / "market-card.json"
 FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
 POOL_ROWS = 10        # displayed rows in the accumulation pool
+LADDER_DISPLAY_ROWS = 18   # displayed rows in the limit-up ladder
+STYLE_THRESHOLD = 1.0      # pct points before a style edge is called
+
+
+def style_view(panel: list[dict[str, Any]]) -> dict[str, Any] | None:
+    """Rule-based style coordinate from the 20-day index returns.
+
+    规模：中证1000 - 沪深300（正 = 小盘占优）
+    价值：中证红利 - 沪深300（正 = 红利/价值占优）
+
+    Deliberately expressionless: it reports the spread and labels it by a fixed
+    threshold. No narrative, no forecast.
+    """
+    by_key = {row["key"]: row for row in panel or []}
+    small = (by_key.get("zz1000") or {}).get("ret20")
+    large = (by_key.get("hs300") or {}).get("ret20")
+    dividend = (by_key.get("zzdiv") or {}).get("ret20")
+    if None in (small, large, dividend):
+        return None
+    size_edge = round(small - large, 2)
+    value_edge = round(dividend - large, 2)
+
+    def label(edge: float, pos: str, neg: str) -> str:
+        if edge >= STYLE_THRESHOLD:
+            return pos
+        if edge <= -STYLE_THRESHOLD:
+            return neg
+        return "差异不显著"
+
+    size_label = label(size_edge, "小盘占优", "大盘占优")
+    value_label = label(value_edge, "红利/价值占优", "成长占优")
+    return {
+        "size_edge": size_edge,
+        "value_edge": value_edge,
+        "size_label": size_label,
+        "value_label": value_label,
+        "note": (f"规模：中证1000 20日 {small:+.2f}% vs 沪深300 {large:+.2f}%"
+                 f"（差 {size_edge:+.2f}pct，{size_label}）；"
+                 f"价值：中证红利 20日 {dividend:+.2f}% vs 沪深300 {large:+.2f}%"
+                 f"（差 {value_edge:+.2f}pct，{value_label}）。"),
+        "method": f"20 日区间收益之差，按 ±{STYLE_THRESHOLD}pct 阈值归类；规则生成，非叙事判断。",
+    }
 
 
 def load_documents() -> list[dict[str, Any]]:
@@ -85,6 +127,10 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
 
     mood = emotion(source["breadth"], days)
     latest = days[-1]
+    ladder = source.get("limit_ladder") or {}
+    metrics = ladder.get("metrics") or {}
+    panel = source.get("index_panel", [])
+    style = style_view(panel)
     verdicts = [
         {"tag":"市场定性", "title":f"情绪处于“{mood['label']}”，指数与题材表现分化",
          "evidence":f"上涨占比 {mood['up_ratio']}%，涨停/跌停 {source['breadth']['limit_up']}/{source['breadth']['limit_down']}，成交额环比 {mood['turnover_change']:+.2f} 万亿元。",
@@ -97,6 +143,16 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             {"tag":"资金线索", "title":f"{strongest['sector']}的 5 日净流入居样本首位",
              "evidence":f"5 日 {strongest['day5']:+.1f} 亿元，10 日 {strongest['day10']:+.1f} 亿元；分类为{strongest['classification']}。",
              "action":"进入观察池，需等待量价与板块广度共同确认。"})
+        if metrics:
+            promote = (f"{metrics['promotion_rate']:.1f}%" if metrics.get("promotion_rate") is not None
+                       else "暂无")
+            verdicts.append(
+                {"tag":"情绪结构",
+                 "title":f"最高 {metrics.get('max_board', 0)} 连板，封板率 {metrics.get('seal_rate')}%",
+                 "evidence":f"涨停 {metrics.get('limit_up')} 家 / 跌停 {metrics.get('limit_down')} 家，"
+                            f"炸板 {metrics.get('zha_ban')} 家，2 板及以上 {metrics.get('two_board_plus')} 家，"
+                            f"涨停股次日晋级率 {promote}。",
+                 "action":"晋级率与封板率同时走弱时，视为情绪退潮信号，不宜接力高位板。"})
         verdicts.append(
             {"tag":"风险约束", "title":f"{weakest['sector']}当日资金流出最明显",
              "evidence":f"当日 {weakest['today']:+.1f} 亿元，5 日 {weakest['day5']:+.1f} 亿元。",
@@ -112,9 +168,17 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
     # only the top flows so the card stays readable. Verdicts and the pool are
     # computed on the FULL flow list above, so capping does not skew them.
     display_flows = flows[:FLOW_TABLE_ROWS]
+    display_ladder = dict(ladder)
+    if ladder:
+        display_ladder["ladder"] = ladder.get("ladder", [])[:LADDER_DISPLAY_ROWS]
     return {"meta":meta, "status":{"emotion":mood, "market_tone":latest["feature"],
             "turnover":latest["turnover"]}, "verdicts":verdicts, "market_days":days,
+            "index_panel":panel, "style":style,
             "breadth":source["breadth"], "flows":display_flows, "accumulation_pool":pool,
+            "limit_ladder":display_ladder, "margin":source.get("margin"),
+            "global_markets":source.get("global_markets", []),
+            "global_as_of":source.get("global_as_of"),
+            "global_us_session":source.get("global_us_session", "unknown"),
             "events":source.get("events", []), "scenarios":source.get("scenarios", []),
             "risk_notes":source.get("risk_notes", [])}
 

@@ -4,15 +4,23 @@
 
 Request budget (steady state, once per trading day):
 
-    Tencent fqkline (index pct)          3 requests
-    CSIndex official (SH turnover)       1 request   (range query)
-    SZSE official (SZ turnover)          1 request   (today only; history cached)
-    Eastmoney push2ex (ZT/DT pools)      2 requests  (today only; history cached)
-    Sina hs_a list (breadth/closes)    ~56 requests  (paged at 100, 0.12s apart)
-    Eastmoney sector flow rank           1 request   (today + 5d + 10d in one call)
+    Tencent fqkline (7 index klines)      7 requests
+    CSIndex official (SH turnover)        1 request   (range query)
+    SZSE official (SZ turnover)           1 request   (today only; history cached)
+    Eastmoney push2ex (ZT/DT/ZB pools)    3 requests  (today only; history cached)
+    Sina hs_a list (breadth/closes)     ~56 requests  (paged at 100, 0.12s apart)
+    Eastmoney sector flow rank           ~5 requests  (paged at 100; push2 -> push2delay)
+    Eastmoney datacenter (margin)         1 request   (T+1 disclosure, whole market)
+    Eastmoney push2delay (global batch)   1 request   (10 markets in one call)
+    Sina hq.sinajs.cn (sox/metals/fx)     1 request   (batched)
+    Tencent qt.gtimg.cn (HSTECH)          1 request
 
-    Eastmoney total: 3 requests/day  (was ~97 in the naive design, which
+    Eastmoney total: ~10 requests/day (was ~97 in the naive design, which
     triggered IP-level throttling within minutes).
+
+Blocks added later (limit ladder / index panel / margin / global markets) stay
+on push2delay + datacenter-web + Tencent + Sina. Only the sector-flow ranking
+ever touches push2, and it falls back to push2delay automatically.
 
 The sector-flow ranking tries the realtime cluster (push2) first and falls
 back to the delayed cluster (push2delay) - after market close the values are
@@ -37,7 +45,7 @@ import ssl
 import sys
 import time
 import urllib.request
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -53,8 +61,46 @@ SSL_CTX = ssl.create_default_context()
 SSL_CTX.check_hostname = False
 SSL_CTX.verify_mode = ssl.CERT_NONE
 
-TENCENT_INDEXES = [("sh000001", "shanghai"), ("sz399006", "chinext"), ("sh000688", "star50")]
-KEEP_DAYS = 40          # trading days retained in caches
+# (tencent symbol, internal key, display name). The first three are also the
+# ones the five-day table renders; all seven feed the index panel.
+TENCENT_INDEXES = [
+    ("sh000001", "shanghai", "上证指数"),
+    ("sz399001", "szcheng", "深证成指"),
+    ("sz399006", "chinext", "创业板指"),
+    ("sh000688", "star50", "科创50"),
+    ("sh000300", "hs300", "沪深300"),
+    ("sh000852", "zz1000", "中证1000"),
+    ("sh000922", "zzdiv", "中证红利"),
+]
+INDEX_PANEL_ORDER = ["shanghai", "szcheng", "chinext", "star50", "hs300", "zz1000", "zzdiv"]
+RETURN_WINDOWS = (5, 20, 60)
+KLINE_LIMIT = 70         # 60-day window needs 61 closes; keep a small buffer
+KEEP_DAYS = 40           # trading days retained in caches
+LADDER_ROWS = 24         # max rows emitted for the limit-up ladder
+
+# Global markets. Eastmoney delayed cluster secids (one batched request).
+EM_GLOBAL_SECIDS = [
+    ("100.DJIA", "道琼斯", "美股"),
+    ("100.NDX", "纳斯达克", "美股"),
+    ("100.SPX", "标普500", "美股"),
+    ("100.N225", "日经225", "亚太"),
+    ("100.KS11", "韩国KOSPI", "亚太"),
+    ("100.TWII", "台湾加权", "亚太"),
+    ("100.HSI", "恒生指数", "亚太"),
+    ("100.FTSE", "英国富时100", "欧洲"),
+    ("100.GDAXI", "德国DAX", "欧洲"),
+    ("100.UDI", "美元指数", "汇率"),
+]
+# Sina batched codes: (code, display name, category). Parsing is driven by the
+# code prefix (gb_ / hf_ / fx_), see _sina_row.
+SINA_GLOBAL_CODES = [
+    ("gb_$sox", "费城半导体", "美股"),
+    ("hf_XAU", "伦敦金现货", "商品"),
+    ("hf_XAG", "伦敦银现货", "商品"),
+    ("hf_CL", "纽约原油", "商品"),
+    ("hf_CAD", "LME铜", "商品"),
+    ("fx_susdcnh", "离岸人民币", "汇率"),
+]
 
 REQUEST_COUNTS: dict[str, int] = {}
 
@@ -64,6 +110,9 @@ RISK_NOTES = [
     "涨跌停家数以东财涨停池为准；上市首日等无涨跌幅限制个股不计入。",
     "5日新高/新低基于本地收盘价缓存计算，缓存不足时该指标显示为「—」，连续运行数日后生效。",
     "两市成交额 = 中证指数官网披露的上证指数成交额 + 深交所官网披露的深市股票成交额，与行情软件口径可能略有差异。",
+    "指数区间收益由腾讯行情日线收盘价直接计算（不复权，指数点位本身已含成分调整），"
+    "60 日窗口需连续日线，缓存重建后首日可能缺失。",
+    "估值分位（PE/PB 历史百分位）无免费稳定数据源，本卡片不列示，不做任何估算。",
     "本页为数据整理与规则演示，不构成投资建议。",
 ]
 
@@ -111,9 +160,9 @@ def save_cache(path: Path, data: Any) -> None:
 def fetch_index_klines() -> dict[str, list[dict[str, Any]]]:
     """Tencent daily klines: [{date, close, pct}] per index, ascending."""
     out: dict[str, list[dict[str, Any]]] = {}
-    for symbol, key in TENCENT_INDEXES:
+    for symbol, key, _name in TENCENT_INDEXES:
         url = (f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?"
-               f"param={symbol},day,,,{KEEP_DAYS},qfq")
+               f"param={symbol},day,,,{KLINE_LIMIT},qfq")
         data = get_json(url).get("data") or {}
         node = data.get(symbol) or {}
         rows = node.get("day") or node.get("qfqday") or []
@@ -149,12 +198,73 @@ def fetch_sz_turnover(date: str) -> float:
 
 
 def fetch_pool(kind: str, yyyymmdd: str) -> list[dict[str, Any]]:
-    pool = "ZT" if kind == "zt" else "DT"
-    sort = "fbt%3Aasc" if kind == "zt" else "fund%3Aasc"
+    """Eastmoney topic pool: zt (涨停) / dt (跌停) / zb (炸板).
+
+    push2ex sits outside the IP-throttling applied to push2/push2his.
+    ZT rows carry lbc (连板数), zttj (n天m板), fund (封单额), zbc (炸板次数),
+    hybk (行业) - everything the ladder needs, at zero extra request cost.
+    """
+    pool = {"zt": "ZT", "dt": "DT", "zb": "ZB"}[kind]
+    sort = "fund%3Aasc" if kind == "dt" else "fbt%3Aasc"
     url = ("https://push2ex.eastmoney.com/getTopic" + pool + "Pool?cb=&"
            "ut=7eea3edcaed734bea9cbfc24409ed989&dpt=wz.ztzt&"
            f"Pageindex=0&pagesize=10000&sort={sort}&date={yyyymmdd}")
     return (get_json(url).get("data") or {}).get("pool") or []
+
+
+def fetch_margin_history(rows: int = 6) -> list[dict[str, Any]]:
+    """Whole-market margin balance (融资融券), newest first.
+
+    Source: Eastmoney datacenter-web RPTA_RZRQ_LSHJ (a different host from the
+    throttled push2 family). Values are in yuan; DIM_DATE is the disclosure
+    date, which lags the market date by one trading day (T+1).
+    """
+    url = ("https://datacenter-web.eastmoney.com/api/data/v1/get?"
+           "reportName=RPTA_RZRQ_LSHJ"
+           "&columns=DIM_DATE,RZRQYE,RZYE,RQYE,RZJME,RZYEZB"
+           "&sortColumns=DIM_DATE&sortTypes=-1"
+           f"&pageSize={rows}&pageNumber=1")
+    payload = get_json(url)
+    data = (payload.get("result") or {}).get("data") or []
+    if not data:
+        raise RuntimeError(f"margin history empty: {payload.get('message')}")
+    return data
+
+
+def fetch_em_global() -> dict[str, dict[str, Any]]:
+    """US/APAC/EU indices + dollar index in one batched delayed-cluster call."""
+    secids = ",".join(sid for sid, _, _ in EM_GLOBAL_SECIDS)
+    url = ("https://push2delay.eastmoney.com/api/qt/ulist.np/get?fltt=2&"
+           f"secids={secids}&fields=f2,f3,f4,f12,f14,f18")
+    diff = (get_json(url).get("data") or {}).get("diff") or []
+    return {str(row.get("f12")): row for row in diff if isinstance(row, dict)}
+
+
+def fetch_sina_batch(codes: list[str]) -> dict[str, str]:
+    """Sina hq.sinajs.cn, many symbols in one request. Returns raw CSV strings."""
+    url = "https://hq.sinajs.cn/list=" + ",".join(codes)
+    body = http_get(url, decode="gbk", headers={"Referer": "https://finance.sina.com.cn"})
+    out: dict[str, str] = {}
+    for line in body.strip().split("\n"):
+        head, _, tail = line.partition('="')
+        if not tail:
+            continue
+        out[head.replace("var hq_str_", "").strip()] = tail.rstrip('";')
+    return out
+
+
+def fetch_tencent_quotes(symbols: list[str]) -> dict[str, list[str]]:
+    """Tencent qt.gtimg.cn single-quote endpoint (used for HSTECH)."""
+    out: dict[str, list[str]] = {}
+    body = http_get("https://qt.gtimg.cn/q=" + ",".join(symbols), decode="gbk")
+    for line in body.strip().split("\n"):
+        head, _, tail = line.partition('="')
+        if not tail:
+            continue
+        fields = tail.rstrip('";').split("~")
+        if len(fields) > 32:
+            out[head.replace("v_", "").strip()] = fields
+    return out
 
 
 def fetch_all_stocks() -> list[dict[str, Any]]:
@@ -271,6 +381,197 @@ def build_flow_rows(sectors_today: list[dict[str, Any]],
     return rows
 
 
+# ------------------------------------------------- new blocks (pure logic)
+def window_returns(closes: list[float], windows: tuple[int, ...] = RETURN_WINDOWS
+                   ) -> dict[str, float | None]:
+    """区间收益 %: close[-1] / close[-1-N] - 1. None when history is short."""
+    out: dict[str, float | None] = {}
+    for n in windows:
+        out[f"ret{n}"] = (round((closes[-1] / closes[-1 - n] - 1) * 100, 2)
+                          if len(closes) > n else None)
+    return out
+
+
+def build_index_panel(klines: dict[str, list[dict[str, Any]]]) -> list[dict[str, Any]]:
+    """Seven-index snapshot: close / day pct / 5d / 20d / 60d returns. Pure."""
+    names = {key: name for _, key, name in TENCENT_INDEXES}
+    panel = []
+    for key in INDEX_PANEL_ORDER:
+        series = klines.get(key) or []
+        if not series:
+            continue
+        row = {"key": key, "name": names.get(key, key), "date": series[-1]["date"],
+               "close": round(series[-1]["close"], 2), "pct": series[-1]["pct"]}
+        row.update(window_returns([r["close"] for r in series]))
+        panel.append(row)
+    return panel
+
+
+def build_limit_ladder(zt_pool: list[dict[str, Any]], zb_pool: list[dict[str, Any]],
+                       prev_codes: list[str], date: str,
+                       limit_down: int | None = None,
+                       rows: int = LADDER_ROWS) -> dict[str, Any]:
+    """连板天梯 + 情绪指标。Pure - no I/O.
+
+    口径（与参考卡/行情软件可能不同，页面明示）：
+      封板率   = 收盘涨停 / (收盘涨停 + 炸板)       —— 炸板取东财炸板池
+      晋级率   = 昨日涨停股中今日仍涨停的占比        —— 依赖本地涨停代码缓存
+      封单力度 = 封单金额 / 流通市值
+    """
+    source: list[dict[str, Any]] = []
+    for item in zt_pool:
+        code = str(item.get("c") or "").strip()
+        if not code:
+            continue
+        board = int(item.get("lbc") or 1) or 1
+        ltsz = float(item.get("ltsz") or 0)
+        fund = float(item.get("fund") or 0)
+        zttj = item.get("zttj") or {}
+        days = int(zttj.get("days") or board)
+        ct = int(zttj.get("ct") or board)
+        source.append({
+            "code": code,
+            "stock": (item.get("n") or code).replace(" ", ""),
+            "sector": item.get("hybk") or "未知",
+            "board": board,
+            "seal_ratio": round(fund / ltsz * 100, 2) if ltsz > 0 else None,
+            "seal_fund": round(fund / 1e8, 2),
+            "amount": round(float(item.get("amount") or 0) / 1e8, 2),
+            "turnover_rate": round(float(item.get("hs") or 0), 2),
+            "zbc": int(item.get("zbc") or 0),
+            "note": f"{days}天{ct}板" if days > ct else f"{ct}连板",
+        })
+    source.sort(key=lambda r: (-r["board"], -(r["seal_ratio"] or 0), r["code"]))
+
+    distribution: dict[str, int] = {}
+    for row in source:
+        key = str(row["board"])
+        distribution[key] = distribution.get(key, 0) + 1
+
+    limit_up, zha_ban = len(zt_pool), len(zb_pool)
+    prev_set = set(prev_codes or [])
+    today_codes = {r["code"] for r in source}
+    promoted = len(today_codes & prev_set) if prev_set else None
+    metrics = {
+        "limit_up": limit_up,
+        "limit_down": limit_down,
+        "zha_ban": zha_ban,
+        "seal_rate": round(limit_up / (limit_up + zha_ban) * 100, 1) if limit_up + zha_ban else None,
+        "promotion_rate": (round(promoted / len(prev_set) * 100, 1)
+                           if prev_set and promoted is not None else None),
+        "promoted": promoted,
+        "prev_limit_up": len(prev_set) or None,
+        "max_board": source[0]["board"] if source else 0,
+        "two_board_plus": sum(v for k, v in distribution.items() if int(k) >= 2),
+    }
+    return {
+        "date": date,
+        "ladder": source[:rows],
+        "distribution": dict(sorted(distribution.items(), key=lambda kv: int(kv[0]), reverse=True)),
+        "metrics": metrics,
+        "notes": [
+            "封板率 = 收盘涨停 /（收盘涨停 + 炸板），采用东财涨停池与炸板池口径；"
+            "与按「盘中曾触及涨停」统计的口径不同，数值不可直接比较。",
+            "晋级率 = 上一交易日涨停个股中今日仍收涨停的占比，依据东财涨停池个股代码比对，"
+            "上一交易日名单由本地缓存提供（首次运行会多取一次历史涨停池）。",
+            "连板数取东财涨停池 lbc 字段；「n 天 m 板」取 zttj 字段；封单力度 = 封单金额 / 流通市值。",
+        ],
+    }
+
+
+def build_margin_view(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Whole-market margin balance view from the datacenter history. Pure."""
+    def yi(value: Any) -> float | None:
+        return round(float(value) / 1e8, 2) if value is not None else None
+
+    latest = rows[0]
+    prev = rows[1] if len(rows) > 1 else None
+    balance = yi(latest.get("RZRQYE"))
+    prev_balance = yi(prev.get("RZRQYE")) if prev else None
+    return {
+        "balance": balance,
+        "change": round(balance - prev_balance, 2) if None not in (balance, prev_balance) else None,
+        "financing": yi(latest.get("RZYE")),
+        "securities_loan": yi(latest.get("RQYE")),
+        "financing_net_buy": yi(latest.get("RZJME")),
+        "pct_of_float": round(float(latest["RZYEZB"]), 2) if latest.get("RZYEZB") is not None else None,
+        "as_of": str(latest.get("DIM_DATE", ""))[:10],
+        "prev_as_of": str(prev.get("DIM_DATE", ""))[:10] if prev else None,
+        "note": "两融余额为沪深两市合计（东财数据中心历史汇总），交易所 T+1 披露，"
+                "数据日期通常落后卡片市场日 1 个交易日，请以 as_of 字段为准。",
+    }
+
+
+def global_session_state(market_date: str, now: datetime | None = None) -> str:
+    """Has the US session for market_date closed yet (local clock is Beijing)?
+
+    US cash equities close 16:00 ET, i.e. 04:00-05:00 Beijing the next day.
+    A card built before that gets an intraday print, and must say so instead of
+    silently presenting it as a close. 05:00 is the conservative bound (EDT).
+    """
+    now = now or datetime.now()
+    close = datetime.strptime(market_date, "%Y-%m-%d") + timedelta(days=1, hours=5)
+    return "closed" if now >= close else "intraday"
+
+
+def _num(value: Any) -> float | None:
+    """Coerce to float. 4 decimals keeps FX pairs meaningful; the page formats."""
+    try:
+        return round(float(value), 4)
+    except (TypeError, ValueError):
+        return None
+
+
+def _sina_row(raw: str | None, kind: str) -> dict[str, Any]:
+    """Parse one sina hq.sinajs.cn CSV payload. Pure."""
+    if not raw:
+        return {"close": None, "pct": None, "as_of": None}
+    parts = raw.split(",")
+    try:
+        if kind == "gb":      # 名称,现价,涨跌幅%,时间,...
+            return {"close": _num(parts[1]), "pct": _num(parts[2]),
+                    "as_of": (parts[3] or None) if len(parts) > 3 else None}
+        if kind == "hf":      # 现价,买,卖,?,高,低,时间,昨收,开盘,...,日期,名称
+            close, prev_close = _num(parts[0]), _num(parts[7])
+            return {"close": close,
+                    "pct": round((close / prev_close - 1) * 100, 2)
+                           if close and prev_close else None,
+                    "as_of": (parts[12] or None) if len(parts) > 12 else None}
+        if kind == "fx":      # 时间,现价,买,卖,昨收,...,涨跌幅%,...,日期
+            return {"close": _num(parts[1]), "pct": _num(parts[10]),
+                    "as_of": (parts[17] or None) if len(parts) > 17 else None}
+    except IndexError:
+        pass
+    return {"close": None, "pct": None, "as_of": None}
+
+
+def build_global_rows(em_quotes: dict[str, dict[str, Any]],
+                      sina_raw: dict[str, str],
+                      tx_quotes: dict[str, list[str]]) -> list[dict[str, Any]]:
+    """Assemble the global-market table from the three batched sources. Pure.
+
+    Any single symbol can come back empty; the row is still emitted with nulls
+    so the table keeps its shape and the page can show「—」.
+    """
+    rows: list[dict[str, Any]] = []
+    for secid, name, category in EM_GLOBAL_SECIDS:
+        quote = em_quotes.get(secid.split(".", 1)[1]) or {}
+        rows.append({"name": name, "category": category, "close": _num(quote.get("f2")),
+                     "pct": _num(quote.get("f3")), "as_of": None, "unit": "点"})
+    for code, name, category in SINA_GLOBAL_CODES:
+        parsed = _sina_row(sina_raw.get(code), code[:2])
+        rows.append({"name": name, "category": category, "close": parsed["close"],
+                     "pct": parsed["pct"], "as_of": parsed["as_of"], "unit": None})
+    for symbol, name, category in (("hkHSTECH", "恒生科技", "亚太"),):
+        fields = tx_quotes.get(symbol) or []
+        rows.append({"name": name, "category": category,
+                     "close": _num(fields[3]) if len(fields) > 3 else None,
+                     "pct": _num(fields[32]) if len(fields) > 32 else None,
+                     "as_of": (fields[30] or None) if len(fields) > 30 else None,
+                     "unit": "点"})
+    return rows
+
+
 def day_feature(sh: float, cx: float, star: float, t_delta: float, limit_up: int) -> str:
     avg = (sh + cx + star) / 3
     if avg >= 0.5 and t_delta > 0.05:
@@ -306,7 +607,7 @@ def main() -> None:
     market_date = dates_all[-1]
     prev_date = dates_all[-2] if len(dates_all) >= 2 else None
     window6 = dates_all[-6:]
-    print(f"[1/6] market date: {market_date}")
+    print(f"[1/8] market date: {market_date}")
     sources.append({
         "name": "腾讯行情接口 fqkline（指数日线涨跌幅）",
         "as_of": f"{market_date} 收盘",
@@ -324,7 +625,7 @@ def main() -> None:
                 for d in window6 if d in daily_stats}
     if turnover.get(market_date, 0) <= 0:
         raise RuntimeError("turnover assembly failed")
-    print(f"[2/6] turnover {market_date}: {turnover[market_date]} trillion CNY")
+    print(f"[2/8] turnover {market_date}: {turnover[market_date]} trillion CNY")
     sources.append({
         "name": "中证指数有限公司官网（上证指数成交额）",
         "as_of": f"{market_date} 收盘",
@@ -336,7 +637,7 @@ def main() -> None:
         "note": "每日行情-证券类别统计中「股票」行，单位亿元。两市成交额=沪+深。历史值由本地缓存提供。",
     })
 
-    # 3. ZT/DT pools - 2 requests today + cache for the display window
+    # 3. ZT/DT/ZB pools - 3 requests today + cache for the display window
     for d in window6:
         entry = daily_stats.setdefault(d, {})
         if "zt" not in entry:
@@ -344,18 +645,32 @@ def main() -> None:
         if "dt" not in entry:
             entry["dt"] = len(fetch_pool("dt", d.replace("-", "")))
         if "zt" in entry and "dt" in entry:
-            print(f"[3/6] pools {d}: ZT={entry['zt']} DT={entry['dt']}")
+            print(f"[3/8] pools {d}: ZT={entry['zt']} DT={entry['dt']}")
     zt_today = fetch_pool("zt", market_date.replace("-", ""))  # full list for sector attribution
+    zb_today = fetch_pool("zb", market_date.replace("-", ""))  # 炸板池：封板率分母
     zt_sector: dict[str, int] = {}
     for item in zt_today:
         name = item.get("hybk") or "未知"
         zt_sector[name] = zt_sector.get(name, 0) + 1
     daily_stats[market_date]["zt"] = len(zt_today)
+    daily_stats[market_date]["dt"] = len(fetch_pool("dt", market_date.replace("-", ""))) \
+        if daily_stats[market_date].get("dt") is None else daily_stats[market_date]["dt"]
     sources.append({
-        "name": "东方财富 涨停/跌停池接口（push2ex）",
+        "name": "东方财富 涨停/跌停/炸板池接口（push2ex）",
         "as_of": f"{market_date} 收盘",
-        "note": "涨跌停家数按东财涨停池判定，行业归属按池内 hybk 字段。",
+        "note": "涨跌停家数按东财涨停池判定，行业归属按池内 hybk 字段；"
+                "连板数取 lbc、封单额取 fund、炸板次数取 zbc、炸板家数取炸板池。",
     })
+
+    # 涨停代码名单：当日入缓存，晋级率需要上一交易日名单（冷启动多取一次）
+    daily_stats[market_date]["zt_codes"] = [
+        str(item.get("c")) for item in zt_today if item.get("c")]
+    prev_codes = daily_stats.get(prev_date, {}).get("zt_codes") if prev_date else None
+    if not prev_codes and prev_date:
+        prev_codes = [str(i.get("c")) for i in fetch_pool("zt", prev_date.replace("-", ""))
+                      if i.get("c")]
+        daily_stats[prev_date]["zt_codes"] = prev_codes
+        print(f"[3/8] backfilled ZT codes for {prev_date}: {len(prev_codes)}")
 
     # prune daily stats
     for d in list(daily_stats):
@@ -368,7 +683,7 @@ def main() -> None:
     up = sum(1 for s in stocks if s["pct"] > 0)
     down = sum(1 for s in stocks if s["pct"] < 0)
     flat = sum(1 for s in stocks if s["pct"] == 0)
-    print(f"[4/6] breadth: up={up} down={down} flat={flat} total={len(stocks)}")
+    print(f"[4/8] breadth: up={up} down={down} flat={flat} total={len(stocks)}")
     sources.append({
         "name": "新浪财经 A 股全列表接口（涨跌家数）",
         "as_of": f"{market_date} 收盘",
@@ -402,7 +717,7 @@ def main() -> None:
             del breadth_history[d]
     save_cache(BREADTH_CACHE, breadth_history)
     if new_high is None:
-        print("[4/6] new-high/low: cache insufficient -> null this run")
+        print("[4/8] new-high/low: cache insufficient -> null this run")
 
     # 5. Sector flows - 1 request today + cache; one-time backfill if needed
     flows: list[dict[str, Any]] = []
@@ -411,7 +726,7 @@ def main() -> None:
     try:
         sectors_today = fetch_sector_today()
     except Exception as exc:  # noqa: BLE001
-        print(f"[5/6] sector ranking unavailable ({type(exc).__name__}) -> flows degraded")
+        print(f"[5/8] sector ranking unavailable ({type(exc).__name__}) -> flows degraded")
         sectors_today = []
         flow_status = "throttled"
 
@@ -429,7 +744,7 @@ def main() -> None:
             flow_status = "throttled"
 
     if flow_status == "ok":
-        print(f"[5/6] sector flows: {len(flows)} sectors")
+        print(f"[5/8] sector flows: {len(flows)} sectors")
         sources.append({
             "name": "东方财富 行业板块主力资金流接口（clist 排行，实时集群不可用时自动切换延时集群）",
             "as_of": f"{market_date} 收盘",
@@ -437,7 +752,7 @@ def main() -> None:
                     "单次请求全量。主力=超大单+大单（东财单因子口径）。",
         })
     else:
-        print("[5/6] sector flows: UNAVAILABLE -> empty with note")
+        print("[5/8] sector flows: UNAVAILABLE -> empty with note")
 
     # 6. market_days from caches
     market_days = []
@@ -457,7 +772,73 @@ def main() -> None:
             "feature": day_feature(sh, cx, star, delta, stat.get("zt", 0)),
         })
 
+    # 6. Index panel (7 indexes × 5/20/60d) - pure, zero extra requests
+    index_panel = build_index_panel(klines)
+    print(f"[6/8] index panel: {len(index_panel)} indexes, "
+          f"60d available={sum(1 for r in index_panel if r['ret60'] is not None)}")
+
+    # 6b. Limit ladder - pure, built from the pools already in hand
+    limit_ladder = build_limit_ladder(
+        zt_today, zb_today, prev_codes or [], market_date,
+        limit_down=daily_stats[market_date].get("dt"))
+    m = limit_ladder["metrics"]
+    print(f"[6/8] ladder: ZT={m['limit_up']} ZB={m['zha_ban']} "
+          f"seal={m['seal_rate']}% promote={m['promotion_rate']}% max={m['max_board']}板")
+
+    # 7. Margin (T+1) + global markets - both soft dependencies
     notes = list(RISK_NOTES)
+    margin: dict[str, Any] | None = None
+    try:
+        margin = build_margin_view(fetch_margin_history())
+        print(f"[7/8] margin: {margin['balance']}亿元 ({margin['change']:+.2f}) as_of={margin['as_of']}")
+        sources.append({
+            "name": "东方财富数据中心 融资融券历史汇总（RPTA_RZRQ_LSHJ）",
+            "as_of": f"{margin['as_of']}（T+1 披露）",
+            "note": "沪深两市合计融资融券余额，单位亿元；交易所 T+1 披露，数据日期落后卡片市场日。",
+        })
+    except Exception as exc:  # noqa: BLE001
+        print(f"[7/8] margin unavailable ({type(exc).__name__}) -> block degraded")
+        notes.append("两融余额本次未采集成功（东方财富数据中心接口异常），该栏留空，下次运行时自动补齐。")
+
+    global_markets: list[dict[str, Any]] = []
+    global_as_of = None
+    us_state = "unknown"
+    try:
+        em_quotes = fetch_em_global()
+        sina_raw = fetch_sina_batch([c for c, *_ in SINA_GLOBAL_CODES])
+        tx_quotes = fetch_tencent_quotes(["hkHSTECH"])
+        global_markets = build_global_rows(em_quotes, sina_raw, tx_quotes)
+        # Sources return dates in different formats (2026-08-31 vs 2026/08/31);
+        # normalise before picking the newest, and keep only the calendar day.
+        stamped = [r["as_of"][:10].replace("/", "-") for r in global_markets if r.get("as_of")]
+        global_as_of = max(stamped) if stamped else None
+        if global_as_of:
+            for row in global_markets:
+                if row.get("as_of"):
+                    row["as_of"] = row["as_of"][:10].replace("/", "-")
+                    row["lagged"] = row["as_of"] < market_date
+        filled = sum(1 for r in global_markets if r["pct"] is not None)
+        us_state = global_session_state(market_date)
+        print(f"[7/8] global: {filled}/{len(global_markets)} symbols priced, "
+              f"as_of={global_as_of}, US session={us_state}")
+        sources.append({
+            "name": "东方财富延时集群 / 新浪财经 / 腾讯行情（全球市场）",
+            "as_of": global_as_of or "采集时刻",
+            "note": "美股与欧股为北京时间次日凌晨收盘价，亚太与港股为当日收盘；"
+                    "美债收益率无免费稳定源，本章节不列示。",
+        })
+        if us_state == "intraday":
+            notes.append(f"采集时刻（北京时间 {datetime.now():%Y-%m-%d %H:%M}）美股 {market_date} 交易时段尚未收盘"
+                         "（美东 16:00 收盘，约北京时间次日 05:00），全球市场章节中的美股数值为最新盘中价，"
+                         "不是收盘价；需要收盘口径请在次日 05:00 后重跑采集。")
+    except Exception as exc:  # noqa: BLE001
+        print(f"[7/8] global unavailable ({type(exc).__name__}) -> block degraded")
+        notes.append("全球市场行情本次未采集成功，该章节为空；该块为软依赖，不影响其余章节。")
+    else:
+        missing = [r["name"] for r in global_markets if r["pct"] is None]
+        if missing:
+            notes.append(f"全球市场中 {len(missing)} 个标的本次未取到报价（{'、'.join(missing)}），以「—」显示。")
+
     if bootstrap_note:
         notes.append(bootstrap_note)
     if flow_status != "ok":
@@ -482,6 +863,12 @@ def main() -> None:
                     "limit_up": daily_stats[market_date].get("zt", 0),
                     "limit_down": daily_stats[market_date].get("dt", 0)},
         "flows": flows,
+        "index_panel": index_panel,
+        "limit_ladder": limit_ladder,
+        "margin": margin,
+        "global_markets": global_markets,
+        "global_as_of": global_as_of,
+        "global_us_session": us_state,
         "events": [],
         "scenarios": [],
         "risk_notes": notes,
@@ -492,7 +879,7 @@ def main() -> None:
     with out.open("w", encoding="utf-8", newline="\n") as handle:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
         handle.write("\n")
-    print(f"[6/6] wrote {out.name}: sectors={len(flows)} days={len(market_days)} flows={flow_status}")
+    print(f"[8/8] wrote {out.name}: sectors={len(flows)} days={len(market_days)} flows={flow_status}")
     print("requests by host:", json.dumps(REQUEST_COUNTS, ensure_ascii=False))
     print("next: python scripts/build_data.py")
 
