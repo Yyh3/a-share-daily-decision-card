@@ -43,11 +43,98 @@ function renderLadder(ladder) {
   $("#ladder-notes").innerHTML = [head, ...notes].filter(Boolean).map(item => `<span>${escapeHtml(item)}</span>`).join("");
 }
 
+function renderValuation(valuation) {
+  const rows = (valuation || []).map(v => {
+    const cls = v.percentile === null ? "" : v.percentile >= 80 ? "positive" : v.percentile <= 20 ? "negative" : "";
+    return `<tr><td><strong>${escapeHtml(v.name)}</strong></td><td>${v.pe === null ? "—" : v.pe.toFixed(2)}</td><td class="${cls}">${v.percentile === null ? "—" : `${v.percentile.toFixed(1)}%`}</td><td>${v.samples ?? "—"}</td></tr>`;
+  }).join("");
+  $("#valuation-table").innerHTML = rows ||
+    `<tr><td colspan="4" class="empty-row">估值分位为软依赖，本次未采集到数据（或历史序列不足），不影响其余章节。</td></tr>`;
+}
+
+function renderUST(ust) {
+  const block = $("#ust-block");
+  if (!block) return;
+  if (!ust) {
+    block.innerHTML = `<h4>美债收益率</h4><p class="unit-note">本次快照未采集到美债数据（软依赖：美国财政部官方 CSV，美东时间当日下午发布）。</p>`;
+    return;
+  }
+  const cells = [
+    ["10Y 收益率", `${ust.y10.toFixed(2)}%`],
+    ["日变动", ust.change_bp === null ? "—" : `${ust.change_bp > 0 ? "+" : ""}${ust.change_bp.toFixed(1)} bp`],
+    ["2s10s 利差", ust.spread_2s10s_bp === null ? "—" : `${ust.spread_2s10s_bp > 0 ? "+" : ""}${ust.spread_2s10s_bp.toFixed(1)} bp`],
+    ["近2年分位", ust.percentile === null ? "—" : `${ust.percentile.toFixed(1)}%`],
+  ].map(([key, value]) => `<div class="metric"><strong>${escapeHtml(value)}</strong><small>${escapeHtml(key)}</small></div>`).join("");
+  const curve = (ust.tenors && Object.keys(ust.tenors).length > 1)
+    ? Object.entries(ust.tenors).filter(([, v]) => v !== null).map(([k, v]) => `${k.replace(" Yr", "Y")} ${v.toFixed(2)}%`).join(" · ")
+    : "";
+  block.innerHTML = `<h4>美债收益率曲线（${escapeHtml(ust.as_of)}）</h4><div class="metric-grid">${cells}</div>`
+    + (curve ? `<p class="unit-note">曲线：${curve}</p>` : "")
+    + `<p class="unit-note">来源：${escapeHtml(ust.source)}；美东时间当日下午发布，对应北京时间次日凌晨，日期通常落后卡片市场日 1 个自然日。`
+    + `2Y ${ust.y2 === null ? "—" : ust.y2.toFixed(2) + "%"} / 30Y ${ust.y30 === null ? "—" : ust.y30.toFixed(2) + "%"}。</p>`;
+}
+
+function renderDragonTiger(dt) {
+  const stockBody = $("#lhb-stock-table");
+  const seatBody = $("#lhb-seat-table");
+  if (!stockBody || !seatBody) return;
+  if (!dt) {
+    $("#lhb-summary").innerHTML = `<p class="unit-note">龙虎榜为软依赖（交易所通常在当日 18:00 前后披露），本次未采集到数据；收盘后重跑采集脚本即可补齐。</p>`;
+    stockBody.innerHTML = `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
+    seatBody.innerHTML = `<tr><td colspan="8" class="empty-row">无数据。</td></tr>`;
+    return;
+  }
+  const s = dt.summary || {};
+  $("#lhb-summary").innerHTML = `<div class="metric-grid">${
+    [["上榜个股", `${dt.stock_count} 家`],
+     ["净买 / 净卖", `${s.net_in_stocks ?? "—"} / ${s.net_out_stocks ?? "—"}`],
+     ["个股净买合计", s.total_net_wan === null ? "—" : `${signed(s.total_net_wan)} 万`],
+     ["机构专用净额", s.inst_net_wan === null ? "—" : `${signed(s.inst_net_wan)} 万`],
+     ["北向席位净额", s.north_net_wan === null ? "—" : `${signed(s.north_net_wan)} 万`],
+     ["披露记录", `${dt.record_count} 条`]]
+    .map(([key, value]) => `<div class="metric"><strong>${escapeHtml(value)}</strong><small>${escapeHtml(key)}</small></div>`).join("")
+  }</div>`;
+
+  stockBody.innerHTML = (dt.stocks || []).length ? (dt.stocks || []).map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong><br><small>${escapeHtml(r.code)}</small></td><td class="${classOrDash(r.pct)}">${signedOrDash(r.pct, "%")}</td><td class="${classOrDash(r.net_wan)}">${signedOrDash(r.net_wan)}</td><td>${signedOrDash(r.buy_wan)}</td><td>${signedOrDash(r.sell_wan)}</td><td>${r.turnover === null || r.turnover === undefined ? "—" : r.turnover.toFixed(2) + "%"}</td><td><small>${escapeHtml(r.reason)}${r.window !== "当日" ? `（${escapeHtml(r.window)}）` : ""}</small></td></tr>`).join("") : `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
+
+  const seatTag = (seat) => seat.includes("机构专用") ? "seat-tag seat-inst"
+    : seat.includes("沪股通专用") || seat.includes("深股通专用") ? "seat-tag seat-north"
+    : "seat-tag seat-broker";
+  seatBody.innerHTML = (dt.top_seats || []).length ? (dt.top_seats || []).map(r => `<tr><td><span class="${seatTag(r.seat)}">${escapeHtml(r.seat)}</span></td><td><strong>${escapeHtml(r.name)}</strong><br><small>${escapeHtml(r.code)}</small></td><td class="${classOrDash(r.net_wan)}">${signedOrDash(r.net_wan)}</td><td>${signedOrDash(r.buy_wan)}</td><td>${signedOrDash(r.sell_wan)}</td><td>${r.rise_prob === null || r.rise_prob === undefined ? "—" : r.rise_prob.toFixed(1) + "%"}</td><td><small>${escapeHtml(r.reason)}</small></td></tr>`).join("") : `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
+
+  const special = (bucket, rows) => rows && rows.length
+    ? `<div class="lhb-special"><strong>${escapeHtml(bucket)}</strong> ${rows.map(r =>
+      `<span class="seat-chip">${escapeHtml(r.name)} <b class="${classOrDash(r.net_wan)}">${signed(r.net_wan)}万</b></span>`).join("")}</div>`
+    : "";
+  $("#lhb-special").innerHTML =
+    special("机构专用", (dt.special || {})["机构专用"])
+    + special("沪股通专用", (dt.special || {})["沪股通专用"])
+    + special("深股通专用", (dt.special || {})["深股通专用"]);
+
+  $("#lhb-note").textContent = dt.note || "";
+}
+
+function renderLift(lift) {
+  const block = $("#lift-block");
+  if (!block) return;
+  if (!lift) {
+    block.innerHTML = `<h4>解禁排雷（未来 7 日）</h4><p class="unit-note">本次快照未采集到解禁数据（软依赖）。</p>`;
+    return;
+  }
+  const rows = (lift.top || []).map(e => `<tr><td>${e.date.slice(5)}</td><td><strong>${escapeHtml(e.name)}</strong><br><small>${escapeHtml(e.code)}</small></td><td>${e.cap_yi === null ? "—" : e.cap_yi.toFixed(2) + " 亿"}</td><td>${e.shares_wan === null ? "—" : e.shares_wan.toLocaleString("zh-CN") + " 万股"}</td><td>${e.ratio_pct === null ? "—" : e.ratio_pct.toFixed(2) + "%"}</td><td><small>${escapeHtml(e.type)}</small></td></tr>`).join("");
+  const flag = (lift.flagged || []).length
+    ? `<p class="unit-note">⚠ 占总股本 ≥5% 的大额解禁：${lift.flagged.map(e => `${escapeHtml(e.name)}（${e.date.slice(5)}，${e.ratio_pct.toFixed(1)}%）`).join("、")}。</p>`
+    : "";
+  block.innerHTML = `<h4>解禁排雷（未来 7 日）</h4>
+    <p class="unit-note">${lift.window} 共 ${lift.event_count} 家解禁、合计 ${lift.total_cap_yi.toFixed(1)} 亿元。${escapeHtml(lift.note)}</p>
+    <div class="table-wrap"><table><thead><tr><th>日期</th><th>个股</th><th>解禁市值</th><th>解禁数量</th><th>占总股本</th><th>类型</th></tr></thead><tbody>${rows || `<tr><td colspan="6" class="empty-row">未来 7 日无解禁记录。</td></tr>`}</tbody></table></div>${flag}`;
+}
+
 function renderGlobal(rows, asOf, usSession) {
   $("#global-table").innerHTML = rows.length ? rows.map(row => `<tr><td>${escapeHtml(row.category)}</td><td><strong>${escapeHtml(row.name)}</strong></td><td>${row.close === null ? "—" : money(row.close)}</td><td class="${classOrDash(row.pct)}">${signedOrDash(row.pct, "%")}</td></tr>`).join("") : `<tr><td colspan="4" class="empty-row">全球行情为软依赖，本次未采集到数据，不影响其余章节。</td></tr>`;
   const lagged = rows.filter(row => row.lagged);
   let note = rows.length
-    ? `行情截至 ${dash(asOf) || "采集时刻"}；美股与欧股取北京时间次日凌晨收盘，亚太与港股取当日收盘。美债收益率无免费稳定数据源，未列示。`
+    ? `行情截至 ${dash(asOf) || "采集时刻"}；美股与欧股取北京时间次日凌晨收盘，亚太与港股取当日收盘；美债收益率见上方小节。`
     : "";
   if (usSession === "intraday" && rows.length) {
     note += " ⚠ 采集时美股尚未收盘，美股与相关商品为最新盘中价，非收盘价。";
@@ -75,7 +162,8 @@ function renderMargin(margin) {
 
 function render(data) {
   const { meta, status, verdicts, market_days: days, breadth, flows, accumulation_pool: pool, events, scenarios, risk_notes: risks,
-          index_panel: panel, style, limit_ladder: ladder, margin, global_markets: globals, global_as_of: globalAsOf } = data;
+          index_panel: panel, style, limit_ladder: ladder, margin, global_markets: globals, global_as_of: globalAsOf,
+          us_treasury: ust, dragon_tiger: dragon, valuation, lift_unlock: lift } = data;
   document.title = `A 股每日复盘决策卡 · ${meta.market_date}`;
   $("#data-badge").textContent = `更新 ${meta.updated_at}`;
   $("#demo-warning").innerHTML = meta.demo
@@ -92,8 +180,12 @@ function render(data) {
   $("#flow-table").innerHTML = flows.map(row => `<tr><td><strong>${escapeHtml(row.sector)}</strong></td><td class="${directionClass(row.today)}">${signed(row.today)}</td><td class="${directionClass(row.day5)}">${signed(row.day5)}</td><td class="${directionClass(row.day10)}">${signed(row.day10)}</td><td><span class="flow-label">${escapeHtml(row.classification)}</span></td></tr>`).join("");
 
   renderIndexPanel(panel, style);
+  renderValuation(valuation);
   renderLadder(ladder);
   renderGlobal(globals || [], globalAsOf, data.global_us_session);
+  renderUST(ust);
+  renderDragonTiger(dragon);
+  renderLift(lift);
   renderMargin(margin);
 
   const total = breadth.up + breadth.down + breadth.flat;

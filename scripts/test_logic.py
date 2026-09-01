@@ -231,6 +231,116 @@ check("style: below threshold -> 不显著",
 check("style: missing panel -> None", build_data.style_view([]) is None)
 check("style: partial panel -> None", build_data.style_view([{"key": "hs300", "ret20": 1.0}]) is None)
 
+# ---------------------------------------------------------------- lhb_window
+check("lhb: single-day reason -> 当日", cd.lhb_window("日涨幅偏离值达7%的证券") == "当日")
+check("lhb: three-day reason (汉字) -> 3日",
+      cd.lhb_window("连续三个交易日内，涨幅偏离值累计达到20%的证券") == "3日")
+check("lhb: three-day reason (数字) -> 3日",
+      cd.lhb_window("连续3个交易日内收盘价格涨幅偏离值累计达到20%") == "3日")
+check("lhb: empty reason -> 当日", cd.lhb_window("") == "当日")
+
+# ---------------------------------------------------------------- _merge_reasons
+base = {"code": "600000", "seat": "x", "window": "当日", "net_wan": 100.0, "reason": "换手率达20%"}
+merged = cd._merge_reasons([dict(base), {**base, "reason": "涨幅偏离7%"},
+                            {**base, "net_wan": 250.0, "reason": "3日累计偏离"}], ("code", "seat"))
+check("merge: same event collapses to one row", len(merged) == 2, f"got {len(merged)}")
+check("merge: reasons joined", "涨幅偏离7%" in merged[0]["reason"] and "换手率达20%" in merged[0]["reason"])
+check("merge: different amount stays separate",
+      any(r["net_wan"] == 250.0 for r in merged))
+
+# ---------------------------------------------------------------- build_dragon_tiger
+LHB_STOCKS = [
+    {"SECURITY_CODE": "002396", "SECURITY_NAME_ABBR": "星网锐捷", "TRADE_DATE": "2026-08-31 00:00:00",
+     "CLOSE_PRICE": 10.0, "CHANGE_RATE": 10.0, "BILLBOARD_NET_AMT": 3.0e8, "BILLBOARD_BUY_AMT": 4.0e8,
+     "BILLBOARD_SELL_AMT": 1.0e8, "ACCUM_AMOUNT": 9.4e8, "TURNOVERRATE": 12.0,
+     "EXPLANATION": "日涨幅达到15%的前5只证券", "EXPLAIN": ""},
+    {"SECURITY_CODE": "300999", "SECURITY_NAME_ABBR": "安克创新", "TRADE_DATE": "2026-08-31 00:00:00",
+     "CLOSE_PRICE": 100.0, "CHANGE_RATE": -5.0, "BILLBOARD_NET_AMT": -2.0e8, "BILLBOARD_BUY_AMT": 1.0e8,
+     "BILLBOARD_SELL_AMT": 3.0e8, "ACCUM_AMOUNT": 8.0e8, "TURNOVERRATE": 5.0,
+     "EXPLANATION": "连续三个交易日内，跌幅偏离值累计达到30%的证券", "EXPLAIN": ""},
+]
+LHB_SEATS = [
+    {"SECURITY_CODE": "002396", "OPERATEDEPT_NAME": "机构专用", "BUY": 2.0e8, "SELL": 0.0,
+     "NET": 2.0e8, "CHANGE_RATE": 10.0, "RISE_PROBABILITY_3DAY": 66.7,
+     "TOTAL_BUYER_SALESTIMES_3DAY": 5, "EXPLANATION": "日涨幅达到15%的前5只证券"},
+    {"SECURITY_CODE": "300999", "OPERATEDEPT_NAME": "机构专用", "BUY": 0.0, "SELL": 1.5e8,
+     "NET": -1.5e8, "CHANGE_RATE": -5.0, "RISE_PROBABILITY_3DAY": None,
+     "TOTAL_BUYER_SALESTIMES_3DAY": 2, "EXPLANATION": "连续三个交易日内，跌幅偏离值累计达到30%的证券"},
+    {"SECURITY_CODE": "002396", "OPERATEDEPT_NAME": "国盛证券宁波桑田路", "BUY": 1.0e8, "SELL": 0.1e8,
+     "NET": 0.9e8, "CHANGE_RATE": 10.0, "RISE_PROBABILITY_3DAY": 55.0,
+     "TOTAL_BUYER_SALESTIMES_3DAY": 1, "EXPLANATION": "日涨幅达到15%的前5只证券"},
+]
+dt = cd.build_dragon_tiger(LHB_STOCKS, LHB_SEATS)
+check("dragon: as_of from TRADE_DATE", dt["as_of"] == "2026-08-31")
+check("dragon: stock net in 万", dt["stocks"][0]["net_wan"] == 30000.0,
+      f"got {dt['stocks'][0]['net_wan']}")
+check("dragon: stock row carries window", dt["stocks"][1]["window"] == "3日")
+check("dragon: seat name joined from stock report",
+      all(r["name"] in ("星网锐捷", "安克创新") for r in dt["top_seats"]))
+check("dragon: top_seats sorted by |net| desc",
+      [r["net_wan"] for r in dt["top_seats"]] == sorted((r["net_wan"] for r in dt["top_seats"]),
+                                                          key=lambda v: -abs(v)))
+check("dragon: special bucket keeps 机构专用 rows", len(dt["special"]["机构专用"]) == 2)
+s = dt["summary"]
+check("dragon: totals use single-day rows only", s["total_net_wan"] == 30000.0,
+      f"got {s['total_net_wan']}")
+check("dragon: inst total uses 当日 rows only", s["inst_net_wan"] == 20000.0,
+      f"got {s['inst_net_wan']}")
+
+# ---------------------------------------------------------------- pe_percentile
+# 500 consecutive days from 2016-09-01 -> all inside the 10y window of 2026-08-31.
+from datetime import date as _date, timedelta as _td  # noqa: E402
+_pe_dates = [_date(2016, 9, 1) + _td(days=i) for i in range(500)]
+pe_series = {d.isoformat(): 10.0 + i * 0.01 for i, d in enumerate(_pe_dates)}
+pe_series["2026-08-31"] = 25.0
+pv = cd.pe_percentile(pe_series)
+check("pe: percentile of the max is 100", pv["percentile"] == 100.0, f"got {pv['percentile']}")
+check("pe: as_of is the latest date", pv["as_of"] == "2026-08-31")
+low = dict(pe_series)
+low["2026-08-31"] = 5.0
+check("pe: percentile of the min is ~0",
+      cd.pe_percentile(low)["percentile"] < 5.0)
+check("pe: short history -> None",
+      cd.pe_percentile({"2026-08-30": 1.0, "2026-08-31": 1.1}) is None)
+check("pe: empty -> None", cd.pe_percentile({}) is None)
+
+# ---------------------------------------------------------------- build_lift_view
+LIFT_ROWS = [
+    {"SECURITY_CODE": "002998", "SECURITY_NAME_ABBR": "优彩资源", "FREE_DATE": "2026-09-02 00:00:00",
+     "LIFT_MARKET_CAP": 290.64, "FREE_SHARES": 27083.43, "FREE_SHARES_TYPE": "股权激励限售股份",
+     "TOTAL_RATIO": 0.006},
+    {"SECURITY_CODE": "600925", "SECURITY_NAME_ABBR": "苏能股份", "FREE_DATE": "2026-09-07 00:00:00",
+     "LIFT_MARKET_CAP": 2324449.73, "FREE_SHARES": 688888.89, "FREE_SHARES_TYPE": "追加承诺限售股份",
+     "TOTAL_RATIO": 1.0},
+    {"SECURITY_CODE": "000000", "SECURITY_NAME_ABBR": "区间外", "FREE_DATE": "2026-09-20 00:00:00",
+     "LIFT_MARKET_CAP": 99999.0, "FREE_SHARES": 1.0, "FREE_SHARES_TYPE": "其他", "TOTAL_RATIO": 0.01},
+]
+lv = cd.build_lift_view(LIFT_ROWS, "2026-09-01", "2026-09-08")
+check("lift: out-of-window rows dropped", lv["event_count"] == 2)
+check("lift: cap 万元 -> 亿元", lv["top"][0]["cap_yi"] == 232.44, f"got {lv['top'][0]['cap_yi']}")
+check("lift: sorted by cap desc", lv["top"][0]["name"] == "苏能股份")
+check("lift: total over in-window events", lv["total_cap_yi"] == round(232.44 + 0.03, 2),
+      f"got {lv['total_cap_yi']}")
+check("lift: by_date counts", {s["date"]: s["count"] for s in lv["by_date"]}
+      == {"2026-09-02": 1, "2026-09-07": 1})
+check("lift: ratio >= 5% flagged", [f["name"] for f in lv["flagged"]] == ["苏能股份"],
+      f"got {lv['flagged']}")
+check("lift: empty rows -> zero view", cd.build_lift_view([], "2026-09-01", "2026-09-08")["event_count"] == 0)
+
+# ---------------------------------------------------------------- US Treasury parsing
+CSV_SAMPLE = ("Date,\"1 Mo\",\"3 Mo\",\"6 Mo\",\"1 Yr\",\"2 Yr\",\"3 Yr\",\"5 Yr\",\"7 Yr\","
+              "\"10 Yr\",\"20 Yr\",\"30 Yr\"\n"
+              "08/29/2026,4.05,4.08,4.15,4.20,4.30,4.40,4.50,4.60,4.70,4.90,4.95\n"
+              "08/28/2026,4.04,4.07,4.14,4.19,4.28,4.38,4.48,4.58,4.68,4.88,4.93\n")
+ust_rows = cd.parse_us_treasury_csv(CSV_SAMPLE)
+check("ust: rows parsed newest first", [r["date"] for r in ust_rows] == ["2026-08-29", "2026-08-28"])
+check("ust: y10/y2 read from tenors", ust_rows[0]["y10"] == 4.70 and ust_rows[0]["y2"] == 4.30)
+ust_view = cd.build_us_treasury_view({2026: ust_rows})
+check("ust: change_bp = (4.70-4.68)*100", ust_view["change_bp"] == 2.0, f"got {ust_view['change_bp']}")
+check("ust: 2s10s spread = 40bp", ust_view["spread_2s10s_bp"] == 40.0, f"got {ust_view['spread_2s10s_bp']}")
+check("ust: garbage row skipped",
+      len(cd.parse_us_treasury_csv("Date,\"10 Yr\"\n,4.0\nxx/01/2026,1.0\n")) == 0)
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} test(s) FAILED: {FAILURES}")

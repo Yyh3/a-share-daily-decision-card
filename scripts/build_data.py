@@ -16,6 +16,27 @@ FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
 POOL_ROWS = 10        # displayed rows in the accumulation pool
 LADDER_DISPLAY_ROWS = 18   # displayed rows in the limit-up ladder
 STYLE_THRESHOLD = 1.0      # pct points before a style edge is called
+LHB_STOCK_DISPLAY = 24     # dragon-tiger stock rows shown
+LHB_SEAT_DISPLAY = 20      # dragon-tiger seat rows shown
+LHB_SPECIAL_DISPLAY = 10   # rows per special-seat bucket shown
+
+
+def trim_dragon_tiger(view: dict[str, Any] | None) -> dict[str, Any] | None:
+    """Cap the dragon-tiger tables for display; keep every summary number.
+
+    The full raw tables stay in data/raw/eod-*.json; the card only shows the
+    extreme rows, which is what the |NET| sort already surfaced.
+    """
+    if not view:
+        return None
+    trimmed = dict(view)
+    trimmed["stocks"] = (view.get("stocks") or [])[:LHB_STOCK_DISPLAY]
+    trimmed["top_seats"] = (view.get("top_seats") or [])[:LHB_SEAT_DISPLAY]
+    trimmed["special"] = {
+        bucket: rows[:LHB_SPECIAL_DISPLAY]
+        for bucket, rows in (view.get("special") or {}).items()
+    }
+    return trimmed
 
 
 def style_view(panel: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -179,6 +200,10 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             "global_markets":source.get("global_markets", []),
             "global_as_of":source.get("global_as_of"),
             "global_us_session":source.get("global_us_session", "unknown"),
+            "us_treasury":source.get("us_treasury"),
+            "dragon_tiger":trim_dragon_tiger(source.get("dragon_tiger")),
+            "valuation":source.get("valuation", []),
+            "lift_unlock":source.get("lift_unlock"),
             "events":source.get("events", []), "scenarios":source.get("scenarios", []),
             "risk_notes":source.get("risk_notes", [])}
 

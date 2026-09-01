@@ -15,3 +15,21 @@
 .empty-row{text-align:center;color:var(--muted);padding:14px 0}
 #index-table td:first-child,#ladder-table td:first-child{white-space:nowrap}
 #global-table td:first-child{color:var(--muted);font-size:12px}
+.valuation-table{margin-top:12px}
+.valuation-table td:nth-child(2),.valuation-table th:nth-child(2){text-align:right}
+#valuation-table td:nth-child(3){font-weight:700}
+.ust-block{margin-bottom:14px}
+.ust-block h4{margin:0 0 8px;font-size:13px}
+.lift-block{margin-bottom:16px}
+.lift-block h4{margin:0 0 6px;font-size:13px}
+.lift-block .table-wrap{margin-top:8px}
+.lhb-special-wrap{margin-top:12px;display:grid;gap:6px}
+.lhb-special{font-size:12px;color:var(--muted)}
+.lhb-special strong{color:var(--ink);margin-right:6px}
+.seat-chip{display:inline-block;margin:0 4px 4px 0;padding:1px 7px;border:1px solid var(--line);background:#f6f8f7}
+.seat-tag{display:inline-block;max-width:220px;overflow:hidden;text-overflow:ellipsis;vertical-align:bottom;padding:1px 7px;font-size:11px}
+.seat-tag.seat-broker{background:#f0f2f1;color:var(--muted)}
+.seat-tag.seat-inst{background:var(--green-soft);color:var(--green);font-weight:700}
+.seat-tag.seat-north{background:var(--amber-soft);color:var(--amber);font-weight:700}
+#lhb-summary{margin-bottom:12px}
+#lhb-stock-table small,#lhb-seat-table small{color:var(--muted)}
