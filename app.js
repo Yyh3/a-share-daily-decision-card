@@ -97,10 +97,11 @@ function renderDragonTiger(dt) {
 
   stockBody.innerHTML = (dt.stocks || []).length ? (dt.stocks || []).map(r => `<tr><td><strong>${escapeHtml(r.name)}</strong><br><small>${escapeHtml(r.code)}</small></td><td class="${classOrDash(r.pct)}">${signedOrDash(r.pct, "%")}</td><td class="${classOrDash(r.net_wan)}">${signedOrDash(r.net_wan)}</td><td>${signedOrDash(r.buy_wan)}</td><td>${signedOrDash(r.sell_wan)}</td><td>${r.turnover === null || r.turnover === undefined ? "—" : r.turnover.toFixed(2) + "%"}</td><td><small>${escapeHtml(r.reason)}${r.window !== "当日" ? `（${escapeHtml(r.window)}）` : ""}</small></td></tr>`).join("") : `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
 
-  const seatTag = (seat) => seat.includes("机构专用") ? "seat-tag seat-inst"
-    : seat.includes("沪股通专用") || seat.includes("深股通专用") ? "seat-tag seat-north"
-    : "seat-tag seat-broker";
-  seatBody.innerHTML = (dt.top_seats || []).length ? (dt.top_seats || []).map(r => `<tr><td><span class="${seatTag(r.seat)}">${escapeHtml(r.seat)}</span></td><td><strong>${escapeHtml(r.name)}</strong><br><small>${escapeHtml(r.code)}</small></td><td class="${classOrDash(r.net_wan)}">${signedOrDash(r.net_wan)}</td><td>${signedOrDash(r.buy_wan)}</td><td>${signedOrDash(r.sell_wan)}</td><td>${r.rise_prob === null || r.rise_prob === undefined ? "—" : r.rise_prob.toFixed(1) + "%"}</td><td><small>${escapeHtml(r.reason)}</small></td></tr>`).join("") : `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
+  const seatClass = (tag) => tag === "机构" ? "seat-tag seat-inst"
+    : tag === "北向" ? "seat-tag seat-north"
+    : tag === "外资" ? "seat-tag seat-foreign"
+    : tag ? "seat-tag seat-famous" : "seat-tag seat-broker";
+  seatBody.innerHTML = (dt.top_seats || []).length ? (dt.top_seats || []).map(r => `<tr><td><span class="${seatClass(r.seat_tag)}">${escapeHtml(r.seat)}</span>${r.seat_tag ? `<br><small class="muted">${escapeHtml(r.seat_tag)}</small>` : ""}</td><td><strong>${escapeHtml(r.name)}</strong><br><small>${escapeHtml(r.code)}</small></td><td class="${classOrDash(r.net_wan)}">${signedOrDash(r.net_wan)}</td><td>${signedOrDash(r.buy_wan)}</td><td>${signedOrDash(r.sell_wan)}</td><td>${r.rise_prob === null || r.rise_prob === undefined ? "—" : r.rise_prob.toFixed(1) + "%"}</td><td><small>${escapeHtml(r.reason)}</small></td></tr>`).join("") : `<tr><td colspan="7" class="empty-row">无数据。</td></tr>`;
 
   const special = (bucket, rows) => rows && rows.length
     ? `<div class="lhb-special"><strong>${escapeHtml(bucket)}</strong> ${rows.map(r =>
@@ -112,6 +113,27 @@ function renderDragonTiger(dt) {
     + special("深股通专用", (dt.special || {})["深股通专用"]);
 
   $("#lhb-note").textContent = dt.note || "";
+}
+
+function renderDirection(dt, noise) {
+  const table = $("#lhb-direction-table");
+  if (!table) return;
+  const rows = (dt && dt.direction) || [];
+  table.innerHTML = rows.length
+    ? rows.map(r => `<tr><td><strong>${escapeHtml(r.sector)}</strong></td>`
+        + `<td class="${directionClass(r.net_wan)}">${signed(r.net_yi)} 亿</td>`
+        + `<td>${r.count} 只</td><td>${r.in_stocks} 买 / ${r.count - r.in_stocks} 卖</td>`
+        + `<td>${r.top ? `${escapeHtml(r.top.name)} <b class="${directionClass(r.top.net_wan)}">${signed(r.top.net_wan)}万</b>` : "—"}</td></tr>`).join("")
+    : `<tr><td colspan="5" class="empty-row">方向聚合需要个股行业映射（采集时按代码批量取 申万二级 行业）；本次未取到，本表留空。</td></tr>`;
+
+  const note = $("#lhb-note");
+  const base = (dt && dt.note) || "";
+  if (noise && noise.length) {
+    note.textContent = `${base}　噪音区（涨幅 1%~8%、主力资金不足 5 亿、无涨停——纯轮动，不出卡）：`
+      + noise.map(n => `${n.sector} ${n.change_pct >= 0 ? "+" : ""}${n.change_pct}%`).join("、") + "。";
+  } else {
+    note.textContent = base;
+  }
 }
 
 function renderLift(lift) {
@@ -160,22 +182,85 @@ function renderMargin(margin) {
     + `当日融资净买入 ${margin.financing_net_buy === null ? "—" : `${signed(margin.financing_net_buy)} 亿`}。${escapeHtml(margin.note)}</p>`;
 }
 
+function renderRotation(rotation, mainline) {
+  const box = $("#mainline");
+  if (mainline) {
+    box.innerHTML = `<div class="mainline-head"><strong>主线判定：${escapeHtml(mainline.conclusion)}</strong></div>`
+      + `<p class="mainline-reason">${escapeHtml(mainline.reason)}</p>`
+      + `<table class="criteria-table"><tbody>${mainline.criteria.map(c => `<tr><th>${escapeHtml(c.item)}</th><td>${escapeHtml(c.reading)}</td><td class="muted">${escapeHtml(c.meaning)}</td></tr>`).join("")}</tbody></table>`
+      + `<p class="unit-note">${escapeHtml(mainline.method)}</p>`;
+  } else {
+    box.innerHTML = "<p class=\"unit-note\">主线判定需要行业资金流数据，本次未采集成功。</p>";
+  }
+
+  const table = $("#rotation-table");
+  if (!rotation) {
+    table.innerHTML = "";
+    $("#rotation-note").textContent = "轮动兑现需要上一交易日的板块资金快照；本地缓存尚不足两日时本表留空，随每日采集自动累积。";
+    return;
+  }
+  table.innerHTML = rotation.rows.map(row => `<tr><td><strong>${escapeHtml(row.sector)}</strong></td>`
+    + `<td class="${directionClass(row.prev_yi)}">${signed(row.prev_yi)} 亿</td>`
+    + `<td class="${directionClass(row.change_pct)}">${row.change_pct === null ? "—" : signed(row.change_pct, "%")}</td>`
+    + `<td class="${directionClass(row.today_yi)}">${signed(row.today_yi)} 亿</td>`
+    + `<td><span class="payoff ${row.symbol === "✓" ? "ok" : row.symbol === "△" ? "half" : "bad"}">${row.symbol} ${escapeHtml(row.verdict)}</span>`
+    + `<small class="muted"> ${escapeHtml(row.note)}</small></td></tr>`).join("");
+  $("#rotation-note").textContent = `${rotation.prev_date} → ${rotation.today_date}　${rotation.win_note}　（${rotation.method}）`;
+}
+
+function renderForecast(forecast) {
+  const box = $("#forecast");
+  if (!forecast) { box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="forecast-head">趋势倒推（下一交易日）</div>`
+    + `<div class="forecast-list">${forecast.branches.map(b => `<div class="forecast-item"><strong>${escapeHtml(b.name)}</strong><p><em>若</em> ${escapeHtml(b.condition)}</p><p><em>则</em> ${escapeHtml(b.implication)}</p></div>`).join("")}</div>`
+    + `<p class="unit-note"><strong>默认假设：</strong>${escapeHtml(forecast.default)}　（${escapeHtml(forecast.method)}）</p>`;
+}
+
+function renderVerify(verify) {
+  const retro = $("#verify-retro");
+  const back = verify && verify.retro;
+  if (back) {
+    const tally = back.tally || {};
+    retro.hidden = false;
+    retro.innerHTML = `<div class="retro-head"><span class="retro-tag">回溯</span><strong>${escapeHtml(back.date)} 验证清单 · 于 ${escapeHtml(back.evaluated_on)} 打分</strong>`
+      + `<span class="retro-tally">✓ ${tally["✓"] || 0} / △ ${tally["△"] || 0} / ✗ ${tally["✗"] || 0}</span></div>`
+      + `<ul class="retro-list">${back.rows.map(r => `<li><span class="mark ${r.result === "✓" ? "ok" : r.result === "△" ? "half" : "bad"}">${r.result}</span>${escapeHtml(r.statement)}</li>`).join("")}</ul>`;
+  } else {
+    retro.innerHTML = `<div class="retro-head"><span class="retro-tag">回溯</span><strong>本卡为首期或上一期清单尚未到验证日</strong></div>`
+      + `<p class="unit-note">自下一期起，卡头会逐项回溯上一期验证清单（✓ 达成 / △ 部分 / ✗ 未达成）。</p>`;
+  }
+
+  const next = $("#verify-next");
+  const checks = (verify && verify.next_checks) || [];
+  next.innerHTML = checks.length
+    ? `<ol class="verify-ol">${checks.map(c => `<li>${escapeHtml(c.statement)}</li>`).join("")}</ol><p class="unit-note">${escapeHtml((verify && verify.method) || "")}</p>`
+    : "<p class=\"unit-note\">验证清单需要资金流与梯队数据，本次未生成。</p>";
+}
+
 function render(data) {
   const { meta, status, verdicts, market_days: days, breadth, flows, accumulation_pool: pool, events, scenarios, risk_notes: risks,
           index_panel: panel, style, limit_ladder: ladder, margin, global_markets: globals, global_as_of: globalAsOf,
           us_treasury: ust, dragon_tiger: dragon, valuation, lift_unlock: lift } = data;
+  const rotation = data.rotation, mainline = data.mainline, forecast = data.forecast,
+        verify = data.verify, noise = data.noise || [];
   document.title = `A 股每日复盘决策卡 · ${meta.market_date}`;
   $("#data-badge").textContent = `更新 ${meta.updated_at}`;
   $("#demo-warning").innerHTML = meta.demo
     ? "<strong>演示数据，不构成投资建议</strong><span>本页不会联网，所有结论由本地 JSON 和确定性规则生成。</span>"
     : `<strong>真实行情快照，不构成投资建议</strong><span>行情与资金数据来自公开接口（腾讯/中证指数官网/深交所官网/东方财富/新浪，逐项见来源说明），由本地脚本离线采集固化，页面本身不联网、非实时。</span>`;
-  $("#hero-summary").textContent = `${meta.market_date} · ${status.market_tone} · 情绪 ${status.emotion.label}`;
+  const stageLabel = (status.stage && status.stage.stage) || "—";
+  const mainlineLabel = mainline ? mainline.conclusion : "—";
+  $("#hero-summary").textContent = `${meta.market_date} · 情绪周期：${stageLabel} ｜ 市场定性：${status.market_tone} ｜ 主线：${mainlineLabel}`;
   $("#status-panel").innerHTML = [
-    ["市场情绪", status.emotion.label], ["情绪评分", `${status.emotion.score} / 5`],
-    ["上涨占比", `${status.emotion.up_ratio}%`], ["成交额", `${status.turnover.toFixed(2)} 万亿`]
+    ["情绪周期", stageLabel], ["市场定性", status.market_tone],
+    ["主线判定", mainlineLabel], ["成交额", `${status.turnover.toFixed(2)} 万亿`]
   ].map(([label, value]) => `<div class="status-cell"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("");
+  if (status.stage && status.stage.reasons && status.stage.reasons.length) {
+    $("#status-panel").insertAdjacentHTML("beforeend",
+      `<div class="status-wide"><small>阶段依据</small><span>${escapeHtml(status.stage.reasons.join("；"))}</span></div>`);
+  }
 
-  $("#verdicts").innerHTML = verdicts.map((item, index) => `<article class="verdict"><span class="tag">${escapeHtml(item.tag)}</span><h3>${index + 1}. ${escapeHtml(item.title)}</h3><p>${escapeHtml(item.evidence)}</p><p class="action"><strong>执行：</strong>${escapeHtml(item.action)}</p></article>`).join("");
+  $("#verdicts").innerHTML = verdicts.map((item, index) => `<article class="verdict"><span class="tag">${escapeHtml(item.tag)}</span><h3>${index + 1}. ${escapeHtml(item.title)}</h3><p>${escapeHtml(item.evidence)}</p><p class="action"><strong>执行：</strong>${escapeHtml(item.action)}</p>${item.trigger ? `<p class="cond"><strong>触发：</strong>${escapeHtml(item.trigger)}</p><p class="cond"><strong>失效：</strong>${escapeHtml(item.invalid)}</p>` : ""}</article>`).join("");
   $("#market-table").innerHTML = days.map(day => `<tr><td><strong>${escapeHtml(day.date)}</strong></td><td class="${directionClass(day.shanghai)}">${signed(day.shanghai, "%")}</td><td class="${directionClass(day.chinext)}">${signed(day.chinext, "%")}</td><td class="${directionClass(day.star50)}">${signed(day.star50, "%")}</td><td>${day.turnover.toFixed(2)} 万亿</td><td>${day.limit_up} / ${day.limit_down}</td><td>${escapeHtml(day.feature)}</td></tr>`).join("");
   $("#flow-table").innerHTML = flows.map(row => `<tr><td><strong>${escapeHtml(row.sector)}</strong></td><td class="${directionClass(row.today)}">${signed(row.today)}</td><td class="${directionClass(row.day5)}">${signed(row.day5)}</td><td class="${directionClass(row.day10)}">${signed(row.day10)}</td><td><span class="flow-label">${escapeHtml(row.classification)}</span></td></tr>`).join("");
 
@@ -185,8 +270,12 @@ function render(data) {
   renderGlobal(globals || [], globalAsOf, data.global_us_session);
   renderUST(ust);
   renderDragonTiger(dragon);
+  renderDirection(dragon, noise);
   renderLift(lift);
   renderMargin(margin);
+  renderRotation(rotation, mainline);
+  renderForecast(forecast);
+  renderVerify(verify);
 
   const total = breadth.up + breadth.down + breadth.flat;
   $("#breadth").innerHTML = `<div class="breadth-bar" title="上涨 / 平盘 / 下跌"><span class="rise" style="width:${breadth.up / total * 100}%"></span><span class="flat" style="width:${breadth.flat / total * 100}%"></span></div><div class="metric-grid">${[["上涨",breadth.up],["下跌",breadth.down],["涨停",breadth.limit_up],["跌停",breadth.limit_down],["5日新高",breadth.new_high],["5日新低",breadth.new_low]].map(([key,value]) => `<div class="metric"><strong>${value ?? "—"}</strong><small>${key}</small></div>`).join("")}</div>`;

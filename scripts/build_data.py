@@ -6,12 +6,21 @@ No network calls are made. Rules are deterministic and intentionally simple.
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import analysis  # noqa: E402
+
 ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
+CACHE_DIR = ROOT / "data" / "cache"
 OUTPUT = ROOT / "data" / "market-card.json"
+VERIFY_LOG = ROOT / "data" / "verify_log.json"
+SEATS_KNOWN = ROOT / "data" / "seats-known.json"
+LIQUIDITY_WINDOW = 10    # sessions behind the turnover ratio
+VERIFY_MAX_AGE = 5       # only backtrack checklists at most this many sessions old
 FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
 POOL_ROWS = 10        # displayed rows in the accumulation pool
 LADDER_DISPLAY_ROWS = 18   # displayed rows in the limit-up ladder
@@ -37,6 +46,94 @@ def trim_dragon_tiger(view: dict[str, Any] | None) -> dict[str, Any] | None:
         for bucket, rows in (view.get("special") or {}).items()
     }
     return trimmed
+
+
+def load_json(path: Path, default: Any = None) -> Any:
+    """Read a local cache/static file. Missing files degrade to the default."""
+    if not path.exists():
+        return default
+    try:
+        with path.open(encoding="utf-8") as handle:
+            return json.load(handle)
+    except (json.JSONDecodeError, OSError):
+        return default
+
+
+def prev_session_daily(history: dict[str, Any], today: str) -> tuple[str | None, dict[str, float]]:
+    """Collapse sector_flow_history into {sector: net_yuan} for the session before today.
+
+    Board names can repeat across industry levels, so equal names are summed.
+    """
+    if not history:
+        return None, {}
+    dates = sorted({date for item in history.values()
+                    for date in ((item or {}).get("daily") or {})})
+    earlier = [d for d in dates if d < today]
+    if not earlier:
+        return None, {}
+    prev = earlier[-1]
+    merged: dict[str, float] = {}
+    for item in history.values():
+        daily = (item or {}).get("daily") or {}
+        value = daily.get(prev)
+        if value is None:
+            continue
+        name = (item or {}).get("name")
+        if not name:
+            continue
+        merged[name] = merged.get(name, 0.0) + float(value)
+    return prev, merged
+
+
+def liquidity_ratio(stats: dict[str, Any], today: str,
+                    window: int = LIQUIDITY_WINDOW) -> tuple[float | None, int]:
+    """Today's turnover vs the mean of the previous sessions (unit-free ratio)."""
+    series = [(date, float(value["sz_turnover"]))
+              for date, value in sorted((stats or {}).items())
+              if isinstance(value, dict) and value.get("sz_turnover")]
+    if not series:
+        return None, 0
+    today_value = dict(series).get(today)
+    previous = [value for date, value in series if date < today][-window:]
+    if today_value is None or not previous:
+        return None, 0
+    return round(today_value / (sum(previous) / len(previous)), 3), len(previous)
+
+
+def run_verify_cycle(market_date: str, ctx: dict[str, Any],
+                     new_checks: list[dict[str, Any]]) -> dict[str, Any]:
+    """Backtrack yesterday's assertions, then file today's.
+
+    Persisted to data/verify_log.json so repeated builds stay idempotent: a
+    checklist is only evaluated once, against the first session that follows it.
+    """
+    log = load_json(VERIFY_LOG, {}) or {}
+    generated = log.setdefault("generated", {})
+    results = log.setdefault("results", {})
+
+    for date in sorted(generated):
+        if date >= market_date or date in results:
+            continue
+        if len([d for d in generated if date < d <= market_date]) > VERIFY_MAX_AGE:
+            continue  # too old to be meaningful
+        rows, tally = analysis.score_checks(generated[date], ctx)
+        results[date] = {"evaluated_on": market_date, "rows": rows, "tally": tally}
+
+    if market_date not in generated:
+        generated[market_date] = new_checks
+
+    with VERIFY_LOG.open("w", encoding="utf-8", newline="\n") as handle:
+        json.dump(log, handle, ensure_ascii=False, indent=2, sort_keys=True)
+        handle.write("\n")
+
+    retro = None
+    for date in sorted(results, reverse=True):
+        if date < market_date:
+            retro = dict(results[date])
+            retro["date"] = date
+            break
+    return {"retro": retro, "next_checks": new_checks,
+            "method": "断言由当日数据规则生成，次日同一规则自动回溯打分（✓/✗/△）。"}
 
 
 def style_view(panel: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -152,10 +249,52 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
     metrics = ladder.get("metrics") or {}
     panel = source.get("index_panel", [])
     style = style_view(panel)
+
+    # -------------------------------------------------- analysis layer (local)
+    market_date = str(source["meta"].get("market_date") or latest["date"])
+    flow_history = load_json(CACHE_DIR / "sector_flow_history.json", {}) or {}
+    daily_stats = load_json(CACHE_DIR / "daily_stats.json", {}) or {}
+    prev_date, prev_daily = prev_session_daily(flow_history, market_date)
+    rotation = analysis.build_rotation_view(prev_daily, source["flows"], prev_date, market_date)
+    ratio, window = liquidity_ratio(daily_stats, market_date)
+    mainline = analysis.build_mainline_view(source["flows"], rotation,
+                                            ladder.get("ladder") or [], ratio, window)
+    stage = analysis.emotion_stage(metrics)
+    forecast = analysis.trend_forecast(metrics, (ladder.get("ladder") or [None])[0],
+                                       (stage or {}).get("stage"))
+
+    # dragon-tiger: roll stocks up to industries and tag the seats
+    direction: list[dict[str, Any]] = []
+    seat_rows: list[dict[str, Any]] = []
+    known_seats = {k: v for k, v in (load_json(SEATS_KNOWN, {}) or {}).items()
+                   if not k.startswith("_")}
+    dragon = source.get("dragon_tiger") or {}
+    industry_map = dragon.get("industry_map") or {}
+    if dragon.get("stocks") and industry_map:
+        direction = analysis.aggregate_direction(dragon["stocks"], industry_map)
+    for row in dragon.get("top_seats") or []:
+        tagged = dict(row)
+        tagged["seat_tag"] = analysis.seat_tag(row.get("seat") or "", known_seats)
+        seat_rows.append(tagged)
+    noise = analysis.noise_zone(source["flows"])
+
+    # verification checklist: backtrack yesterday, file today
+    new_checks = analysis.build_verify_checks(market_date, source["flows"], ladder,
+                                              latest.get("turnover"), pool)
+    verify_ctx = {
+        "flows": {row["sector"]: row for row in source["flows"]},
+        "rotation": {row["sector"]: row["symbol"] for row in (rotation or {}).get("rows", [])},
+        "turnover": latest.get("turnover"),
+        "zt_codes": set(((daily_stats or {}).get(market_date) or {}).get("zt_codes") or []),
+        "promotion_rate": metrics.get("promotion_rate"),
+    }
+    verify = run_verify_cycle(market_date, verify_ctx, new_checks)
     verdicts = [
         {"tag":"市场定性", "title":f"情绪处于“{mood['label']}”，指数与题材表现分化",
          "evidence":f"上涨占比 {mood['up_ratio']}%，涨停/跌停 {source['breadth']['limit_up']}/{source['breadth']['limit_down']}，成交额环比 {mood['turnover_change']:+.2f} 万亿元。",
-         "action":"以确认信号为先，不把单日涨停数量等同于趋势。"},
+         "action":"以确认信号为先，不把单日涨停数量等同于趋势。",
+         "trigger":"上涨占比回到 60% 以上且成交额环比转正。",
+         "invalid":"涨停家数跌破 40 家或上涨占比跌破 40%。"},
     ]
     if flows:
         strongest = max(flows, key=lambda row: row["day5"])
@@ -163,7 +302,9 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         verdicts.append(
             {"tag":"资金线索", "title":f"{strongest['sector']}的 5 日净流入居样本首位",
              "evidence":f"5 日 {strongest['day5']:+.1f} 亿元，10 日 {strongest['day10']:+.1f} 亿元；分类为{strongest['classification']}。",
-             "action":"进入观察池，需等待量价与板块广度共同确认。"})
+             "action":"进入观察池，需等待量价与板块广度共同确认。",
+             "trigger":f"{strongest['sector']} 放量大涨且板块涨停 ≥3 家，升级为候选主线。",
+             "invalid":f"{strongest['sector']} 5 日净流入转负，移出观察池。"})
         if metrics:
             promote = (f"{metrics['promotion_rate']:.1f}%" if metrics.get("promotion_rate") is not None
                        else "暂无")
@@ -173,11 +314,15 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
                  "evidence":f"涨停 {metrics.get('limit_up')} 家 / 跌停 {metrics.get('limit_down')} 家，"
                             f"炸板 {metrics.get('zha_ban')} 家，2 板及以上 {metrics.get('two_board_plus')} 家，"
                             f"涨停股次日晋级率 {promote}。",
-                 "action":"晋级率与封板率同时走弱时，视为情绪退潮信号，不宜接力高位板。"})
+                 "action":"晋级率与封板率同时走弱时，视为情绪退潮信号，不宜接力高位板。",
+                 "trigger":"最高板继续晋级且晋级率回到 50% 以上。",
+                 "invalid":"最高板断板且晋级率 <40%，按退潮处理。"})
         verdicts.append(
-            {"tag":"风险约束", "title":f"{weakest['sector']}当日资金流出最明显",
-             "evidence":f"当日 {weakest['today']:+.1f} 亿元，5 日 {weakest['day5']:+.1f} 亿元。",
-             "action":"不因单日下跌逆势猜底；5 日资金转正前保持谨慎。"})
+        {"tag":"风险约束", "title":f"{weakest['sector']}当日资金流出最明显",
+         "evidence":f"当日 {weakest['today']:+.1f} 亿元，5 日 {weakest['day5']:+.1f} 亿元。",
+         "action":"不因单日下跌逆势猜底；5 日资金转正前保持谨慎。",
+         "trigger":f"{weakest['sector']} 5 日净流入转正，且当日回流超过当日流出的一半。",
+         "invalid":f"{weakest['sector']} 5 日净流出继续扩大。"})
     else:
         verdicts.append(
             {"tag":"数据缺口", "title":"行业资金流数据本次未采集成功",
@@ -192,16 +337,23 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
     display_ladder = dict(ladder)
     if ladder:
         display_ladder["ladder"] = ladder.get("ladder", [])[:LADDER_DISPLAY_ROWS]
+    dragon_view = trim_dragon_tiger(dragon)
+    if dragon_view:
+        dragon_view["top_seats"] = seat_rows[:LHB_SEAT_DISPLAY]
+        dragon_view["direction"] = direction
     return {"meta":meta, "status":{"emotion":mood, "market_tone":latest["feature"],
-            "turnover":latest["turnover"]}, "verdicts":verdicts, "market_days":days,
+            "turnover":latest["turnover"], "stage":stage}, "verdicts":verdicts,
+            "market_days":days,
             "index_panel":panel, "style":style,
             "breadth":source["breadth"], "flows":display_flows, "accumulation_pool":pool,
             "limit_ladder":display_ladder, "margin":source.get("margin"),
+            "rotation":rotation, "mainline":mainline, "forecast":forecast,
+            "verify":verify, "noise":noise,
             "global_markets":source.get("global_markets", []),
             "global_as_of":source.get("global_as_of"),
             "global_us_session":source.get("global_us_session", "unknown"),
             "us_treasury":source.get("us_treasury"),
-            "dragon_tiger":trim_dragon_tiger(source.get("dragon_tiger")),
+            "dragon_tiger":dragon_view,
             "valuation":source.get("valuation", []),
             "lift_unlock":source.get("lift_unlock"),
             "events":source.get("events", []), "scenarios":source.get("scenarios", []),

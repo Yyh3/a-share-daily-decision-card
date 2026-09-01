@@ -30,10 +30,12 @@ def main() -> None:
         "<script>window.__CARD_DATA__ = "
         f"{json.dumps(payload, ensure_ascii=False)};\n</script>\n"
     )
-    # Inject the inline payload right before the app.js <script> tag.
+    # Inject the inline payload right before the app.js <script> tag. The tag is
+    # re-emitted verbatim (\g<0>) so the cache-busting ?v= in index.html stays
+    # the single source of truth — no second copy to forget updating.
     new_html, n = re.subn(
         r'<script src="app\.js[^>]*></script>',
-        data_script + r'<script src="app.js?v=20260901b" defer></script>',
+        lambda _m: data_script + _m.group(0),
         html, count=1,
     )
     if n != 1:

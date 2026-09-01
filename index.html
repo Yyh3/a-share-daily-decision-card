@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>A 股每日复盘决策卡</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=20260901c">
 </head>
 <body>
   <header class="topbar">
@@ -29,6 +29,7 @@
 
     <aside id="demo-warning" class="demo-warning"><strong>演示数据，不构成投资建议</strong><span>本页不会联网，所有结论由本地 JSON 和确定性规则生成。</span></aside>
     <div id="error" class="error" hidden></div>
+    <div id="verify-retro" class="retro-block"></div>
 
     <section class="core-section">
       <div class="section-heading"><span>00</span><div><p>DECISION</p><h2>今日核心裁决</h2></div></div>
@@ -63,7 +64,17 @@
             <div class="table-wrap"><table><thead><tr><th>个股</th><th>涨幅</th><th>净买(万)</th><th>买入(万)</th><th>卖出(万)</th><th>换手</th><th>上榜原因</th></tr></thead><tbody id="lhb-stock-table"></tbody></table></div>
             <div class="table-wrap"><table><thead><tr><th>席位</th><th>标的</th><th>净额(万)</th><th>买入(万)</th><th>卖出(万)</th><th>3日胜率</th><th>原因</th></tr></thead><tbody id="lhb-seat-table"></tbody></table></div>
             <div id="lhb-special" class="lhb-special-wrap"></div>
+            <div class="table-wrap"><table><thead><tr><th>方向（按个股行业聚合）</th><th>净额</th><th>上榜数</th><th>净买入/卖出</th><th>代表个股</th></tr></thead><tbody id="lhb-direction-table"></tbody></table></div>
             <p id="lhb-note" class="unit-note"></p>
+          </div>
+        </section>
+
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>03C</span><span><small>ROTATION</small><b>轮动兑现与主线判定</b></span></span><span class="chevron">⌃</span></button>
+          <div class="section-body">
+            <div id="mainline" class="mainline-block"></div>
+            <div class="table-wrap"><table><thead><tr><th>昨日领涨方向</th><th>昨日净流入</th><th>今日涨幅</th><th>今日主力</th><th>兑现判定</th></tr></thead><tbody id="rotation-table"></tbody></table></div>
+            <p id="rotation-note" class="unit-note"></p>
           </div>
         </section>
 
@@ -73,6 +84,7 @@
             <div id="ladder-metrics" class="metric-grid"></div>
             <div id="ladder-dist" class="ladder-dist"></div>
             <div class="table-wrap"><table><thead><tr><th>连板</th><th>个股</th><th>行业</th><th>封单力度</th><th>成交额</th><th>换手</th><th>炸板</th><th>形态</th></tr></thead><tbody id="ladder-table"></tbody></table></div>
+            <div id="forecast" class="forecast-block"></div>
             <p id="ladder-notes" class="unit-note"></p>
           </div>
         </section>
@@ -110,6 +122,10 @@
           <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>09</span><span><small>PLAYBOOK</small><b>次日情景预案</b></span></span><span class="chevron">⌃</span></button>
           <div id="scenarios" class="section-body scenario-list"></div>
         </section>
+        <section class="collapsible" data-section>
+          <button class="section-toggle" type="button" aria-expanded="true"><span class="section-heading"><span>09B</span><span><small>VERIFY</small><b>次日验证清单</b></span></span><span class="chevron">⌃</span></button>
+          <div id="verify-next" class="section-body verify-list"></div>
+        </section>
       </aside>
     </div>
 
@@ -122,6 +138,6 @@
     </section>
   </main>
   <footer>本地数据驱动 · 无实时行情连接 · 请独立判断并承担风险</footer>
-  <script src="app.js?v=20260901b" defer></script>
+  <script src="app.js?v=20260901c" defer></script>
 </body>
 </html>

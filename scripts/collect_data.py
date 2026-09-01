@@ -523,6 +523,43 @@ def fetch_lhb_seats(date: str) -> list[dict[str, Any]]:
     return _fetch_lhb_report(LHB_SEAT_REPORT, "NET", date)
 
 
+INDUSTRY_CACHE = CACHE_DIR / "industry.json"
+INDUSTRY_BATCH = 50
+
+
+def fetch_stock_industries(codes: list[str]) -> dict[str, str]:
+    """Map stock codes to their 申万二级 industry via one batched quote call.
+
+    f100 is the industry name and matches the taxonomy used by the sector flow
+    rows, so dragon-tiger names can be rolled up into the same sectors. The
+    mapping is cached forever in data/cache/industry.json because it barely
+    changes; only unknown codes cost a request.
+    """
+    cache: dict[str, str] = {}
+    if INDUSTRY_CACHE.exists():
+        cache = json.loads(INDUSTRY_CACHE.read_text(encoding="utf-8") or "{}")
+    missing = [c for c in dict.fromkeys(codes) if c and c not in cache]
+    for start in range(0, len(missing), INDUSTRY_BATCH):
+        batch = missing[start:start + INDUSTRY_BATCH]
+        secids = ",".join(_secid(code) for code in batch)
+        url = ("https://push2delay.eastmoney.com/api/qt/ulist.np/get?"
+               f"secids={secids}&fields=f12,f14,f100&fltt=2&invt=2")
+        rows = ((get_json(url).get("data") or {}).get("diff") or [])
+        for row in rows:
+            if row.get("f12") and row.get("f100"):
+                cache[row["f12"]] = row["f100"]
+    if missing:
+        INDUSTRY_CACHE.parent.mkdir(parents=True, exist_ok=True)
+        INDUSTRY_CACHE.write_text(json.dumps(cache, ensure_ascii=False, indent=0,
+                                             sort_keys=True), encoding="utf-8")
+    return cache
+
+
+def _secid(code: str) -> str:
+    """Eastmoney secid prefix: 1 = SH, 0 = SZ/BJ."""
+    return ("1." if code.startswith(("6", "9")) else "0.") + code
+
+
 def fetch_all_stocks() -> list[dict[str, Any]]:
     """Sina hs_a list (SH/SZ/BJ): [{code, price, pct, prev_close}] via pagination."""
     count = int(get_json(
@@ -1393,6 +1430,14 @@ def main() -> None:
         lhb_stocks = fetch_lhb_stocks(market_date)
         lhb_seats = fetch_lhb_seats(market_date)
         dragon_tiger = build_dragon_tiger(lhb_stocks, lhb_seats)
+        try:
+            codes = [row["code"] for row in dragon_tiger["stocks"] if row.get("code")]
+            dragon_tiger["industry_map"] = {k: v for k, v in
+                                            fetch_stock_industries(codes).items()
+                                            if k in set(codes)}
+        except Exception as exc:  # soft dependency: direction table degrades
+            dragon_tiger["industry_map"] = {}
+            print(f"[7b] industry lookup failed: {exc}")
         s = dragon_tiger["summary"]
         print(f"[7b] dragon-tiger: {dragon_tiger['stock_count']} stocks / "
               f"{dragon_tiger['seat_count']} seats / {dragon_tiger['broker_count']} brokerages "

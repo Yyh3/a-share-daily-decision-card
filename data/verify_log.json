@@ -1,0 +1,109 @@
+{
+  "generated": {
+    "2026-08-28": [
+      {
+        "id": "2026-08-28-pool-元件/PCB",
+        "params": {
+          "sector": "元件/PCB"
+        },
+        "statement": "元件/PCB 5 日净流入是否仍为正（蓄力池存亡判据）",
+        "type": "sector_day5_positive"
+      },
+      {
+        "id": "2026-08-28-pool-专用设备",
+        "params": {
+          "sector": "专用设备"
+        },
+        "statement": "专用设备 5 日净流入是否仍为正（蓄力池存亡判据）",
+        "type": "sector_day5_positive"
+      },
+      {
+        "id": "2026-08-28-payoff-软件开发",
+        "params": {
+          "sector": "软件开发"
+        },
+        "statement": "今日领涨的软件开发明日是否兑现（✗ 即失败）",
+        "type": "rotation_payoff"
+      },
+      {
+        "id": "2026-08-28-turnover",
+        "params": {
+          "floor": 1.99
+        },
+        "statement": "两市成交能否守住 1.99 万亿（低于则缩量防御）",
+        "type": "turnover_floor"
+      },
+      {
+        "id": "2026-08-28-board-000017",
+        "params": {
+          "board": 7,
+          "code": "000017",
+          "name": "深中华A"
+        },
+        "statement": "深中华A（7板）是否继续涨停",
+        "type": "board_continue"
+      },
+      {
+        "id": "2026-08-28-promo",
+        "params": {
+          "floor": 40
+        },
+        "statement": "涨停晋级率能否守住 40%（低于则退潮预警）",
+        "type": "promotion_floor"
+      }
+    ],
+    "2026-09-01": [
+      {
+        "id": "2026-09-01-pool-计算机",
+        "params": {
+          "sector": "计算机"
+        },
+        "statement": "计算机 5 日净流入是否仍为正（蓄力池存亡判据）",
+        "type": "sector_day5_positive"
+      },
+      {
+        "id": "2026-09-01-pool-非银金融",
+        "params": {
+          "sector": "非银金融"
+        },
+        "statement": "非银金融 5 日净流入是否仍为正（蓄力池存亡判据）",
+        "type": "sector_day5_positive"
+      },
+      {
+        "id": "2026-09-01-payoff-农林牧渔",
+        "params": {
+          "sector": "农林牧渔"
+        },
+        "statement": "今日领涨的农林牧渔明日是否兑现（✗ 即失败）",
+        "type": "rotation_payoff"
+      },
+      {
+        "id": "2026-09-01-turnover",
+        "params": {
+          "floor": 1.04
+        },
+        "statement": "两市成交能否守住 1.04 万亿（低于则缩量防御）",
+        "type": "turnover_floor"
+      },
+      {
+        "id": "2026-09-01-board-002084",
+        "params": {
+          "board": 7,
+          "code": "002084",
+          "name": "海鸥住工"
+        },
+        "statement": "海鸥住工（7板）是否继续涨停",
+        "type": "board_continue"
+      },
+      {
+        "id": "2026-09-01-promo",
+        "params": {
+          "floor": 40
+        },
+        "statement": "涨停晋级率能否守住 40%（低于则退潮预警）",
+        "type": "promotion_floor"
+      }
+    ]
+  },
+  "results": {}
+}

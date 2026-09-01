@@ -341,6 +341,127 @@ check("ust: 2s10s spread = 40bp", ust_view["spread_2s10s_bp"] == 40.0, f"got {us
 check("ust: garbage row skipped",
       len(cd.parse_us_treasury_csv("Date,\"10 Yr\"\n,4.0\nxx/01/2026,1.0\n")) == 0)
 
+# ---------------------------------------------------------------- analysis: rotation
+import analysis as an  # noqa: E402
+
+check("rotation: 价涨资金进 -> 持续", an.rotation_verdict(1.5, 3.0, 8.0)[0] == "\u2713")
+check("rotation: 价涨资金撤 -> 半兑现", an.rotation_verdict(1.2, -4.0, 9.0)[0] == "\u25b3")
+check("rotation: 小跌但多日为正 -> 半兑现", an.rotation_verdict(-0.5, -9.0, 30.0)[0] == "\u25b3")
+check("rotation: 价跌资金撤 -> 失败", an.rotation_verdict(-2.1, -120.0, -149.0)[0] == "\u2717")
+check("rotation: 停滞", an.rotation_verdict(-0.2, 0.0, -5.0)[0] == "\u2717")
+check("rotation: 无当日读数 -> ?", an.rotation_verdict(None, 0.0, 1.0)[0] == "?")
+
+ROT_PREV = {"\u534a\u5bfc\u4f53": 176e8, "\u901a\u4fe1\u8bbe\u5907": 100e8, "\u5143\u4ef6": 80e8,
+            "\u79cd\u690d\u4e1a": 30e8}
+ROT_TODAY = [
+    {"sector": "\u534a\u5bfc\u4f53", "today": -122.6, "day5": -149.5, "day10": -560.7, "change_pct": -2.12, "limit_up": 0},
+    {"sector": "\u901a\u4fe1\u8bbe\u5907", "today": -59.2, "day5": -85.8, "day10": 69.1, "change_pct": -1.56, "limit_up": 0},
+    {"sector": "\u5143\u4ef6", "today": -24.4, "day5": 64.2, "day10": 56.3, "change_pct": -0.78, "limit_up": 0},
+    {"sector": "\u79cd\u690d\u4e1a", "today": 3.0, "day5": 14.6, "day10": 28.9, "change_pct": 2.10, "limit_up": 8},
+]
+rot = an.build_rotation_view(ROT_PREV, ROT_TODAY, "2026-08-27", "2026-08-28")
+check("rotation view: 4 rows", rot is not None and len(rot["rows"]) == 4)
+check("rotation view: \u5143\u4ef6 \u534a\u5151\u73b0", [r for r in rot["rows"] if r["sector"] == "\u5143\u4ef6"][0]["symbol"] == "\u25b3")
+check("rotation view: \u79cd\u690d\u4e1a \u6301\u7eed", [r for r in rot["rows"] if r["sector"] == "\u79cd\u690d\u4e1a"][0]["symbol"] == "\u2713")
+check("rotation view: tally 1/1/2", (rot["sustained"], rot["partial"], rot["failed"]) == (1, 1, 2),
+      f"{rot['sustained']}/{rot['partial']}/{rot['failed']}")
+check("rotation view: \u4e00\u65e5\u6e38\u5e02\u8bba\u8c03", "\u4e00\u65e5\u6e38" in rot["win_note"])
+check("rotation view: \u51c0\u6d41\u5165\u8f6c\u4e3a\u4ebf\u5143", abs(rot["rows"][0]["prev_yi"] - 176.0) < 0.01)
+check("rotation view: \u7a7a\u5386\u53f2 -> None", an.build_rotation_view({}, ROT_TODAY, "2026-08-27", "2026-08-28") is None)
+check("rotation view: top_n \u622a\u65ad", len(an.build_rotation_view(ROT_PREV, ROT_TODAY, "d", "d", top_n=2)["rows"]) == 2)
+
+# ---------------------------------------------------------------- analysis: mainline
+LAD_ROWS = [{"sector": "\u57fa\u7840\u5316\u5de5", "board": 3}, {"sector": "\u57fa\u7840\u5316\u5de5", "board": 2},
+            {"sector": "\u8ba1\u7b97\u673a", "board": 2}, {"sector": "\u519c\u6797\u7267\u6e14", "board": 1}]
+ml = an.build_mainline_view(ROT_TODAY, rot, LAD_ROWS, 0.8, 7)
+check("mainline: 5 criteria", ml is not None and len(ml["criteria"]) == 5)
+check("mainline: \u5224\u636e\u987a\u5e8f", [c["item"] for c in ml["criteria"]]
+      == ["\u677f\u5757\u5bbd\u5ea6", "\u8f6e\u52a8\u80dc\u7387", "\u8d44\u91d1\u96c6\u4e2d\u5ea6", "\u6da8\u505c\u5f52\u7c7b", "\u6d41\u52a8\u6027"])
+check("mainline: \u8d44\u91d1\u64a4\u51fa\u5224\u5b9a", "\u64a4\u51fa" in [c["meaning"] for c in ml["criteria"] if c["item"] == "\u8d44\u91d1\u96c6\u4e2d\u5ea6"][0])
+check("mainline: \u60c5\u7eea\u4e3b\u7ebf\u7ed3\u8bba", "\u60c5\u7eea\u4e3b\u7ebf" in ml["conclusion"], ml["conclusion"])
+check("mainline: \u7a7a flows -> None", an.build_mainline_view([], rot, LAD_ROWS, 0.8, 7) is None)
+
+CONV_LAD = [{"sector": "\u6c34\u6ce5", "board": 2} for _ in range(9)] + [{"sector": "\u94a2\u94c1", "board": 1}]
+ml2 = an.build_mainline_view(ROT_TODAY, {"total": 4, "sustained": 3, "partial": 1, "failed": 0, "rows": []},
+                             CONV_LAD, 1.1, 7)
+check("mainline: \u6536\u655b\u5230\u5355\u4e00\u884c\u4e1a -> \u4e3b\u7ebf\u5019\u9009", "\u4e3b\u7ebf\u5019\u9009" in ml2["conclusion"], ml2["conclusion"])
+
+# ---------------------------------------------------------------- analysis: emotion stage
+check("stage: 7\u677f+\u4f4e\u664b\u7ea7\u7387 -> \u9ad8\u6f6e\u9876\u90e8",
+      "\u9876\u90e8" in an.emotion_stage({"max_board": 7, "promotion_rate": 20.5, "seal_rate": 93.3, "zha_ban": 6})["stage"])
+check("stage: 7\u677f+\u9ad8\u664b\u7ea7\u7387 -> \u9ad8\u6f6e\u533a",
+      an.emotion_stage({"max_board": 7, "promotion_rate": 55.0, "zha_ban": 1})["stage"] == "\u9ad8\u6f6e\u533a")
+check("stage: \u70b8\u677f\u591a -> \u9876\u90e8",
+      "\u9876\u90e8" in an.emotion_stage({"max_board": 7, "promotion_rate": 60.0, "zha_ban": 8})["stage"])
+check("stage: 2\u677f\u4f4e\u8fdb -> \u9000\u6f6e/\u51b0\u70b9",
+      "\u9000\u6f6e" in an.emotion_stage({"max_board": 2, "promotion_rate": 25.0, "two_board_plus": 3})["stage"])
+check("stage: \u7a7a metrics -> None", an.emotion_stage({}) is None)
+check("stage: \u4f9d\u636e\u542b\u5c01\u677f\u7387",
+      any("\u5c01\u677f\u7387" in r for r in an.emotion_stage({"max_board": 5, "seal_rate": 88.0})["reasons"]))
+
+# ---------------------------------------------------------------- analysis: forecast
+fc = an.trend_forecast({"max_board": 7, "promotion_rate": 20.5}, {"stock": "\u6d77\u9e25\u4f4f\u5de5", "board": 7}, "\u9ad8\u6f6e\u533a\u9876\u90e8\uff08\u5206\u6b67\u663e\u73b0\uff09")
+check("forecast: 3 branches", fc is not None and len(fc["branches"]) == 3)
+check("forecast: \u6807\u7684\u80a1\u5165\u6761\u4ef6", "\u6d77\u9e25\u4f4f\u5de5" in fc["branches"][0]["condition"])
+check("forecast: \u9876\u90e8\u9ed8\u8ba4\u9632\u5b88", "\u9000\u6f6e" in fc["default"])
+check("forecast: \u7a7a metrics -> None", an.trend_forecast({}, None, None) is None)
+
+# ---------------------------------------------------------------- analysis: verify
+V_FLOWS = [{"sector": "\u8ba1\u7b97\u673a", "today": -4.6, "day5": 97.8, "day10": -103.5, "change_pct": 1.43, "limit_up": 0},
+           {"sector": "\u519c\u6797\u7267\u6e14", "today": 28.8, "day5": 32.5, "day10": 27.2, "change_pct": 4.04, "limit_up": 4}]
+V_LADDER = {"metrics": {"promotion_rate": 20.5, "max_board": 7},
+            "ladder": [{"code": "002084", "stock": "\u6d77\u9e25\u4f4f\u5de5", "board": 7, "sector": "\u5bb6\u5c45\u7528\u54c1"}]}
+V_POOL = [{"sector": "\u8ba1\u7b97\u673a", "score": 90}, {"sector": "\u975e\u94f6\u91d1\u878d", "score": 60}]
+checks = an.build_verify_checks("2026-09-01", V_FLOWS, V_LADDER, 1.09, V_POOL)
+check("verify: \u751f\u6210 6 \u6761\uff08\u84c4\u529b\u6c60 2 + \u5151\u73b0/\u6210\u4ea4/\u677f\u7ea7/\u664b\u7ea7 \u5404 1\uff09", len(checks) == 6, f"got {len(checks)}")
+check("verify: \u542b\u84c4\u529b\u6c60 / \u5151\u73b0 / \u6210\u4ea4 / \u677f\u7ea7 / \u664b\u7ea7",
+      {c["type"] for c in checks} == {"sector_day5_positive", "rotation_payoff", "turnover_floor",
+                                      "board_continue", "promotion_floor"})
+check("verify: turnover floor = 95%", abs([c for c in checks if c["type"] == "turnover_floor"][0]["params"]["floor"] - 1.04) < 0.01)
+
+V_CTX = {"flows": {r["sector"]: r for r in V_FLOWS}, "rotation": {"\u519c\u6797\u7267\u6e14": "\u2713"},
+         "turnover": 1.20, "zt_codes": {"002084"}, "promotion_rate": 55.0}
+check("verify: day5 \u4ecd\u4e3a\u6b63 -> \u2713", an.evaluate_check(checks[0], V_CTX) == "\u2713")
+check("verify: \u5151\u73b0\u6301\u7eed -> \u2713", an.evaluate_check([c for c in checks if c["type"] == "rotation_payoff"][0], V_CTX) == "\u2713")
+check("verify: \u6210\u4ea4\u5b88\u4f4f -> \u2713", an.evaluate_check([c for c in checks if c["type"] == "turnover_floor"][0], V_CTX) == "\u2713")
+check("verify: \u672a\u65ad\u677f -> \u2713", an.evaluate_check([c for c in checks if c["type"] == "board_continue"][0], V_CTX) == "\u2713")
+check("verify: \u664b\u7ea7\u7387\u56de\u5347 -> \u2713", an.evaluate_check([c for c in checks if c["type"] == "promotion_floor"][0], V_CTX) == "\u2713")
+check("verify: \u65ad\u677f -> \u2717", an.evaluate_check([c for c in checks if c["type"] == "board_continue"][0],
+                                                  dict(V_CTX, zt_codes=set())) == "\u2717")
+check("verify: \u7f29\u91cf -> \u2717", an.evaluate_check([c for c in checks if c["type"] == "turnover_floor"][0],
+                                                  dict(V_CTX, turnover=0.9)) == "\u2717")
+check("verify: \u7f3a\u6570\u636e -> None", an.evaluate_check(checks[0], {}) is None)
+scored, tally = an.score_checks(checks, V_CTX)
+check("verify: tally \u4e94\u4e2d + \u4e00\u4e2a\u7f3a\u6570\u636e\u964d\u7ea7", tally == {"\u2713": 5, "\u2717": 0, "\u25b3": 0, "?": 1}, str(tally))
+check("verify: rows \u5e26 result", all("result" in r for r in scored))
+
+# ---------------------------------------------------------------- analysis: seats + direction
+KNOWN = {"\u673a\u6784\u4e13\u7528": "\u673a\u6784", "\u6c11\u6c11": "\u77e5\u540d\u6e38\u8d44",
+         "\u62c9\u8428": "\u4e1c\u8d22\u62c9\u8428\u7cfb", "\u6caa\u80a1\u901a\u4e13\u7528": "\u5317\u5411"}
+check("seat: \u5168\u7b49\u547d\u4e2d", an.seat_tag("\u673a\u6784\u4e13\u7528", KNOWN) == "\u673a\u6784")
+check("seat: \u5305\u542b\u547d\u4e2d", an.seat_tag("\u4e1c\u65b9\u8d22\u5bcc\u62c9\u8428\u56e2\u7ed3\u8def\u7b2c\u4e8c", KNOWN) == "\u4e1c\u8d22\u62c9\u8428\u7cfb")
+check("seat: \u672a\u77e5 -> None", an.seat_tag("\u67d0\u8425\u4e1a\u90e8", KNOWN) is None)
+check("seat: \u7a7a -> None", an.seat_tag("", KNOWN) is None)
+
+D_STOCKS = [{"code": "1", "name": "A", "net_wan": 60000.0, "pct": 10.0},
+            {"code": "2", "name": "B", "net_wan": -20000.0, "pct": -3.0},
+            {"code": "3", "name": "C", "net_wan": 15000.0, "pct": 5.0}]
+D_MAP = {"1": "\u5143\u4ef6", "2": "\u5143\u4ef6", "3": "\u79cd\u690d\u4e1a"}
+directions = an.aggregate_direction(D_STOCKS, D_MAP)
+check("direction: \u6309\u884c\u4e1a\u805a\u5408", [d["sector"] for d in directions] == ["\u5143\u4ef6", "\u79cd\u690d\u4e1a"], str(directions))
+check("direction: \u51c0\u989d\u6c47\u603b", directions[0]["net_wan"] == 40000.0)
+check("direction: \u4e70\u5356\u5bb6\u6570", (directions[0]["in_stocks"], directions[0]["count"]) == (1, 2))
+check("direction: \u4ee3\u8868\u4e2a\u80a1", directions[0]["top"]["name"] == "A")
+check("direction: \u65e0\u6620\u5c04 -> \u672a\u5206\u7c7b", an.aggregate_direction(D_STOCKS, {})[0]["sector"] == "\u672a\u5206\u7c7b")
+
+NZ = an.noise_zone([{"sector": "a", "change_pct": 2.0, "today": 1.0, "limit_up": 0},
+                    {"sector": "b", "change_pct": 20.0, "today": 1.0, "limit_up": 0},
+                    {"sector": "c", "change_pct": 3.0, "today": 1.0, "limit_up": 5},
+                    {"sector": "d", "change_pct": 3.0, "today": 30.0, "limit_up": 0},
+                    {"sector": "e", "change_pct": 0.4, "today": 1.0, "limit_up": 0}])
+check("noise: \u53ea\u7559\u6da8\u5e45 1-8% \u4e14\u65e0\u6da8\u505c\u4e14\u8d44\u91d1\u5c0f", [n["sector"] for n in NZ] == ["a"], str(NZ))
+
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} test(s) FAILED: {FAILURES}")
