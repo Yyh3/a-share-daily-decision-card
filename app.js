@@ -185,8 +185,21 @@ function renderMargin(margin) {
 function renderRotation(rotation, mainline) {
   const box = $("#mainline");
   if (mainline) {
-    box.innerHTML = `<div class="mainline-head"><strong>主线判定：${escapeHtml(mainline.conclusion)}</strong></div>`
+    const st = mainline.structured || {};
+    const dims = mainline.dimensions || {};
+    const dimChip = (name, value, aligned) => value
+      ? `<span class="dim-chip${aligned ? "" : " dim-split"}">${name}：${escapeHtml(value)}${aligned ? "" : "（另一维度不指向同一方向）"}</span>`
+      : "";
+    const levelLabel = st.level === "产业级" ? "产业级主线" : st.level === "情绪级" ? "情绪级载体" : "无主线";
+    const rewrite = mainline.rewrite || {};
+    box.innerHTML = `<div class="mainline-head"><strong>主线判定：${escapeHtml(mainline.conclusion)}</strong>`
+      + `<span class="mainline-level">${escapeHtml(levelLabel)}${st.criteria_met != null ? ` · 判据 ${st.criteria_met}/5` : ""}</span>`
+      + (mainline.conclusion_origin === "llm" ? `<span class="dim-chip">结论措辞经改写（已核对关键事实）</span>` : "")
+      + (rewrite.applied === false ? `<span class="dim-chip dim-split" title="${escapeHtml(rewrite.why || "")}">外部改写未采用</span>` : "")
+      + `</div>`
+      + `<div class="mainline-dims">${dimChip("资金延续", dims.capital, dims.aligned)}${dimChip("涨停归类", dims.ladder, dims.aligned)}</div>`
       + `<p class="mainline-reason">${escapeHtml(mainline.reason)}</p>`
+      + (st.key_facts && st.key_facts.length ? `<ul class="mainline-facts">${st.key_facts.map(f => `<li>${escapeHtml(f)}</li>`).join("")}</ul>` : "")
       + `<table class="criteria-table"><tbody>${mainline.criteria.map(c => `<tr><th>${escapeHtml(c.item)}</th><td>${escapeHtml(c.reading)}</td><td class="muted">${escapeHtml(c.meaning)}</td></tr>`).join("")}</tbody></table>`
       + `<p class="unit-note">${escapeHtml(mainline.method)}</p>`;
   } else {
@@ -223,8 +236,8 @@ function renderVerify(verify) {
     const tally = back.tally || {};
     retro.hidden = false;
     retro.innerHTML = `<div class="retro-head"><span class="retro-tag">回溯</span><strong>${escapeHtml(back.date)} 验证清单 · 于 ${escapeHtml(back.evaluated_on)} 打分</strong>`
-      + `<span class="retro-tally">✓ ${tally["✓"] || 0} / △ ${tally["△"] || 0} / ✗ ${tally["✗"] || 0}</span></div>`
-      + `<ul class="retro-list">${back.rows.map(r => `<li><span class="mark ${r.result === "✓" ? "ok" : r.result === "△" ? "half" : "bad"}">${r.result}</span>${escapeHtml(r.statement)}</li>`).join("")}</ul>`;
+      + `<span class="retro-tally">✓ ${tally["✓"] || 0} / △ ${tally["△"] || 0} / ✗ ${tally["✗"] || 0}${tally["?"] ? ` / ? ${tally["?"]}` : ""}</span></div>`
+      + `<ul class="retro-list">${back.rows.map(r => `<li><span class="mark ${r.result === "✓" ? "ok" : r.result === "△" ? "half" : "bad"}">${r.result}</span>${escapeHtml(r.statement)}${r.reason_label ? `<em class="retro-why">${escapeHtml(r.reason_label)}</em>` : ""}</li>`).join("")}</ul>`;
   } else {
     retro.innerHTML = `<div class="retro-head"><span class="retro-tag">回溯</span><strong>本卡为首期或上一期清单尚未到验证日</strong></div>`
       + `<p class="unit-note">自下一期起，卡头会逐项回溯上一期验证清单（✓ 达成 / △ 部分 / ✗ 未达成）。</p>`;
@@ -343,8 +356,25 @@ function render(data) {
   const total = breadth.up + breadth.down + breadth.flat;
   $("#breadth").innerHTML = `<div class="breadth-bar" title="上涨 / 平盘 / 下跌"><span class="rise" style="width:${breadth.up / total * 100}%"></span><span class="flat" style="width:${breadth.flat / total * 100}%"></span></div><div class="metric-grid">${[["上涨",breadth.up],["下跌",breadth.down],["涨停",breadth.limit_up],["跌停",breadth.limit_down],["5日新高",breadth.new_high],["5日新低",breadth.new_low]].map(([key,value]) => `<div class="metric"><strong>${value ?? "—"}</strong><small>${key}</small></div>`).join("")}</div>`;
   $("#pool").innerHTML = pool.length ? pool.map((item, index) => `<article class="pool-item"><div class="pool-head"><strong><span class="rank">0${index + 1}</span> ${escapeHtml(item.sector)}</strong><span>${item.score.toFixed(1)} 分</span></div><p>${escapeHtml(item.reason)}</p></article>`).join("") : "<p>当前规则下无候选板块。</p>";
-  $("#events").innerHTML = events.length ? events.map(item => `<article class="event-card"><div class="event-head"><h3>${escapeHtml(item.title)}</h3><span class="level">${escapeHtml(item.level)} · ${escapeHtml(item.direction)}</span></div><p>${escapeHtml(item.summary)}</p><dl><dt>传导</dt><dd>${escapeHtml(item.transmission)}</dd><dt>证据</dt><dd>${escapeHtml(item.evidence)}</dd><dt>风险</dt><dd>${escapeHtml(item.risk)}</dd></dl></article>`).join("") : "<p class=\"unit-note\">当前数据源未接入资讯事件，本栏留空。热点与产业传导需人工或离线分析层补充。</p>";
-  $("#scenarios").innerHTML = scenarios.length ? scenarios.map(item => `<article class="scenario"><div class="scenario-head"><strong>${escapeHtml(item.name)}</strong><span class="probability">${item.probability}%</span></div><div class="prob-bar"><span style="width:${item.probability}%"></span></div><p><strong>触发：</strong>${escapeHtml(item.trigger)}</p><p><strong>动作：</strong>${escapeHtml(item.action)}</p></article>`).join("") : "<p class=\"unit-note\">次日情景预案属于离线分析层，当前数据源未提供，本栏留空。</p>";
+  const eventsMeta = data.events_meta || {};
+  const rejectedCount = (eventsMeta.rejected || []).length;
+  const eventsNote = eventsMeta.method
+    ? `<p class="unit-note">事件卡：规则扫描 ${eventsMeta.scanned ?? 0} 张 + 外部 ${eventsMeta.external ?? 0} 张，通过数值校验展示 ${events.length} 张；被拒 ${rejectedCount} 张均注明原因。（${escapeHtml(eventsMeta.method)}）</p>`
+    : "";
+  $("#events").innerHTML = events.length
+    ? events.map(item => `<article class="event-card"><div class="event-head"><h3>${escapeHtml(item.title)}</h3>`
+        + `<span class="level">${escapeHtml(item.level)} · ${escapeHtml(item.direction)}${item.origin === "llm" ? " · 外部" : ""}</span></div>`
+        + `<p>${escapeHtml(item.summary)}</p>`
+        + (item.anchors && item.anchors.length ? `<p class="event-anchors">${item.anchors.map(a => `<span>${escapeHtml(a.label)} ${escapeHtml(String(a.value))}</span>`).join("")}</p>` : "")
+        + `<dl><dt>传导</dt><dd>${escapeHtml(item.transmission)}</dd><dt>证据</dt><dd>${escapeHtml(item.evidence)}</dd><dt>风险</dt><dd>${escapeHtml(item.risk)}</dd></dl></article>`).join("")
+      + eventsNote
+    : `<p class="unit-note">当日快照未扫出满足阈值的事件（大涨+净流入+涨停共振 / 大额流出 / 席位异动 / 高度-晋级率背离）。</p>` + eventsNote;
+  const scenarioMeta = data.scenario_meta || {};
+  const scenarioNote = scenarioMeta.method ? `<p class="unit-note">概率依据：${scenarioMeta.probability_basis === "observed" ? "历史基频" : "固定先验"}（样本 ${scenarioMeta.sample_days ?? 0} 个交易日）。${escapeHtml(scenarioMeta.method)}</p>` : "";
+  $("#scenarios").innerHTML = scenarios.length
+    ? scenarios.map(item => `<article class="scenario"><div class="scenario-head"><strong>${escapeHtml(item.name)}</strong><span class="probability">${item.probability}%</span></div><div class="prob-bar"><span style="width:${item.probability}%"></span></div><p><strong>触发：</strong>${escapeHtml(item.trigger)}</p><p><strong>动作：</strong>${escapeHtml(item.action)}</p></article>`).join("")
+      + scenarioNote
+    : "<p class=\"unit-note\">次日情景预案需要当日涨停与成交数据，本次未生成。</p>";
   const sourceItems = meta.sources.map(source => `<li><strong>${escapeHtml(source.name)}</strong> · ${escapeHtml(source.as_of)}<br>${escapeHtml(source.note)}</li>`).join("");
   $("#sources").innerHTML = `<div><h3>数据来源</h3><ul>${sourceItems}<li>输入文件：${escapeHtml(meta.input_file)}</li><li>页面更新时间：${escapeHtml(meta.updated_at)}</li></ul></div><div><h3>风险与口径</h3><ul>${risks.map(item => `<li>${escapeHtml(item)}</li>`).join("")}<li>情绪算法：${escapeHtml(status.emotion.method)}</li></ul></div>`;
 }

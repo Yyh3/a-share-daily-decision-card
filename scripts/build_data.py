@@ -22,7 +22,6 @@ SEATS_KNOWN = ROOT / "data" / "seats-known.json"
 CALENDAR_CFG = ROOT / "data" / "macro-calendar.json"
 CALENDAR_DAYS_AHEAD = 14
 LIQUIDITY_WINDOW = 10    # sessions behind the turnover ratio
-VERIFY_MAX_AGE = 5       # only backtrack checklists at most this many sessions old
 FLOW_TABLE_ROWS = 20  # displayed rows in the flow table (sorted by 5d flow)
 POOL_ROWS = 10        # displayed rows in the accumulation pool
 LADDER_DISPLAY_ROWS = 18   # displayed rows in the limit-up ladder
@@ -30,6 +29,10 @@ STYLE_THRESHOLD = 1.0      # pct points before a style edge is called
 LHB_STOCK_DISPLAY = 24     # dragon-tiger stock rows shown
 LHB_SEAT_DISPLAY = 20      # dragon-tiger seat rows shown
 LHB_SPECIAL_DISPLAY = 10   # rows per special-seat bucket shown
+EVENTS_LIMIT = 6           # event cards rendered on the card
+MAINLINE_MIN_FACTS = 2     # rule-derived tokens a rewrite must quote
+
+CONFIG_DIR = ROOT / "data"
 
 
 def trim_dragon_tiger(view: dict[str, Any] | None) -> dict[str, Any] | None:
@@ -59,6 +62,74 @@ def load_json(path: Path, default: Any = None) -> Any:
             return json.load(handle)
     except (json.JSONDecodeError, OSError):
         return default
+
+
+def snapshot_numbers(flows: list[dict[str, Any]], ladder: dict[str, Any],
+                     divergence: list[dict[str, Any]] | None,
+                     dragon: dict[str, Any] | None,
+                     days: list[dict[str, Any]]) -> list[float]:
+    """Every number an event card is allowed to quote.
+
+    Built from the snapshot itself, so an anchor that is not here is a number
+    the day's data cannot vouch for. Derived scales (万元 → 亿元) are included
+    alongside the raw ones because cards quote whichever unit reads better.
+    """
+    values: list[float] = []
+    for row in flows or []:
+        for key in ("change_pct", "today", "day5", "day10", "limit_up"):
+            value = row.get(key)
+            if value is not None:
+                try:
+                    values.append(float(value))
+                except (TypeError, ValueError):
+                    continue
+    for value in (ladder.get("metrics") or {}).values():
+        if value is not None:
+            try:
+                values.append(float(value))
+            except (TypeError, ValueError):
+                continue
+    for item in divergence or []:
+        for key in ("global_pct", "sector_pct", "gap"):
+            value = item.get(key)
+            if value is not None:
+                try:
+                    values.append(float(value))
+                except (TypeError, ValueError):
+                    continue
+    summary = (dragon or {}).get("summary") or {}
+    for key in ("inst_net_wan", "north_net_wan"):
+        value = summary.get(key)
+        if value is None:
+            continue
+        try:
+            wan = float(value)
+        except (TypeError, ValueError):
+            continue
+        values.extend([wan, wan / 10000.0])
+    for row in days or []:
+        for key in ("turnover", "close", "change_pct"):
+            value = row.get(key)
+            if value is not None:
+                try:
+                    values.append(float(value))
+                except (TypeError, ValueError):
+                    continue
+    return values
+
+
+def load_optional_cards(path: Path, key: str = "events") -> list[dict[str, Any]]:
+    """Read an externally authored block (LLM or human) if one exists.
+
+    Accepts either a bare list or {"key": [...]}. Missing or malformed files
+    return an empty list: the rule layer is the baseline, not the fallback.
+    """
+    doc = load_json(path)
+    if isinstance(doc, dict):
+        doc = doc.get(key)
+    if not isinstance(doc, list):
+        return []
+    return [item for item in doc if isinstance(item, dict)]
 
 
 def prev_session_daily(history: dict[str, Any], today: str) -> tuple[str | None, dict[str, float]]:
@@ -103,23 +174,42 @@ def liquidity_ratio(stats: dict[str, Any], today: str,
 
 
 def run_verify_cycle(market_date: str, ctx: dict[str, Any],
-                     new_checks: list[dict[str, Any]]) -> dict[str, Any]:
-    """Backtrack yesterday's assertions, then file today's.
+                     new_checks: list[dict[str, Any]],
+                     prev_trading_day: str | None = None) -> dict[str, Any]:
+    """Backtrack the previous session's assertions, then file today's.
 
-    Persisted to data/verify_log.json so repeated builds stay idempotent: a
-    checklist is only evaluated once, against the first session that follows it.
+    An assertion is about the *next* session, so only a checklist filed on the
+    previous trading day can be scored honestly. Older ones missed their window
+    and are dropped rather than scored against the wrong day. Persisted to
+    data/verify_log.json; re-running collection on the same day re-scores only
+    when the underlying numbers actually changed.
     """
     log = load_json(VERIFY_LOG, {}) or {}
     generated = log.setdefault("generated", {})
     results = log.setdefault("results", {})
+    fingerprint = analysis.ctx_fingerprint(ctx)
 
-    for date in sorted(generated):
-        if date >= market_date or date in results:
-            continue
-        if len([d for d in generated if date < d <= market_date]) > VERIFY_MAX_AGE:
-            continue  # too old to be meaningful
-        rows, tally = analysis.score_checks(generated[date], ctx)
-        results[date] = {"evaluated_on": market_date, "rows": rows, "tally": tally}
+    past = sorted(date for date in generated if date < market_date)
+    for date in past[:-1]:
+        if date not in results:
+            generated.pop(date, None)  # window closed long ago, never scoreable
+
+    target = past[-1] if past else None
+    if target and prev_trading_day and target != prev_trading_day:
+        # A session was skipped; this checklist can no longer be answered.
+        if target not in results:
+            generated.pop(target, None)
+        target = None
+
+    if target:
+        prior = results.get(target)
+        rescore = prior is None or (
+            prior.get("evaluated_on") == market_date
+            and prior.get("fingerprint") != fingerprint)
+        if rescore:
+            rows, tally = analysis.score_checks(generated[target], ctx, fresh=True)
+            results[target] = {"evaluated_on": market_date, "fingerprint": fingerprint,
+                               "rows": rows, "tally": tally}
 
     if market_date not in generated:
         generated[market_date] = new_checks
@@ -135,7 +225,8 @@ def run_verify_cycle(market_date: str, ctx: dict[str, Any],
             retro["date"] = date
             break
     return {"retro": retro, "next_checks": new_checks,
-            "method": "断言由当日数据规则生成，次日同一规则自动回溯打分（✓/✗/△）。"}
+            "method": "断言由当日数据规则生成，仅在紧邻的下一个交易日复盘时打分（✓/✗/△）；"
+                      "判不出结果的一律标注原因，不静默留空。"}
 
 
 def style_view(panel: list[dict[str, Any]]) -> dict[str, Any] | None:
@@ -232,6 +323,9 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         row["classification"] = classify_flow(row)
         flows.append(row)
     flows.sort(key=lambda row: (-row["day5"], row["sector"]))
+    # The feed mixes industry levels, so one direction can occupy several slots
+    # with identical numbers. Collapse before anything consumes the ranking.
+    flows = analysis.dedupe_sectors(flows)
 
     # Candidate pool: positive 5-day flow, subdued daily move, and fewer than
     # three limit-ups. Score provides a deterministic display order.
@@ -257,9 +351,9 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
     flow_history = load_json(CACHE_DIR / "sector_flow_history.json", {}) or {}
     daily_stats = load_json(CACHE_DIR / "daily_stats.json", {}) or {}
     prev_date, prev_daily = prev_session_daily(flow_history, market_date)
-    rotation = analysis.build_rotation_view(prev_daily, source["flows"], prev_date, market_date)
+    rotation = analysis.build_rotation_view(prev_daily, flows, prev_date, market_date)
     ratio, window = liquidity_ratio(daily_stats, market_date)
-    mainline = analysis.build_mainline_view(source["flows"], rotation,
+    mainline = analysis.build_mainline_view(flows, rotation,
                                             ladder.get("ladder") or [], ratio, window)
     stage = analysis.emotion_stage(metrics)
     forecast = analysis.trend_forecast(metrics, (ladder.get("ladder") or [None])[0],
@@ -278,11 +372,11 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         tagged = dict(row)
         tagged["seat_tag"] = analysis.seat_tag(row.get("seat") or "", known_seats)
         seat_rows.append(tagged)
-    noise = analysis.noise_zone(source["flows"])
+    noise = analysis.noise_zone(flows)
 
     # batch-2 analysis blocks: divergence / macro calendar / direction pool
     divergence = analysis.divergence_list(source.get("global_markets") or [],
-                                          source["flows"])
+                                          flows)
     calendar_cfg = load_json(CALENDAR_CFG, {}) or {}
     calendar = analysis.macro_calendar(market_date, days_ahead=CALENDAR_DAYS_AHEAD,
                                        rules=analysis.DEFAULT_MACRO_RULES,
@@ -293,19 +387,59 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
         daily_pct = (entry or {}).get("pct") or {}
         if name and daily_pct:
             pct_history[name] = [daily_pct[d] for d in sorted(daily_pct)]
-    pool_grid = analysis.direction_pool(source["flows"], pool, rotation, pct_history)
+    pool_grid = analysis.direction_pool(flows, pool, rotation, pct_history)
+
+    # batch-3: event cards / next-session scenarios / optional reworded mainline
+    allowed_values = snapshot_numbers(flows, ladder, divergence, dragon, days)
+    candidates = analysis.scan_event_candidates(flows, divergence, dragon, ladder,
+                                                limit=EVENTS_LIMIT)
+    external_events = load_optional_cards(CONFIG_DIR / f"events-{market_date}.json")
+    events, rejected = analysis.validate_events(external_events + candidates,
+                                                allowed_values)
+    events = events[:EVENTS_LIMIT]
+    events_meta = {
+        "scanned": len(candidates), "external": len(external_events),
+        "accepted": len(events), "rejected": rejected,
+        "method": "候选由当日快照规则扫描生成；每张卡必须填满 7 个字段，且引用的每个数字"
+                  "都能在当日快照中找到出处，否则不展示并注明原因。",
+    }
+
+    sample_days = max((len(v) for v in pct_history.values()), default=0)
+    scenarios_doc = analysis.build_scenarios(ladder, latest.get("turnover"), sample_days)
+    scenarios = (scenarios_doc or {}).get("scenarios") or []
+    scenario_meta = None
+    if scenarios_doc:
+        scenario_meta = {k: v for k, v in scenarios_doc.items() if k != "scenarios"}
+
+    rewrite_doc = load_json(CONFIG_DIR / f"mainline-{market_date}.json")
+    rewrite_text = rewrite_doc.get("conclusion") if isinstance(rewrite_doc, dict) else (
+        rewrite_doc if isinstance(rewrite_doc, str) else None)
+    if rewrite_text:
+        before = mainline
+        mainline = analysis.apply_mainline_rewrite(mainline, str(rewrite_text),
+                                                   min_facts=MAINLINE_MIN_FACTS)
+        if mainline is not None and mainline is before:
+            mainline = dict(mainline)
+            mainline["rewrite"] = {
+                "applied": False,
+                "why": f"改写未命中至少 {MAINLINE_MIN_FACTS} 项关键事实，保留规则结论句。",
+            }
+        elif mainline is not None:
+            mainline = dict(mainline)
+            mainline["rewrite"] = {"applied": True, "why": "改写命中关键事实，仅替换措辞。"}
 
     # verification checklist: backtrack yesterday, file today
-    new_checks = analysis.build_verify_checks(market_date, source["flows"], ladder,
+    new_checks = analysis.build_verify_checks(market_date, flows, ladder,
                                               latest.get("turnover"), pool)
     verify_ctx = {
-        "flows": {row["sector"]: row for row in source["flows"]},
+        "flows": {row["sector"]: row for row in flows},
         "rotation": {row["sector"]: row["symbol"] for row in (rotation or {}).get("rows", [])},
         "turnover": latest.get("turnover"),
         "zt_codes": set(((daily_stats or {}).get(market_date) or {}).get("zt_codes") or []),
         "promotion_rate": metrics.get("promotion_rate"),
     }
-    verify = run_verify_cycle(market_date, verify_ctx, new_checks)
+    prev_trading_day = days[-2]["date"] if len(days) > 1 else None
+    verify = run_verify_cycle(market_date, verify_ctx, new_checks, prev_trading_day)
     verdicts = [
         {"tag":"市场定性", "title":f"情绪处于“{mood['label']}”，指数与题材表现分化",
          "evidence":f"上涨占比 {mood['up_ratio']}%，涨停/跌停 {source['breadth']['limit_up']}/{source['breadth']['limit_down']}，成交额环比 {mood['turnover_change']:+.2f} 万亿元。",
@@ -375,7 +509,8 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             "dragon_tiger":dragon_view,
             "valuation":source.get("valuation", []),
             "lift_unlock":source.get("lift_unlock"),
-            "events":source.get("events", []), "scenarios":source.get("scenarios", []),
+            "events":events, "events_meta":events_meta,
+            "scenarios":scenarios, "scenario_meta":scenario_meta,
             "risk_notes":source.get("risk_notes", [])}
 
 

@@ -540,6 +540,224 @@ POS3 = an._sector_position([0.1] * 19)
 check("position: 19 samples -> 积累中", POS3["label"] == "积累中" and POS3["ret20"] is None, str(POS3))
 
 
+# build_data sorts by -day5 before de-duplicating, so the fixture mirrors that:
+# the strongest member of a duplicated group is the one that survives.
+DD = an.dedupe_sectors(sorted([
+    {"sector": "证券Ⅱ", "today": 12.2, "day5": 55.9, "day10": 16.1},
+    {"sector": "证券Ⅲ", "today": 12.2, "day5": 55.9, "day10": 16.1},
+    {"sector": "计算机", "today": -4.6, "day5": 97.8, "day10": -103.5},
+    {"sector": "软件开发", "today": 2.6, "day5": 43.3, "day10": -8.0},
+    {"sector": "消费电子", "today": -28.7, "day5": 29.6, "day10": 5.0},
+    {"sector": "消费电子零部件及组装", "today": -29.3, "day5": 29.6, "day10": 5.0},
+    {"sector": "元件", "today": -70.0, "day5": 53.1, "day10": 1.0},
+    {"sector": "印制电路板", "today": -60.4, "day5": 51.9, "day10": 2.0},
+], key=lambda r: -r["day5"]))
+check("dedupe: 罗马数字层级归并", [r["sector"] for r in DD].count("证券Ⅲ") == 0
+      and "证券Ⅱ" in [r["sector"] for r in DD], str([r["sector"] for r in DD]))
+check("dedupe: 前缀包含且 day5 相同 -> 合并", "消费电子零部件及组装" not in [r["sector"] for r in DD])
+check("dedupe: 父子但数值不同 -> 都保留（保守）",
+      "元件" in [r["sector"] for r in DD] and "印制电路板" in [r["sector"] for r in DD])
+check("dedupe: 无关板块不受影响",
+      "计算机" in [r["sector"] for r in DD] and "软件开发" in [r["sector"] for r in DD])
+check("dedupe: 顺序保持（强者在前）", [r["sector"] for r in DD][0] == "计算机", str([r["sector"] for r in DD]))
+check("dedupe: 数量 8 -> 6", len(DD) == 6, f"got {len(DD)}")
+DD2 = an.dedupe_sectors([
+    {"sector": "银行", "today": 1.0, "day5": 50.0, "day10": 2.0},
+    {"sector": "银行Ⅱ", "today": 1.0, "day5": 50.0, "day10": 2.0},
+])
+check("dedupe: 银行/银行Ⅱ 归并", len(DD2) == 1, str(DD2))
+DD3 = an.dedupe_sectors([
+    {"sector": "有色", "today": 1.0, "day5": 50.0, "day10": 2.0},
+    {"sector": "有色金属材料", "today": 1.0, "day5": 20.0, "day10": 2.0},
+])
+check("dedupe: 前缀但 day5 差 60% -> 不合并", len(DD3) == 2, str(DD3))
+check("dedupe: 空输入", an.dedupe_sectors([]) == [])
+check("dedupe: 空名字跳过", len(an.dedupe_sectors([{"sector": "", "day5": 1.0}])) == 0)
+
+
+# -------------------------------------------------- verify: reasons + timing
+DET = an.evaluate_check_detail
+check("verify reason: 板块不在快照 -> sector_absent",
+      DET({"type": "sector_day5_positive", "params": {"sector": "X"}}, {"flows": {}})
+      == (None, "sector_absent"))
+check("verify reason: 快照缺成交 -> missing_data",
+      DET({"type": "turnover_floor", "params": {"floor": 1.0}}, {}) == (None, "missing_data"))
+check("verify reason: 非目标日 -> stale（不再错配日期）",
+      DET({"type": "turnover_floor", "params": {"floor": 1.0}}, {"turnover": 9.9}, fresh=False)
+      == (None, "stale"))
+check("verify reason: 有结果时 reason 为 None",
+      DET({"type": "turnover_floor", "params": {"floor": 1.0}}, {"turnover": 2.0}) == ("✓", None))
+check("verify reason: 轮动表无该板块 -> sector_absent",
+      DET({"type": "rotation_payoff", "params": {"sector": "Y"}}, {"rotation": {}}) == (None, "sector_absent"))
+SC, TALLY = an.score_checks(
+    [{"type": "sector_day5_positive", "params": {"sector": "X"}, "statement": "s"},
+     {"type": "turnover_floor", "params": {"floor": 1.0}, "statement": "t"}],
+    {"flows": {}, "turnover": 2.0})
+check("score_checks: 未判出的带 reason_label", SC[0]["result"] == "?" and "reason_label" in SC[0], str(SC[0]))
+check("score_checks: 判出的不带 reason", "reason" not in SC[1], str(SC[1]))
+check("score_checks: tally 计入 ?", TALLY["?"] == 1 and TALLY["✓"] == 1, str(TALLY))
+STALE, STALLY = an.score_checks(
+    [{"type": "turnover_floor", "params": {"floor": 1.0}, "statement": "t"}],
+    {"turnover": 2.0}, fresh=False)
+check("score_checks: fresh=False 全部 stale", STALLY == {"✓": 0, "✗": 0, "△": 0, "?": 1}
+      and STALE[0]["reason"] == "stale", str(STALE))
+
+FP_A = an.ctx_fingerprint({"flows": {"A": {"day5": 1.0}}, "turnover": 2.0, "promotion_rate": 20.0})
+FP_B = an.ctx_fingerprint({"flows": {"A": {"day5": -1.0}}, "turnover": 2.0, "promotion_rate": 20.0})
+FP_C = an.ctx_fingerprint({"flows": {"A": {"day5": 1.0}}, "turnover": 2.0, "promotion_rate": 20.0})
+check("fingerprint: 同输入同值", FP_A == FP_C)
+check("fingerprint: 数据变化则变化", FP_A != FP_B)
+
+# run_verify_cycle writes to VERIFY_LOG; redirect it so the real log is untouched.
+import tempfile as _tf, shutil as _sh
+_VC = {"flows": {"A": {"day5": 1.0}}, "rotation": {"A": "✓"}, "turnover": 2.0,
+       "zt_codes": {"000001"}, "promotion_rate": 45.0}
+_VC2 = dict(_VC, flows={"A": {"day5": -1.0}})
+_CHK = [{"id": "d1-A", "type": "sector_day5_positive", "params": {"sector": "A"},
+         "statement": "A 5 日净流入是否仍为正"}]
+_tmpdir = _tf.mkdtemp()
+_orig_log = build_data.VERIFY_LOG
+try:
+    build_data.VERIFY_LOG = Path(_tmpdir) / "verify_log.json"
+    r1 = build_data.run_verify_cycle("2026-09-01", _VC, _CHK, None)
+    check("cycle: 首日只归档不回溯", r1["retro"] is None)
+    r2 = build_data.run_verify_cycle("2026-09-02", _VC, _CHK, "2026-09-01")
+    check("cycle: 紧邻交易日才评分", r2["retro"] is not None
+          and r2["retro"]["rows"][0]["result"] == "✓", str(r2["retro"]))
+    r2b = build_data.run_verify_cycle("2026-09-02", _VC2, _CHK, "2026-09-01")
+    check("cycle: 同日重采且数据变化 -> 重评", r2b["retro"]["rows"][0]["result"] == "✗",
+          str(r2b["retro"]))
+    r2c = build_data.run_verify_cycle("2026-09-02", _VC2, _CHK, "2026-09-01")
+    check("cycle: 同日同数据 -> 幂等不重写",
+          r2c["retro"]["rows"][0]["result"] == "✗")
+    r3 = build_data.run_verify_cycle("2026-09-03", _VC, _CHK, "2026-09-02")
+    check("cycle: 09-02 清单在 09-03 评分", r3["retro"]["date"] == "2026-09-02", str(r3["retro"]))
+    # a skipped session: checklist from 09-01 can no longer be answered on 09-05
+    build_data.VERIFY_LOG = Path(_tmpdir) / "verify_log2.json"
+    build_data.run_verify_cycle("2026-09-01", _VC, _CHK, None)
+    r4 = build_data.run_verify_cycle("2026-09-05", _VC, _CHK, "2026-09-04")
+    check("cycle: 漏跑后目标日不匹配 -> 不评分", r4["retro"] is None, str(r4["retro"]))
+    _log = json.loads((Path(_tmpdir) / "verify_log2.json").read_text(encoding="utf-8"))
+    check("cycle: 过期清单被清理而非留着错配", "2026-09-01" not in _log["generated"],
+          str(list(_log["generated"])))
+finally:
+    build_data.VERIFY_LOG = _orig_log
+    _sh.rmtree(_tmpdir, ignore_errors=True)
+
+
+# ------------------------------------------------------------ event cards
+_E_ROW = {"sector": "种植业", "change_pct": 8.88, "today": 25.0, "day5": 30.0,
+          "day10": 40.0, "limit_up": 8, "classification": "持续流入"}
+_E_FLOW = dict(_E_ROW, sector="沉默板块", change_pct=0.5, today=1.0, limit_up=0)
+E_CAND = an.scan_event_candidates([_E_ROW, _E_FLOW])
+check("event: 放量异动被扫出", any("种植业" in e["title"] and e["direction"] == "利多"
+                                   for e in E_CAND), str([e["title"] for e in E_CAND]))
+check("event: 8 家涨停 -> 级别高",
+      next(e for e in E_CAND if "种植业" in e["title"])["level"] == "高")
+check("event: 温和板块不生成卡", not any("沉默板块" in e["title"] for e in E_CAND))
+E_OUT = an.scan_event_candidates([dict(_E_FLOW, sector="流出板块", today=-60.0)])
+check("event: 大额净流出 -> 利空卡",
+      any(e["direction"] == "利空" and "流出板块" in e["title"] for e in E_OUT))
+E_DRAG = an.scan_event_candidates([], dragon={"summary": {"inst_net_wan": 30000,
+                                                          "north_net_wan": -30000}})
+_by_label = {e["title"][:4]: e for e in E_DRAG}
+check("event: 机构净买 3 亿 -> 利多",
+      _by_label.get("机构专用", {}).get("direction") == "利多", str(_by_label))
+check("event: 北向净卖 -> 利空（净买则利多）",
+      _by_label.get("北向席位", {}).get("direction") == "利空", str(_by_label))
+E_LAD = an.scan_event_candidates([], ladder={"metrics": {"promotion_rate": 20.5,
+                                                         "max_board": 7,
+                                                         "zha_ban": 9, "seal_rate": 60}})
+check("event: 高度与晋级率背离 -> 高级别中性卡",
+      any(e["level"] == "高" and e["direction"] == "中性" for e in E_LAD), str(E_LAD))
+_MANY = [dict(_E_ROW, sector=f"板块{i}") for i in range(10)]
+check("event: 数量上限", len(an.scan_event_candidates(_MANY, limit=6)) == 6)
+_MID = an.scan_event_candidates([dict(_E_ROW, limit_up=2)])
+check("event: 2 家涨停 -> 级别中",
+      next(e for e in _MID if "种植业" in e["title"])["level"] == "中")
+
+# validate: every quoted number must exist in the snapshot
+E_LADDER = {"metrics": {"promotion_rate": 20.5, "max_board": 7}}
+_ALLOWED = build_data.snapshot_numbers([_E_ROW], E_LADDER, None, None, [])
+_GOOD = an.scan_event_candidates([_E_ROW], ladder=E_LADDER)
+ok, rej = an.validate_events(_GOOD, _ALLOWED)
+check("event: 规则卡全部通过校验", len(ok) == len(_GOOD) and not rej, str(rej))
+check("event: anchor 数字都能对上快照", all(
+    any(abs(a["value"] - n) <= max(0.02, abs(n) * 0.02) for n in _ALLOWED)
+    for e in ok for a in e["anchors"]))
+_BAD_FIELD = dict(_GOOD[0]); _BAD_FIELD.pop("risk")
+_, rej1 = an.validate_events([_BAD_FIELD], _ALLOWED)
+check("event: 缺字段 -> 拒绝并注明", rej1 and "缺字段" in rej1[0]["why"], str(rej1))
+_BAD_LEVEL = dict(_GOOD[0], level="特大")
+_, rej2 = an.validate_events([_BAD_LEVEL], _ALLOWED)
+check("event: 非法 level -> 拒绝", rej2 and "level" in rej2[0]["why"], str(rej2))
+_BAD_ANCHOR = dict(_GOOD[0], anchors=[{"label": "幻觉数值", "value": 999.0}])
+_, rej3 = an.validate_events([_BAD_ANCHOR], _ALLOWED)
+check("event: 数字无出处 -> 拒绝", rej3 and "无出处" in rej3[0]["why"], str(rej3))
+_, rej4 = an.validate_events([dict(_GOOD[0], anchors=[])], _ALLOWED)
+check("event: anchors 为空 -> 拒绝（不能蒙混）", rej4 and "anchors" in rej4[0]["why"], str(rej4))
+_OK_EXT, _ = an.validate_events([dict(_GOOD[0], origin="llm")], _ALLOWED)
+check("event: 外部卡带正确出处 -> 接受且 origin 保留",
+      len(_OK_EXT) == 1 and _OK_EXT[0]["origin"] == "llm")
+
+# ------------------------------------------------------------ scenarios
+check("scenario: 无涨停或无成交 -> None",
+      an.build_scenarios({"metrics": {}}, 2.0) is None
+      and an.build_scenarios({"metrics": {"limit_up": 80}}, None) is None)
+S = an.build_scenarios({"metrics": {"limit_up": 83, "promotion_rate": 20.5}}, 2.03, 1)
+_names = [s["name"] for s in S["scenarios"]]
+_up = next(s for s in S["scenarios"] if s["name"] == "加速上行")["trigger"]
+_flat = next(s for s in S["scenarios"] if s["name"] == "震荡分化")["trigger"]
+check("scenario: 三情景齐全", _names == ["加速上行", "震荡分化", "补跌退潮"], str(_names))
+check("scenario: 上行阈值 round5(83*1.2)=100", "100" in _up, _up)
+check("scenario: 震荡区间 round5(83*0.8)=65", "65" in _flat, _flat)
+check("scenario: 成交阈值 1.05x/0.95x", "2.13" in _up and "1.93" in _flat, _up)
+check("scenario: 概率和为 100",
+      sum(s["probability"] for s in S["scenarios"]) == 100)
+check("scenario: 样本不足 -> 先验", S["probability_basis"] == "prior"
+      and S["sample_days"] == 1, str(S["probability_basis"]))
+S60 = an.build_scenarios({"metrics": {"limit_up": 83}}, 2.0, 60)
+check("scenario: 样本足够 -> 观测基频", S60["probability_basis"] == "observed")
+
+# ------------------------------------------------------------ mainline rewrite
+_MV = an.build_mainline_view(
+    [_E_ROW], {"total": 3, "sustained": 1, "partial": 1, "failed": 1,
+               "rows": [{"sector": "种植业", "symbol": "✓"}]},
+    [{"sector": "影视院线", "name": "A 股"}], 1.1, 10)
+check("mainline: 持续=1 时 level=情绪级（与结论句一致）",
+      _MV["structured"]["level"] == "情绪级", str(_MV["structured"]))
+check("mainline: 两维度不一致时 aligned=False",
+      _MV["dimensions"]["aligned"] is False and _MV["dimensions"]["capital"] == "种植业",
+      str(_MV["dimensions"]))
+_TOKENS = _MV["structured"]["key_tokens"]
+check("mainline: key_tokens 非空", len(_TOKENS) >= 2, str(_TOKENS))
+_RW_GOOD = f"种植业是资金主攻方向，净流入 {_E_ROW['today']:+.1f} 亿，涨停 {_E_ROW['limit_up']} 只"
+_RW_OUT = an.apply_mainline_rewrite(_MV, _RW_GOOD)
+check("mainline: 改写命中 >=2 事实 -> 采用",
+      _RW_OUT["conclusion"] == _RW_GOOD and _RW_OUT["conclusion_origin"] == "llm",
+      str(_RW_OUT.get("conclusion")))
+_RW_BAD = an.apply_mainline_rewrite(_MV, "今天大盘很好，建议满仓梭哈")
+check("mainline: 改写无事实 -> 保留规则结论", _RW_BAD is _MV)
+check("mainline: 空改写 -> 原样返回", an.apply_mainline_rewrite(_MV, None) is _MV)
+
+# load_optional_cards: bare list / {"events": [...]} / missing
+_tmp2 = _tf.mkdtemp()
+try:
+    p1 = Path(_tmp2) / "a.json"
+    p1.write_text(json.dumps([{"title": "t"}]), encoding="utf-8")
+    check("optional: 裸列表读出", len(build_data.load_optional_cards(p1)) == 1)
+    p2 = Path(_tmp2) / "b.json"
+    p2.write_text(json.dumps({"events": [{"title": "t"}], "note": "x"}), encoding="utf-8")
+    check("optional: dict.events 读出", len(build_data.load_optional_cards(p2)) == 1)
+    p3 = Path(_tmp2) / "c.json"
+    p3.write_text(json.dumps({"other": []}), encoding="utf-8")
+    check("optional: 键不符 -> 空", build_data.load_optional_cards(p3) == [])
+    check("optional: 文件不存在 -> 空",
+          build_data.load_optional_cards(Path(_tmp2) / "nope.json") == [])
+finally:
+    _sh.rmtree(_tmp2, ignore_errors=True)
+
+
 print()
 if FAILURES:
     print(f"{len(FAILURES)} test(s) FAILED: {FAILURES}")

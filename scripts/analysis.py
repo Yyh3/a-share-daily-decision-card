@@ -184,15 +184,75 @@ def build_mainline_view(today_rows: list[dict[str, Any]], rotation: dict[str, An
                   f"{rotation['sustained']} 个延续，宽度与资金方向一致。")
     elif has_carry or (rotation and rotation.get("sustained", 0) >= 1):
         carried = [r["sector"] for r in (rotation or {}).get("rows", []) if r["symbol"] == "✓"]
-        conclusion = (f"存在情绪主线（{'/'.join(carried[:2]) or '延续方向'}），无产业级主线"
+        capital = carried[0] if carried else None
+        conclusion = (f"存在情绪主线（{capital}），无产业级主线"
                       if carried else "不存在产业级主线")
-        reason = ("有方向能连续两日走强，但涨停分布未收敛到单一行业，属情绪载体而非产业主线。")
+        # The two dimensions often name different sectors: capital persistence
+        # looks at flow, ladder concentration looks at limit-ups. Say so instead
+        # of letting the reader wonder which one is "the" mainline.
+        if carried and top_industry and top_industry != "—" and capital != top_industry:
+            reason = (f"资金延续看 {capital}，涨停最集中于 {top_industry}（{top_count} 只）——"
+                      f"两个维度不指向同一方向，属情绪载体而非产业主线。")
+        else:
+            reason = ("有方向能连续两日走强，但涨停分布未收敛到单一行业，属情绪载体而非产业主线。")
     else:
         conclusion = "不存在产业级主线"
         reason = ("昨日领涨方向几乎全部兑现失败，涨停分布发散，资金处于撤出状态——"
                   "存量资金只能在低位蓄力与情绪载体之间轮动。")
+
+    sustained = (rotation or {}).get("sustained", 0)
+    partial = (rotation or {}).get("partial", 0)
+    failed_n = (rotation or {}).get("failed", 0)
+    carried = [r["sector"] for r in (rotation or {}).get("rows", []) if r["symbol"] == "✓"]
+    key_facts = [
+        f"轮动 {sustained} 持续 / {partial} 半兑现 / {failed_n} 失败",
+        f"最大流入 {in_name} {max_in:+.1f}亿",
+        f"涨停最集中 {top_industry} {top_count} 只（{top_share * 100:.0f}%）",
+        f"上涨行业 {breadth_pct:.0f}%",
+    ]
+    key_tokens = [t for t in (in_name, top_industry, f"{max_in:+.1f}亿",
+                              f"{top_count} 只", f"{breadth_pct:.0f}%")
+                  + tuple(carried[:1]) if t and t != "—"]
+    dissents = [c["meaning"] for c in criteria
+                if any(word in c["meaning"] for word in ("撤出", "未收敛", "发散", "存量"))]
+    # One sustained sector already reads as a 情绪级 carrier; two is needed
+    # before the ladder-convergence branch can call it 产业级. The level must
+    # agree with the conclusion sentence, so both read the same flags.
+    any_carry = bool(rotation and rotation.get("sustained", 0) >= 1)
     return {"conclusion": conclusion, "reason": reason, "criteria": criteria,
-            "method": "5 项判据全部由本地数据与固定阈值计算，结论句由判据组合规则生成。"}
+            "dimensions": {"capital": carried[0] if carried else None,
+                           "ladder": top_industry if top_industry != "—" else None,
+                           "aligned": bool(carried) and carried[0] == top_industry},
+            "structured": {
+                "level": "产业级" if (converged and has_carry) else ("情绪级" if any_carry else "无"),
+                "industrial": bool(converged and has_carry),
+                "criteria_met": sum(1 for c in criteria
+                                    if "未收敛" not in c["meaning"] and "撤出" not in c["meaning"]
+                                    and "发散" not in c["meaning"]),
+                "key_facts": key_facts, "key_tokens": key_tokens, "dissents": dissents,
+            },
+            "method": "5 项判据全部由本地数据与固定阈值计算；结论句由判据组合规则生成，"
+                      "外部改写须命中关键事实后才被采用。"}
+
+
+def apply_mainline_rewrite(view: dict[str, Any] | None, rewrite: str | None,
+                           min_facts: int = 2) -> dict[str, Any] | None:
+    """Swap in a reworded conclusion only when it still carries the facts.
+
+    The judgment itself never comes from the rewrite: it must quote at least
+    ``min_facts`` of the rule-derived tokens, otherwise the template sentence
+    stands. Keeps the wording human without letting wording change the call.
+    """
+    if not view or not rewrite:
+        return view
+    tokens = ((view.get("structured") or {}).get("key_tokens") or [])
+    hits = [t for t in tokens if str(t) in str(rewrite)]
+    if len(hits) < min_facts:
+        return view
+    out = dict(view)
+    out["conclusion"] = str(rewrite).strip()
+    out["conclusion_origin"] = "llm"
+    return out
 
 
 # -------------------------------------------------------------- emotion stage
@@ -323,54 +383,103 @@ def build_verify_checks(date: str, today_rows: list[dict[str, Any]],
     return checks
 
 
-def evaluate_check(check: dict[str, Any], ctx: dict[str, Any]) -> str | None:
+# Why an assertion could not be scored. Carried onto the card so a "?" never
+# reads as a silent failure.
+REASON_LABEL = {
+    "missing_data": "当日快照缺该项数据",
+    "sector_absent": "板块未出现在当日快照（可能改名或退市）",
+    "stale": "已错过目标验证日，判据只在次日有效",
+}
+
+
+def evaluate_check(check: dict[str, Any], ctx: dict[str, Any], fresh: bool = True) -> str | None:
     """Score one assertion against a later session. Returns ✓ / ✗ / △ or None."""
+    return evaluate_check_detail(check, ctx, fresh)[0]
+
+
+def evaluate_check_detail(check: dict[str, Any], ctx: dict[str, Any],
+                          fresh: bool = True) -> tuple[str | None, str | None]:
+    """Score one assertion and explain a non-answer.
+
+    ``fresh`` marks the first session after the checklist was filed. Past that
+    point an assertion about "tomorrow" can no longer be answered honestly, so
+    it is reported as stale instead of being scored against the wrong day.
+    """
+    if not fresh:
+        return None, "stale"
     kind = check.get("type")
     params = check.get("params") or {}
 
     if kind == "sector_day5_positive":
         row = (ctx.get("flows") or {}).get(params.get("sector"))
         if not row:
-            return None
-        return "✓" if float(row.get("day5") or 0) > 0 else "✗"
+            return None, "sector_absent"
+        return ("✓" if float(row.get("day5") or 0) > 0 else "✗"), None
 
     if kind == "rotation_payoff":
         symbol = (ctx.get("rotation") or {}).get(params.get("sector"))
-        return symbol if symbol in ("✓", "△", "✗") else None
+        if symbol in ("✓", "△", "✗"):
+            return symbol, None
+        return None, "sector_absent"
 
     if kind == "turnover_floor":
         turnover = ctx.get("turnover")
         if turnover is None:
-            return None
-        return "✓" if float(turnover) >= float(params.get("floor")) else "✗"
+            return None, "missing_data"
+        return ("✓" if float(turnover) >= float(params.get("floor")) else "✗"), None
 
     if kind == "board_continue":
         codes = ctx.get("zt_codes")
         if codes is None:
-            return None
-        return "✓" if params.get("code") in codes else "✗"
+            return None, "missing_data"
+        return ("✓" if params.get("code") in codes else "✗"), None
 
     if kind == "promotion_floor":
         rate = ctx.get("promotion_rate")
         if rate is None:
-            return None
-        return "✓" if float(rate) >= float(params.get("floor")) else "✗"
+            return None, "missing_data"
+        return ("✓" if float(rate) >= float(params.get("floor")) else "✗"), None
 
-    return None
+    return None, "missing_data"
 
 
-def score_checks(checks: list[dict[str, Any]], ctx: dict[str, Any]) -> tuple[list[dict[str, Any]], dict[str, int]]:
+def score_checks(checks: list[dict[str, Any]], ctx: dict[str, Any],
+                 fresh: bool = True) -> tuple[list[dict[str, Any]], dict[str, int]]:
     """Evaluate a whole checklist; returns annotated rows and the tally."""
     annotated: list[dict[str, Any]] = []
     tally = {"✓": 0, "✗": 0, "△": 0, "?": 0}
     for check in checks:
-        result = evaluate_check(check, ctx)
+        result, reason = evaluate_check_detail(check, ctx, fresh)
         key = result if result in tally else "?"
         tally[key] += 1
         row = dict(check)
         row["result"] = result or "?"
+        if reason:
+            row["reason"] = reason
+            row["reason_label"] = REASON_LABEL.get(reason, reason)
         annotated.append(row)
     return annotated, tally
+
+
+def ctx_fingerprint(ctx: dict[str, Any]) -> str:
+    """Hash of the numbers that backtracking depends on.
+
+    Re-running collection on the same day replaces the snapshot; the stored
+    fingerprint lets the caller re-score instead of keeping a verdict taken
+    from an earlier, thinner pass.
+    """
+    import hashlib
+    import json as _json
+
+    payload = {
+        "flows": {name: _round(float(row.get("day5") or 0), 4)
+                  for name, row in (ctx.get("flows") or {}).items()},
+        "turnover": ctx.get("turnover"),
+        "promotion_rate": ctx.get("promotion_rate"),
+        "zt": sorted(str(c) for c in (ctx.get("zt_codes") or [])),
+    }
+    blob = _json.dumps(payload, sort_keys=True, ensure_ascii=False, default=str)
+    return hashlib.sha1(blob.encode("utf-8")).hexdigest()[:12]
 
 
 # --------------------------------------------------------- dragon-tiger decode
@@ -691,3 +800,305 @@ def direction_pool(today_rows: list[dict[str, Any]], pool: list[dict[str, Any]],
             "action": action, "trigger": trigger, "invalid": invalid,
         })
     return rows
+
+
+
+# ------------------------------------------------------------- sector de-dup
+# The upstream feed mixes level-1/2/3 industries, so one direction can occupy
+# several slots with identical numbers (证券Ⅱ / 证券Ⅲ). Rules stay conservative:
+# a wrong merge hides a real direction, a missed merge only costs a slot.
+ROMAN_SUFFIXES = ("Ⅰ", "Ⅱ", "Ⅲ", "Ⅳ")
+DEDUP_PREFIX_TOL = 0.05  # relative day5 gap below which a prefix pair counts as one
+
+
+def _base_name(name: str) -> str:
+    """Strip the level suffix: 证券Ⅱ -> 证券."""
+    text = str(name or "")
+    for suffix in ROMAN_SUFFIXES:
+        if text.endswith(suffix) and len(text) > len(suffix):
+            return text[: -len(suffix)]
+    return text
+
+
+def dedupe_sectors(rows: list[dict[str, Any]], tol: float = DEDUP_PREFIX_TOL) -> list[dict[str, Any]]:
+    """Collapse duplicated industry levels, preserving the incoming order.
+
+    Three rules, in order: the same base name after stripping the level
+    suffix; an identical (today, day5, day10) fingerprint; a name that is a
+    strict prefix of another with a day5 gap under ``tol``. Callers sort by
+    strength first, so the strongest member of a group survives.
+    """
+    kept: list[dict[str, Any]] = []
+    seen_base: dict[str, str] = {}
+    for row in rows or []:
+        name = str(row.get("sector") or "")
+        if not name:
+            continue
+        base = _base_name(name)
+        today = _round(float(row.get("today") or 0), 4)
+        day5 = float(row.get("day5") or 0)
+        day10 = _round(float(row.get("day10") or 0), 4)
+        dup = False
+        if base in seen_base:
+            dup = True
+        if not dup:
+            for prev in kept:
+                p_today = _round(float(prev.get("today") or 0), 4)
+                p_day5 = float(prev.get("day5") or 0)
+                p_day10 = _round(float(prev.get("day10") or 0), 4)
+                if today == p_today and day5 == p_day5 and day10 == p_day10:
+                    dup = True
+                    break
+                p_name = str(prev.get("sector") or "")
+                if not p_name:
+                    continue
+                short, long_ = (p_name, name) if len(p_name) <= len(name) else (name, p_name)
+                if long_.startswith(short):
+                    denom = max(abs(day5), abs(p_day5)) or 1.0
+                    if abs(day5 - p_day5) / denom < tol:
+                        dup = True
+                        break
+        if dup:
+            continue
+        seen_base[base] = name
+        kept.append(row)
+    return kept
+
+
+
+# ------------------------------------------------------------- event cards
+# Schema first: a card is only renderable when all seven fields are present and
+# every number it quotes can be found in the snapshot. Rules produce candidates;
+# an LLM (or a human) may fill cards, but the validator has the last word.
+EVENT_LEVELS = ("高", "中", "低")
+EVENT_DIRECTIONS = ("利多", "利空", "中性")
+EVENT_FIELDS = ("title", "level", "direction", "summary", "transmission", "evidence", "risk")
+EVENT_MIN_PCT = 3.0        # sector move that reads as a move
+EVENT_MIN_FLOW_YI = 10.0   # main-flow size that makes it material
+EVENT_MIN_LIMITUP = 2      # limit-ups inside one industry
+EVENT_OUTFLOW_YI = -50.0   # main-flow that reads as heavy selling
+EVENT_INST_YI = 2.0        # dragon-tiger institutional net buy, 亿
+EVENT_PROMO_SPLIT = 30.0   # promotion rate under which tall boards look fragile
+EVENT_ANCHOR_TOL = 0.02    # relative/absolute slack when matching anchor numbers
+
+
+def scan_event_candidates(today_rows: list[dict[str, Any]],
+                          divergence: list[dict[str, Any]] | None = None,
+                          dragon: dict[str, Any] | None = None,
+                          ladder: dict[str, Any] | None = None,
+                          limit: int = 6) -> list[dict[str, Any]]:
+    """Event cards derived only from the snapshot: no news feed, no narrative.
+
+    Five sources, each with the numbers that justify it attached as anchors so
+    the validator (and the reader) can check every claim.
+    """
+    events: list[dict[str, Any]] = []
+
+    for row in today_rows or []:
+        sector = row.get("sector")
+        pct = row.get("change_pct")
+        if not sector or pct is None:
+            continue
+        today = float(row.get("today") or 0)
+        day5 = float(row.get("day5") or 0)
+        day10 = float(row.get("day10") or 0)
+        up = int(row.get("limit_up") or 0)
+
+        if pct >= EVENT_MIN_PCT and today >= EVENT_MIN_FLOW_YI and up >= EVENT_MIN_LIMITUP:
+            events.append({
+                "title": f"{sector} 放量异动：{pct:+.2f}% 伴 {up} 家涨停",
+                "level": "高" if up >= 3 else "中",
+                "direction": "利多",
+                "summary": f"{sector} 当日涨 {pct:+.2f}%，主力净流入 {today:+.1f} 亿元，板块内 {up} 家涨停。",
+                "transmission": "资金与涨停共振；次日延续则升级为候选主线，回落则按一日游处理。",
+                "evidence": f"5 日 {day5:+.1f} 亿、10 日 {day10:+.1f} 亿，分类为 {row.get('classification') or '—'}。",
+                "risk": "单日放量无法区分主升与情绪冲高，需次日兑现验证。",
+                "origin": "rule",
+                "anchors": [{"label": "当日涨幅", "value": _round(float(pct), 2)},
+                            {"label": "主力净流入(亿)", "value": _round(today, 1)},
+                            {"label": "板块涨停", "value": up}],
+            })
+        if today <= EVENT_OUTFLOW_YI:
+            events.append({
+                "title": f"{sector} 遭大额抛压：主力净流出 {abs(today):.1f} 亿元",
+                "level": "中",
+                "direction": "利空",
+                "summary": f"{sector} 当日主力净流出 {today:.1f} 亿元，当日涨跌 {pct:+.2f}%。",
+                "transmission": "大额流出先压缩板块内跟风资金的容错，反弹多按兑现处理。",
+                "evidence": f"5 日 {day5:+.1f} 亿、10 日 {day10:+.1f} 亿，分类为 {row.get('classification') or '—'}。",
+                "risk": "资金流出与股价涨跌可能背离，需结合涨停与量能一并看。",
+                "origin": "rule",
+                "anchors": [{"label": "主力净流出(亿)", "value": _round(today, 1)},
+                            {"label": "当日涨幅", "value": _round(float(pct), 2)}],
+            })
+
+    for item in divergence or []:
+        events.append({
+            "title": f"{item['theme']} 跨市场背离：{item['global_name']} {item['global_pct']:+.2f}% "
+                     f"vs A 股{item['sector']} {item['sector_pct']:+.2f}%",
+            "level": "中",
+            "direction": "中性",
+            "summary": f"同日两腿走势相反，差值 {item['gap']:+.2f}pct。",
+            "transmission": "背离通常先由 A 股补跌或补涨来收敛；外盘腿领先时可作次日开盘的观察点。",
+            "evidence": f"{item['global_name']} {item['global_pct']:+.2f}%，{item['sector']} {item['sector_pct']:+.2f}%。",
+            "risk": "美股腿是北京时间次日凌晨收盘，与 A 股存在时差，不能当作同刻信号。",
+            "origin": "rule",
+            "anchors": [{"label": "外盘涨跌", "value": _round(float(item["global_pct"]), 2)},
+                        {"label": "A股板块涨跌", "value": _round(float(item["sector_pct"]), 2)}],
+        })
+
+    summary = (dragon or {}).get("summary") or {}
+    # Both seat buckets read the same way: net buying is 利多, net selling 利空.
+    for label, key in (("机构专用", "inst_net_wan"), ("北向席位", "north_net_wan")):
+        value = summary.get(key)
+        if value is None:
+            continue
+        yi = float(value) / 10000.0
+        if abs(yi) < EVENT_INST_YI:
+            continue
+        buying = yi > 0
+        events.append({
+            "title": f"{label}当日净{'买入' if buying else '卖出'} {abs(yi):.2f} 亿元",
+            "level": "中",
+            "direction": "利多" if buying else "利空",
+            "summary": f"龙虎榜 {label} 合计净{'买入' if buying else '卖出'} {abs(yi):.2f} 亿元。",
+            "transmission": "席位方向只说明当日主力态度，隔日溢价需结合个股位置判断。",
+            "evidence": f"取自当日龙虎榜披露（软依赖，交易所 18:00 后陆续发布）。",
+            "risk": "龙虎榜为抽样披露，仅覆盖上榜个股，不代表全市场资金。",
+            "origin": "rule",
+            "anchors": [{"label": f"{label}净额(亿)", "value": _round(yi, 2)}],
+        })
+
+    metrics = (ladder or {}).get("metrics") or {}
+    rate = metrics.get("promotion_rate")
+    board = int(metrics.get("max_board") or 0)
+    if rate is not None and rate < EVENT_PROMO_SPLIT and board >= 5:
+        events.append({
+            "title": f"高位股分歧：{board} 板高度 vs 晋级率 {rate}%",
+            "level": "高",
+            "direction": "中性",
+            "summary": f"最高连板 {board} 板仍在，但晋级率只有 {rate}%，高度与质量背离。",
+            "transmission": "晋级率走低通常先于高度塌陷，是退潮的前端信号而非末端。",
+            "evidence": f"炸板 {metrics.get('zha_ban')} 家、封板率 {metrics.get('seal_rate')}%。",
+            "risk": "单日晋级率受基期涨停家数影响，需连续观察。",
+            "origin": "rule",
+            "anchors": [{"label": "晋级率", "value": _round(float(rate), 1)},
+                        {"label": "最高连板", "value": board}],
+        })
+
+    rank = {"高": 0, "中": 1, "低": 2}
+    events.sort(key=lambda e: (rank.get(e.get("level"), 3), e.get("title", "")))
+    return events[:limit]
+
+
+def validate_events(events: list[dict[str, Any]], allowed_values,
+                    tol: float = EVENT_ANCHOR_TOL) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Keep only cards the snapshot can vouch for.
+
+    Every anchor value must match a number present in ``allowed_values`` within
+    ``tol``. Rejected cards come back with a reason so the caller can explain
+    why a slot stayed empty instead of silently dropping them.
+    """
+    numbers: list[float] = []
+    for value in allowed_values or []:
+        try:
+            numbers.append(float(value))
+        except (TypeError, ValueError):
+            continue
+
+    accepted: list[dict[str, Any]] = []
+    rejected: list[dict[str, str]] = []
+    for item in events or []:
+        title = str(item.get("title") or "(无标题)")
+        missing = [f for f in EVENT_FIELDS if not str(item.get(f) or "").strip()]
+        if missing:
+            rejected.append({"title": title, "why": f"缺字段：{'、'.join(missing)}"})
+            continue
+        if item.get("level") not in EVENT_LEVELS:
+            rejected.append({"title": title, "why": f"level 取值须为 {'/'.join(EVENT_LEVELS)}"})
+            continue
+        if item.get("direction") not in EVENT_DIRECTIONS:
+            rejected.append({"title": title, "why": f"direction 取值须为 {'/'.join(EVENT_DIRECTIONS)}"})
+            continue
+        if not item.get("anchors"):
+            # A card with no quoted numbers cannot be checked, so it cannot be
+            # shown: an empty anchor list would otherwise sail through.
+            rejected.append({"title": title, "why": "未附数值出处（anchors 为空），无法核对"})
+            continue
+        unverified = []
+        for anchor in item.get("anchors") or []:
+            label = str(anchor.get("label") or "?")
+            try:
+                value = float(anchor.get("value"))
+            except (TypeError, ValueError):
+                unverified.append(label)
+                continue
+            if not any(abs(value - n) <= max(tol, abs(n) * tol) for n in numbers):
+                unverified.append(f"{label}={value}")
+        if unverified:
+            rejected.append({"title": title, "why": f"数值在当日快照中无出处：{'、'.join(unverified)}"})
+            continue
+        accepted.append(item)
+    return accepted, rejected
+
+
+
+# ------------------------------------------------------------ scenario plan
+# Probabilities stay on a fixed prior until history can replace them. The basis
+# travels with the number so a prior is never mistaken for an observed rate.
+SCENARIO_PRIOR = {"加速上行": 25, "震荡分化": 50, "补跌退潮": 25}
+SCENARIO_ACTION = {
+    "加速上行": "持仓为主，回踩不破短线支撑可加；只做主线，不碰补涨。",
+    "震荡分化": "降换手，只在主线内做 T；不打板、不追高位断层。",
+    "补跌退潮": "先降仓，高位股与断层股优先减；等新方向被资金确认再进。",
+}
+SCENARIO_MIN_SAMPLES = 60   # sessions of history before priors give way to base rates
+
+
+def _round5(value: float) -> int:
+    """Round a limit-up count to the nearest 5 so triggers read cleanly."""
+    return max(5, int(round(value / 5.0)) * 5)
+
+
+def build_scenarios(ladder: dict[str, Any] | None, turnover: float | None,
+                    sample_days: int = 0) -> dict[str, Any] | None:
+    """Three next-session scenarios with falsifiable triggers.
+
+    Triggers are built from today's own numbers, so tomorrow's card can check
+    them without interpretation. Probabilities are a prior until enough
+    sessions accumulate; the basis is always reported.
+    """
+    metrics = (ladder or {}).get("metrics") or {}
+    zt = int(metrics.get("limit_up") or 0)
+    if zt <= 0 or not turnover:
+        return None
+    rate = metrics.get("promotion_rate")
+    turnover = float(turnover)
+
+    up_floor = _round5(zt * 1.2)
+    flat_low = _round5(zt * 0.8)
+    down_ceil = _round5(zt * 0.7)
+    money_floor = round(turnover * 0.95, 2)
+    money_up = round(turnover * 1.05, 2)
+
+    scenarios = [
+        {"name": "加速上行", "probability": SCENARIO_PRIOR["加速上行"],
+         "trigger": f"涨停 ≥ {up_floor} 家、晋级率 ≥ 40%、成交 ≥ {money_up:.2f} 万亿（三条同时成立）",
+         "action": SCENARIO_ACTION["加速上行"]},
+        {"name": "震荡分化", "probability": SCENARIO_PRIOR["震荡分化"],
+         "trigger": f"涨停落在 {flat_low}~{up_floor} 家区间、成交不低于 {money_floor:.2f} 万亿",
+         "action": SCENARIO_ACTION["震荡分化"]},
+        {"name": "补跌退潮", "probability": SCENARIO_PRIOR["补跌退潮"],
+         "trigger": (f"涨停 ≤ {down_ceil} 家，或晋级率 < 20%，或成交跌破 {money_floor:.2f} 万亿"
+                     + (f"（今日晋级率 {rate}%）" if rate is not None else "")),
+         "action": SCENARIO_ACTION["补跌退潮"]},
+    ]
+    observed = sample_days >= SCENARIO_MIN_SAMPLES
+    return {"scenarios": scenarios,
+            "probability_basis": "observed" if observed else "prior",
+            "sample_days": sample_days,
+            "method": ("触发阈值由当日数值按固定系数推导，次日可直接核对；"
+                       + ("概率取自历史基频。" if observed
+                          else f"概率为固定先验（{SCENARIO_PRIOR['加速上行']}/"
+                               f"{SCENARIO_PRIOR['震荡分化']}/{SCENARIO_PRIOR['补跌退潮']}），"
+                               f"积累 {SCENARIO_MIN_SAMPLES} 个交易日后切换为历史统计。"))}
