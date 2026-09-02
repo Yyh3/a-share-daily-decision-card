@@ -52,9 +52,9 @@
         "type": "promotion_floor"
       }
     ],
-    "2026-09-01": [
+    "2026-09-02": [
       {
-        "id": "2026-09-01-pool-计算机",
+        "id": "2026-09-02-pool-计算机",
         "params": {
           "sector": "计算机"
         },
@@ -62,43 +62,44 @@
         "type": "sector_day5_positive"
       },
       {
-        "id": "2026-09-01-pool-非银金融",
+        "id": "2026-09-02-pool-国防军工",
         "params": {
-          "sector": "非银金融"
+          "sector": "国防军工"
         },
-        "statement": "非银金融 5 日净流入是否仍为正（蓄力池存亡判据）",
+        "statement": "国防军工 5 日净流入是否仍为正（蓄力池存亡判据）",
         "type": "sector_day5_positive"
       },
       {
-        "id": "2026-09-01-payoff-农林牧渔",
+        "id": "2026-09-02-payoff-国防军工",
         "params": {
-          "sector": "农林牧渔"
+          "sector": "国防军工"
         },
-        "statement": "今日领涨的农林牧渔明日是否兑现（✗ 即失败）",
+        "statement": "今日领涨的国防军工明日是否兑现（✗ 即失败）",
         "type": "rotation_payoff"
       },
       {
-        "id": "2026-09-01-turnover",
+        "id": "2026-09-02-turnover",
         "params": {
-          "floor": 1.04
+          "floor": 0.91
         },
-        "statement": "两市成交能否守住 1.04 万亿（低于则缩量防御）",
+        "statement": "两市成交能否守住 0.91 万亿（低于则缩量防御）",
         "type": "turnover_floor"
       },
       {
-        "id": "2026-09-01-board-002084",
+        "id": "2026-09-02-board-003005",
         "params": {
-          "board": 7,
-          "code": "002084",
-          "name": "海鸥住工"
+          "board": 4,
+          "code": "003005",
+          "name": "竞业达"
         },
-        "statement": "海鸥住工（7板）是否继续涨停",
+        "statement": "竞业达（4板）是否继续涨停",
         "type": "board_continue"
       },
       {
-        "id": "2026-09-01-promo",
+        "id": "2026-09-02-promo",
         "params": {
-          "floor": 40
+          "floor": 40.0,
+          "floor_mode": "default"
         },
         "statement": "涨停晋级率能否守住 40%（低于则退潮预警）",
         "type": "promotion_floor"

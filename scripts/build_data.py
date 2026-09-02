@@ -428,9 +428,19 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             mainline = dict(mainline)
             mainline["rewrite"] = {"applied": True, "why": "改写命中关键事实，仅替换措辞。"}
 
-    # verification checklist: backtrack yesterday, file today
+    # verification checklist: backtrack yesterday, file today.
+    # promotion-rate history (prior sessions, oldest first) calibrates the
+    # promo floor from a fixed 40% to the recent median once >=20 samples.
+    promo_history = []
+    for doc in documents:
+        if doc is source:
+            continue
+        rate = ((doc.get("limit_ladder") or {}).get("metrics") or {}).get("promotion_rate")
+        if doc.get("meta", {}).get("market_date", "") < market_date and rate is not None:
+            promo_history.append(float(rate))
     new_checks = analysis.build_verify_checks(market_date, flows, ladder,
-                                              latest.get("turnover"), pool)
+                                              latest.get("turnover"), pool,
+                                              promo_history=promo_history)
     verify_ctx = {
         "flows": {row["sector"]: row for row in flows},
         "rotation": {row["sector"]: row["symbol"] for row in (rotation or {}).get("rows", [])},
@@ -509,6 +519,7 @@ def build(documents: list[dict[str, Any]]) -> dict[str, Any]:
             "dragon_tiger":dragon_view,
             "valuation":source.get("valuation", []),
             "lift_unlock":source.get("lift_unlock"),
+            "etf_shares":source.get("etf_shares"),
             "events":events, "events_meta":events_meta,
             "scenarios":scenarios, "scenario_meta":scenario_meta,
             "risk_notes":source.get("risk_notes", [])}

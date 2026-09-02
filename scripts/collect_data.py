@@ -1104,6 +1104,46 @@ def build_lift_view(rows: list[dict[str, Any]], start_date: str,
     }
 
 
+# ---------------------------------------------------------------- ETF shares
+ETF_SHARES_CACHE = CACHE_DIR / "etf_shares.json"
+
+
+def fetch_etf_shares() -> dict[str, dict[str, Any]]:
+    """All listed ETFs' total shares from the datacenter report (paged).
+
+    Returns {etf_code: {"name", "index_code", "shares"(份)}}. ~4 requests on
+    datacenter-web (outside the push2 throttle).
+    """
+    rows: list[dict[str, Any]] = []
+    page = 1
+    while page <= 10:  # hard cap: 10 pages x 500 = 5000 ETFs
+        url = ("https://datacenter-web.eastmoney.com/api/data/v1/get?"
+               "reportName=RPT_FUND_ETFLIST&columns=SECUCODE,SECURITY_CODE,"
+               "SECURITY_NAME_ABBR,INDEX_CODE,INDEX_NAME,DEC_TOTALSHARE"
+               f"&pageSize=500&pageNumber={page}&sortColumns=SECURITY_CODE&sortTypes=1")
+        data = get_json(url).get("result") or {}
+        batch = data.get("data") or []
+        rows.extend(batch)
+        count = int(data.get("count") or 0)
+        if not batch or len(rows) >= count:
+            break
+        page += 1
+        time.sleep(0.2)
+    out: dict[str, dict[str, Any]] = {}
+    for r in rows:
+        shares = r.get("DEC_TOTALSHARE")
+        if not shares or float(shares) <= 0:
+            continue
+        out[str(r.get("SECURITY_CODE"))] = {
+            "name": r.get("SECURITY_NAME_ABBR") or "",
+            "index_code": str(r.get("INDEX_CODE") or ""),
+            "shares": float(shares),
+        }
+    if len(out) < 500:
+        raise RuntimeError(f"etf share list too small: {len(out)}")
+    return out
+
+
 def global_session_state(market_date: str, now: datetime | None = None) -> str:
     """Has the US session for market_date closed yet (local clock is Beijing)?
 
@@ -1560,6 +1600,34 @@ def main() -> None:
         print(f"[7e] unlocks unavailable ({type(exc).__name__}) -> block degraded")
         notes.append("解禁排雷本次未采集成功（东财数据中心接口异常），该栏留空，下次运行时自动补齐。")
 
+    # 7f. Broad-based ETF share creation/redemption - soft dependency
+    etf_shares: dict[str, Any] | None = None
+    try:
+        today_etf = fetch_etf_shares()
+        etf_cache: dict[str, dict[str, dict[str, Any]]] = load_cache(ETF_SHARES_CACHE)
+        prev_etf = etf_cache.get(prev_date) if prev_date else None
+        # keep only sessions in the index window; today's snapshot overwrites
+        etf_cache[market_date] = today_etf
+        for d in list(etf_cache):
+            if d not in dates_all:
+                del etf_cache[d]
+        save_cache(ETF_SHARES_CACHE, etf_cache)
+        etf_shares = analysis.build_etf_view(today_etf, prev_etf)
+        if etf_shares.get("bootstrap"):
+            print(f"[7f] etf shares: {len(today_etf)} funds cached (first run, deltas from next session)")
+        else:
+            print(f"[7f] etf shares: {len(today_etf)} funds, broad total "
+                  f"{etf_shares.get('summary') or 'no broad rows'}")
+        sources.append({
+            "name": "东方财富数据中心 ETF 基金列表（RPT_FUND_ETFLIST）",
+            "as_of": f"{market_date}（份额披露可能滞后一日）",
+            "note": "宽基指数 ETF 总份额按日差分（净增=申购、净减=赎回），历史值由本地缓存提供；"
+                    "仅统计跟踪沪深300/中证500/1000/上证50/创业板指/科创50/中证红利/A500 的 ETF。",
+        })
+    except Exception as exc:  # noqa: BLE001
+        print(f"[7f] etf shares unavailable ({type(exc).__name__}) -> block degraded")
+        notes.append("宽基 ETF 份额申赎本次未采集成功（东财数据中心接口异常），该栏留空，下次运行时自动补齐。")
+
     if bootstrap_note:
         notes.append(bootstrap_note)
     if flow_status != "ok":
@@ -1595,6 +1663,7 @@ def main() -> None:
         "dragon_tiger": dragon_tiger,
         "valuation": valuation,
         "lift_unlock": lift_unlock,
+        "etf_shares": etf_shares,
         "events": [],
         "scenarios": [],
         "risk_notes": notes,

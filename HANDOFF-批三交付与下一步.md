@@ -1,24 +1,57 @@
 # HANDOFF — 批三交付与下一步
 
-> 创建时间：2026-09-02 17:30（UTC+8）
+> 更新时间：2026-09-02 18:20（UTC+8）
 > 前置文档：`HANDOFF-完全体差距分析.md`（15 项差距清单）→ `HANDOFF-分析层补齐方案.md`（9 项实测）→ 本文档
-> 当前状态：**三批分析层全部落地**，最新 commit `b84776c`，测试 261 项全绿，已推送 GitHub main
+> 当前状态：**P1/P2/P3 全部完成**，测试 **282 项全绿**，09-02 真实数据全链路已跑通；P4 为积累类无需开发
 > 本地路径：`C:\Users\xxw98\cola\coding-cola\project-20260830-233000-dcf14a8f`（仓库 `Yyh3/a-share-daily-decision-card`，私有）
+
+---
+
+## 0. 2026-09-02 傍晚更新：P1-P3 交付记录
+
+### P1 — promotion_floor 历史分位校准 ✅
+
+- 新增纯函数 `analysis.promotion_history_floor(rates)`：≥20 个历史晋级率样本时取**中位数**作为 floor（模式 `history`），否则维持固定 40%（模式 `default`）；None 样本剔除，偶数样本取中间两值均值。
+- `build_verify_checks` 新增 `promo_history` 参数：生成侧 statement 切换为「晋级率能否站上近 20 日中枢 X%」，`params` 带 `floor_mode` 标记；评分侧 `evaluate_check_detail` 无需改动（已参数化，自动用新 floor）。
+- `build_data.py` 从 `data/raw/eod-*.json` 历史（`limit_ladder.metrics.promotion_rate`）收集序列传入，仅取 market_date 之前的样本。
+- **勘误**：原文档说"data/cache 已逐日累积 promotion_rate 序列"不准确——daily_stats.json 只存 zt/dt/zt_codes，晋级率历史实际在 raw 快照里，本次实现直接读 raw。当前仅 2 个历史样本（08-31: 22.0, 09-01: 20.5），floor 显示 default 模式，约 20 个交易日后自动切 history。
+- 单测 11 项（偶数中位数、None 剔除、两种模式的 statement/评分接线）。
+
+### P2 — ETF 份额公示源 ✅（探测成功并落地）
+
+- **数据源实测结论**：东财 datacenter-web 报表 **`RPT_FUND_ETFLIST`** 可用（该域名不在 push2 限流内），字段 `DEC_TOTALSHARE`（总份额，份）+ `INDEX_CODE`（跟踪指数）+ `SECURITY_NAME_ABBR`，全市场 1650 只 ETF 约 4 次分页请求（500/页）。
+- 新增纯函数 `analysis.build_etf_view(today, prev)`：按 8 个宽基指数（沪深300/中证500/1000/上证50/创业板指/科创50/中证红利/A500）聚合 ETF 总份额日差分（净增=申购、净减=赎回），附单基金变动 top8（|Δ|<500 万份视为披露噪声剔除）；首次运行返回 bootstrap 视图。
+- `collect_data.py` 新增 `fetch_etf_shares()` + 缓存 `data/cache/etf_shares.json`（按交易日存全量份额快照，随 dates_all 窗口修剪）+ 主流程 7f 块（软依赖）；`build_data.py` 透传 `etf_shares`；前端 `app.js renderEtf` 渲染在市场广度章节两融下方（`index.html` 新增 `#etf-shares` 容器，`?v=` 升至 **20260902c**）。
+- **首次运行已入库**：09-02 采集 1650 只基金份额，bootstrap 状态，自 09-03 起可见差分。
+- 单测 12 项（多基金同指数聚合、噪声剔除、bootstrap、summary 文案）。
+
+### P3 — 证据包 brief-*.md 生成 ✅
+
+- 新文件 `scripts/build_brief.py`：读 `market-card.json`（零新增采集）输出 `data/brief-<date>.md`，9 节结构：市场概览（含风格/估值/两融/ETF）→ 规则版主线判定 → 行业资金 top20 → 涨停梯队+情绪指标 → 龙虎榜方向聚合 → 轮动兑现/噪音区 → 背离/全球 → 事件日历 → **两个待产出的 JSON schema 说明**（events 7 字段 + evidence 数字必须可核对；mainline conclusion 必须命中 ≥2 关键事实）。
+- 用途：把 brief 喂给任意 LLM（含当前会话），让其产出 `data/events-<date>.json` / `data/mainline-<date>.json`，落盘后重跑 `build_data.py` 即过校验器进卡。
+- 09-02 实测生成 3645 字符 / 122 行。
+
+### 自动化任务修复 ⚠️→✅
+
+- **发现**：原文档声称"自动化任务（19:00 每日）已按此链路配置"——实测 QwenWork 定时任务与 Windows 计划任务中**均不存在**（可能上个会话配置后丢失）。
+- **已补建**：QwenWork cron「A股复盘决策卡-每日采集构建」（工作日 19:00，链路含 build_brief，非交易日自动跳过，软依赖失败不算失败，硬依赖失败才上报）。
+- 渲染验证方式（沙箱内无头浏览器不可用，见第 4 节）：单测 + build 输出契约抽查——etf block bootstrap、promo floor_mode=default、standalone 61,038 bytes。
 
 ---
 
 ## 1. 交接快照（读这一段就能接手）
 
-### 1.1 运行链路（三条命令，顺序固定）
+### 1.1 运行链路（四条命令，顺序固定）
 
 ```
 python -X utf8 scripts/collect_data.py     # 联网采集，落 data/raw/eod-<date>.json + data/cache/*
 python -X utf8 scripts/build_data.py       # 纯本地聚合 → data/market-card.json（副作用：写 data/verify_log.json）
 python -X utf8 scripts/build_standalone.py # 数据内联 → market-card-view.html（双击可看，需与 app.js/styles.css 同目录）
-python -X utf8 scripts/test_logic.py       # 261 项单测；改任何纯函数后必跑
+python -X utf8 scripts/build_brief.py      # LLM 素材包 → data/brief-<date>.md（喂给 LLM 填 events/mainline）
+python -X utf8 scripts/test_logic.py       # 282 项单测；改任何纯函数后必跑
 ```
 
-- 自动化任务（19:00 每日）已按此链路配置，龙虎榜 18:00 后披露，软依赖缺了不算失败。
+- 自动化任务（19:00 每日，工作日）已按此四步链路配置于 QwenWork cron「A股复盘决策卡-每日采集构建」，龙虎榜 18:00 后披露，软依赖缺了不算失败；非交易日自动跳过。
 - `market-card-view.html` 只内联**数据**，app.js/styles.css 仍相对引用——这是设计，不是遗漏。
 
 ### 1.2 架构铁律（改代码前必读）
@@ -61,29 +94,29 @@ python -X utf8 scripts/test_logic.py       # 261 项单测；改任何纯函数�
 3. ✅ 回溯分数来自 18:00 部分采集 → `ctx_fingerprint`（sha1[:12]）变化才重评
 4. ✅ 自动化 15:30 永远看不到 18:00 龙虎榜 → 改 19:00 并重写 prompt
 5. ✅ 主线 `structured.level` 与结论句不一致（持续=1 时误标"无"）→ level 与结论句同源
-6. ⚠️ **`promotion_floor=40` 硬编码**（`analysis.py:380`）——实测 09-01 晋级率仅 20.5%，连续两日按 ✗ 误判。**未修**，见下节。
+6. ✅ **`promotion_floor=40` 硬编码**——已于 09-02 傍晚修复（P1，见第 0 节）：≥20 个历史样本后 floor 自动切换为近 20 日中位数，`floor_mode` 标记来源；样本不足时维持 40 并保留旧文案。
 
 ---
 
-## 3. 待办（按优先级）
+## 3. 待办（按优先级）—— P1/P2/P3 已于 2026-09-02 完成，见第 0 节交付记录
 
-### P1 — promotion_floor 历史分位校准
-- 现状：验证清单里"晋级率能否 ≥40%"的 40 是拍脑袋值，而近期市场晋级率中枢明显下移（09-01 仅 20.5%），该断言天天 ✗，失去信息量。
-- 方案：`data/cache/` 已逐日累积 promotion_rate 序列（daily_stats / 涨停缓存）。等积累 ≥20 个交易日后，把 floor 改为「近 20 日分位中位数」，断言语义从绝对阈值变为相对阈值，`statement` 同步改为"晋级率能否站上近 20 日中枢 X%"。
-- 注意：改的是 `build_verify_checks`（生成侧）与 `evaluate_check_detail`（评分侧）两处，别只改一半。
+### ~~P1 — promotion_floor 历史分位校准~~ ✅
+- 已实现 `promotion_history_floor`（中位数，≥20 样本切换）；历史样本实际来源为 raw 快照而非 daily_stats（原文档有误，已在第 0 节勘误）。当前 2 个样本处于 default 模式，约 20 个交易日后自动切 history，无需再动代码。
 
-### P2 — ETF 份额公示源探测（参考卡 03 章"国家队/ETF 动向"）
-- 现状：`HANDOFF-分析层补齐方案.md` 判为"半可做"——push2delay 的 ETF clist 只有价格，份额字段需另找报表名（东财 datacenter 或基金公司官网公示）。
-- 探测建议：东财 datacenter 试 `RPT_FUND_ETF...` 系报表名；或深交所/上交所基金周报页面。找到后沿用 datacenter 域名（不在 push2 限流内）。
+### ~~P2 — ETF 份额公示源探测~~ ✅
+- 探测成功：东财 datacenter-web `RPT_FUND_ETFLIST` 报表（`DEC_TOTALSHARE` 总份额字段），1650 只 ETF 全量入库，`build_etf_view` 按 8 个宽基指数聚合日差分。首次运行（09-02）为 bootstrap，09-03 起出差分数据。参考卡 03 章的"国家队/ETF 动向"数据层到此闭环（龙虎榜席位级解码仍不在范围）。
 
-### P3 — 证据包 brief-*.md 生成
-- 目的：给 LLM 离线填 `events-<date>.json` / `mainline-<date>.json` 时喂的素材包。把当日快照的关键数字（flows top20、梯队、龙虎榜摘要、背离、日历）导出为一份 markdown。
-- 落点：`scripts/build_brief.py`（新文件），输出 `data/brief-<date>.md`。内容全部来自 market-card.json，零新增采集。
-- LLM 侧约定：产出 JSON → 走 `validate_events` / `apply_mainline_rewrite` 校验，校验器会兜底，所以 brief 里写清楚 schema 即可。
+### ~~P3 — 证据包 brief-*.md 生成~~ ✅
+- `scripts/build_brief.py` 已落地（9 节素材 + 双 schema 说明），09-02 实测 3645 字符。**下一步使用方式**：每日 build 后把 `data/brief-<date>.md` 喂给 LLM，让其产出 `data/events-<date>.json`（7 字段全非空、数字可核对）与 `data/mainline-<date>.json`（命中 ≥2 关键事实），重跑 `build_data.py` 过校验器后进卡——这是"LLM 编译器"链路的人工触发版，可按需接成定时任务。
 
 ### P4 — 积累类（无需开发，时间自动解决）
 - 方向池九宫格的 pct 历史目前仅 1 个样本，全部显示"积累中"，约 20 个交易日后自动丰满。
 - 三情景概率 60 个交易日后从先验切历史基频（`SCENARIO_MIN_SAMPLES=60`）。
+- 晋级率 floor（P1）：约 20 个交易日后自动从 default 切 history 模式。
+
+### P5 — 新增候选（下个迭代再评估，非本次范围）
+- brief→LLM→events 的自动化闭环：19:00 cron 目前只跑到 build_brief；若每日事件卡质量满意，可在 cron 链路后追加"调用 LLM 产 events/mainline → 重跑 build"一步（需要模型会话，成本与失败处理待设计）。
+- ETF 份额口径增强：RPT_FUND_ETFLIST 的份额是披露快照（可能滞后一日），与基金公司官网申赎名单的口径差异尚未标注到页面——目前 note 已写"披露可能滞后一日"，够用。
 
 ---
 
@@ -100,11 +133,13 @@ python -X utf8 scripts/test_logic.py       # 261 项单测；改任何纯函数�
 
 ---
 
-## 5. 验收基线（交接时全部满足）
+## 5. 验收基线（2026-09-02 18:20 全部满足）
 
-- [x] `python -X utf8 scripts/test_logic.py` → **ALL TESTS PASSED（261 项）**
-- [x] `python -X utf8 scripts/build_data.py` → `built data\market-card.json from eod-2026-09-01.json`
-- [x] `python -X utf8 scripts/build_standalone.py` → 60,858 bytes，market_date=2026-09-01
-- [x] `node --check app.js` 通过；`?v=20260902b`
-- [x] `git status` 干净，main 已推至 `b84776c`
-- [x] 09-01 真实数据抽查：主线"存在情绪主线（数字媒体），无产业级主线"（资金=数字媒体 vs 涨停=影视院线，两维度不同向）；事件卡 6 张全部有数值出处；三情景阈值可核对
+- [x] `python -X utf8 scripts/test_logic.py` → **ALL TESTS PASSED（282 项，含 P1 11 项 + P2 12 项）**
+- [x] `python -X utf8 scripts/build_data.py` → `built data\market-card.json from eod-2026-09-02.json`
+- [x] `python -X utf8 scripts/build_standalone.py` → 61,038 bytes，market_date=2026-09-02
+- [x] `python -X utf8 scripts/build_brief.py` → `data/brief-2026-09-02.md`（3,645 字符 / 122 行）
+- [x] `node --check app.js` 通过；`?v=20260902c`
+- [x] QwenWork cron「A股复盘决策卡-每日采集构建」已建（工作日 19:00，四步链路）
+- [x] 09-02 真实数据抽查：ETF 块 bootstrap（1650 只已缓存）；promo floor_mode=default（历史 2 样本）；采集请求统计无 push2his
+- [x] git 干净后推送（本次 P1-P3 + 09-02 快照一并提交）

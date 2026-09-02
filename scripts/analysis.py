@@ -328,10 +328,39 @@ def trend_forecast(metrics: dict[str, Any], top_row: dict[str, Any] | None,
 
 
 # ------------------------------------------------------------ verify checklist
+PROMO_FLOOR_DEFAULT = 40.0    # absolute fallback until history accumulates
+PROMO_FLOOR_MIN_SAMPLES = 20  # trading days of history before switching to percentile
+
+
+def promotion_history_floor(rates: list[float] | None,
+                            min_samples: int = PROMO_FLOOR_MIN_SAMPLES,
+                            default: float = PROMO_FLOOR_DEFAULT) -> tuple[float, str]:
+    """Promotion-rate floor from recent history (median), or the default.
+
+    Returns (floor, mode): mode is "history" when at least ``min_samples``
+    rates are available, else "default". Pure. The assertion semantics change
+    with the mode: absolute threshold (40%) vs recent-market median - the
+    market's promotion-rate centre drifts, and a fixed floor keeps flagging
+    ✗ even when the day is normal for the regime.
+    """
+    clean = sorted(float(r) for r in (rates or []) if r is not None)
+    if len(clean) < min_samples:
+        return float(default), "default"
+    mid = len(clean) // 2
+    median = clean[mid] if len(clean) % 2 else (clean[mid - 1] + clean[mid]) / 2
+    return round(median, 1), "history"
+
+
 def build_verify_checks(date: str, today_rows: list[dict[str, Any]],
                         ladder: dict[str, Any], turnover: float | None,
-                        pool_rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Assertions about the NEXT session, generated deterministically."""
+                        pool_rows: list[dict[str, Any]],
+                        promo_history: list[float] | None = None) -> list[dict[str, Any]]:
+    """Assertions about the NEXT session, generated deterministically.
+
+    ``promo_history`` carries prior sessions' promotion rates (oldest first,
+    excluding the current day); with enough samples the promotion floor
+    becomes the recent median instead of the fixed 40%.
+    """
     checks: list[dict[str, Any]] = []
 
     for row in (pool_rows or [])[:2]:
@@ -374,11 +403,17 @@ def build_verify_checks(date: str, today_rows: list[dict[str, Any]],
             "statement": f"{top_row.get('stock')}（{int(top_row.get('board') or 0)}板）是否继续涨停",
         })
     if metrics.get("promotion_rate") is not None:
+        floor, mode = promotion_history_floor(promo_history)
+        if mode == "history":
+            statement = (f"涨停晋级率能否站上近 {PROMO_FLOOR_MIN_SAMPLES} 日中枢 "
+                         f"{floor:.1f}%（低于则弱于近期常态）")
+        else:
+            statement = "涨停晋级率能否守住 40%（低于则退潮预警）"
         checks.append({
             "id": f"{date}-promo",
             "type": "promotion_floor",
-            "params": {"floor": 40},
-            "statement": "涨停晋级率能否守住 40%（低于则退潮预警）",
+            "params": {"floor": floor, "floor_mode": mode},
+            "statement": statement,
         })
     return checks
 
@@ -1102,3 +1137,70 @@ def build_scenarios(ladder: dict[str, Any] | None, turnover: float | None,
                           else f"概率为固定先验（{SCENARIO_PRIOR['加速上行']}/"
                                f"{SCENARIO_PRIOR['震荡分化']}/{SCENARIO_PRIOR['补跌退潮']}），"
                                f"积累 {SCENARIO_MIN_SAMPLES} 个交易日后切换为历史统计。"))}
+
+# ------------------------------------------------------------ ETF share flows
+# Broad-based index ETFs whose aggregate share changes proxy "national team"
+# style creation/redemption (reference card chapter 03).
+BROAD_INDEX_CODES = {
+    "000300": "沪深300", "000905": "中证500", "000852": "中证1000",
+    "000016": "上证50", "399006": "创业板指", "000688": "科创50",
+    "000922": "中证红利", "000510": "中证A500",
+}
+ETF_TOP_FUNDS = 8   # single-fund movers shown on the card
+
+
+def build_etf_view(today: dict[str, dict[str, Any]],
+                   prev: dict[str, dict[str, Any]] | None) -> dict[str, Any]:
+    """Broad-based ETF share creation/redemption view. Pure.
+
+    today/prev: {etf_code: {"name", "index_code", "shares"(份)}}. Aggregates the
+    day-over-day share delta of broad-based index ETFs by tracked index, plus
+    the biggest single-fund movers. First run (prev is None/empty) returns a
+    bootstrap view with no rows.
+    """
+    if not prev:
+        return {"by_index": [], "top_funds": [], "total_delta": None,
+                "bootstrap": True,
+                "note": "首次采集：份额申赎变动自次一交易日起可见（本地缓存按日累积）。",
+                "method": "宽基指数 ETF 总份额按日差分；净增=申购、净减=赎回。"
+                          "份额数据源披露频率以基金公司为准，可能滞后一日。"}
+
+    by_index: list[dict[str, Any]] = []
+    for code, label in BROAD_INDEX_CODES.items():
+        today_total = sum(v["shares"] for v in today.values()
+                          if v.get("index_code") == code)
+        prev_total = sum(v["shares"] for v in prev.values()
+                         if v.get("index_code") == code)
+        if today_total <= 0 or prev_total <= 0:
+            continue
+        delta = (today_total - prev_total) / 1e8
+        by_index.append({
+            "index": label, "code": code,
+            "shares": round(today_total / 1e8, 1),
+            "delta": round(delta, 2),
+            "direction": "净申购" if delta > 0 else ("净赎回" if delta < 0 else "持平"),
+        })
+    by_index.sort(key=lambda r: -abs(r["delta"]))
+
+    movers = []
+    for etf_code, row in today.items():
+        old = prev.get(etf_code)
+        if not old or row["shares"] <= 0 or old["shares"] <= 0:
+            continue
+        delta = (row["shares"] - old["shares"]) / 1e8
+        if abs(delta) < 0.05:  # 50万份以下视为披露噪声
+            continue
+        movers.append({
+            "code": etf_code, "name": row.get("name", etf_code),
+            "index": BROAD_INDEX_CODES.get(row.get("index_code"), row.get("index_code", "")),
+            "delta": round(delta, 2),
+            "direction": "净申购" if delta > 0 else "净赎回",
+        })
+    movers.sort(key=lambda r: -abs(r["delta"]))
+    total = round(sum(r["delta"] for r in by_index), 2) if by_index else None
+    return {"by_index": by_index, "top_funds": movers[:ETF_TOP_FUNDS],
+            "total_delta": total, "bootstrap": False,
+            "summary": (f"跟踪范围内宽基 ETF 合计{'净申购' if total > 0 else '净赎回'} "
+                        f"{abs(total):.2f} 亿份" if total is not None else None),
+            "method": "宽基指数 ETF 总份额按日差分；净增=申购、净减=赎回。"
+                      "份额数据源披露频率以基金公司为准，可能滞后一日。"}

@@ -435,6 +435,29 @@ scored, tally = an.score_checks(checks, V_CTX)
 check("verify: tally \u4e94\u4e2d + \u4e00\u4e2a\u7f3a\u6570\u636e\u964d\u7ea7", tally == {"\u2713": 5, "\u2717": 0, "\u25b3": 0, "?": 1}, str(tally))
 check("verify: rows \u5e26 result", all("result" in r for r in scored))
 
+# ---------------------------------------------------------------- P1: promotion floor calibration
+check("promo floor: 无历史 -> 默认 40 / default", an.promotion_history_floor(None) == (40.0, "default"))
+check("promo floor: 样本不足 -> default", an.promotion_history_floor([22.0, 20.5]) == (40.0, "default"))
+check("promo floor: None 混入被剔除", an.promotion_history_floor([None, 22.0]) == (40.0, "default"))
+hist20 = [18.0, 22.0, 25.0, 30.0, 21.0] * 4  # 20 samples, median 22.0
+check("promo floor: 20 样本 -> 中位数 / history", an.promotion_history_floor(hist20) == (22.0, "history"))
+check("promo floor: 20 个偶数样本中位数取中间两值均值",
+      an.promotion_history_floor([1.0] * 10 + [3.0] * 10) == (2.0, "history"))
+check("promo floor: 超额样本仍取全序列中位数（无窗口截断）",
+      an.promotion_history_floor(hist20 + [99.0]) == (22.0, "history"))
+# build_verify_checks 接线：历史充足时 statement/floor 切换，不足时保持旧文案
+chk_hist = an.build_verify_checks("2026-09-02", V_FLOWS, V_LADDER, 1.09, V_POOL, promo_history=hist20)
+promo_chk = [c for c in chk_hist if c["type"] == "promotion_floor"][0]
+check("verify: 历史模式 floor=22 且 floor_mode=history",
+      promo_chk["params"]["floor"] == 22.0 and promo_chk["params"]["floor_mode"] == "history")
+check("verify: 历史模式 statement 含中枢文案", "中枢 22.0%" in promo_chk["statement"], promo_chk["statement"])
+promo_chk_def = [c for c in checks if c["type"] == "promotion_floor"][0]
+check("verify: 无历史时保持 40 旧文案", promo_chk_def["params"]["floor"] == 40.0
+      and "40%" in promo_chk_def["statement"])
+# 评分侧沿用 params.floor（新 floor 自动生效，无需改动）
+check("verify: 历史模式评分用新 floor", an.evaluate_check(promo_chk, dict(V_CTX, promotion_rate=22.5)) == "✓"
+      and an.evaluate_check(promo_chk, dict(V_CTX, promotion_rate=21.9)) == "✗")
+
 # ---------------------------------------------------------------- analysis: seats + direction
 KNOWN = {"\u673a\u6784\u4e13\u7528": "\u673a\u6784", "\u6c11\u6c11": "\u77e5\u540d\u6e38\u8d44",
          "\u62c9\u8428": "\u4e1c\u8d22\u62c9\u8428\u7cfb", "\u6caa\u80a1\u901a\u4e13\u7528": "\u5317\u5411"}
@@ -763,3 +786,34 @@ if FAILURES:
     print(f"{len(FAILURES)} test(s) FAILED: {FAILURES}")
     sys.exit(1)
 print("ALL TESTS PASSED")
+
+# ---------------------------------------------------------------- P2: ETF share view
+def etf(code, name, index, shares):
+    return {code: {"name": name, "index_code": index, "shares": shares}}
+
+E_TODAY = {**etf("510300", "沪深300ETF华泰柏瑞", "000300", 230.0e8),
+           **etf("159919", "沪深300ETF嘉实", "000300", 90.0e8),
+           **etf("510050", "上证50ETF", "000016", 120.0e8),
+           **etf("159915", "创业板ETF", "399006", 100.0e8),
+           **etf("563800", "A500ETF", "000510", 20.0e8)}
+E_PREV = {**etf("510300", "沪深300ETF华泰柏瑞", "000300", 232.6e8),
+          **etf("159919", "沪深300ETF嘉实", "000300", 90.0e8),
+          **etf("510050", "上证50ETF", "000016", 120.03e8),
+          **etf("159915", "创业板ETF", "399006", 99.0e8)}
+V = an.build_etf_view(E_TODAY, E_PREV)
+bi = {r["index"]: r for r in V["by_index"]}
+check("etf: 沪深300聚合两只基金 delta=-2.6亿份", bi["沪深300"]["delta"] == -2.6, str(bi.get("沪深300")))
+check("etf: 沪深300总份额=320亿份", bi["沪深300"]["shares"] == 320.0)
+check("etf: 创业板指净申购 +1.0", bi["创业板指"]["delta"] == 1.0 and bi["创业板指"]["direction"] == "净申购")
+check("etf: 按指数排序按|delta|降序（沪深300 |−2.6| 在前）", V["by_index"][0]["index"] == "沪深300")
+check("etf: A500无前日数据->不出行", "中证A500" not in bi)
+tf = {r["code"]: r for r in V["top_funds"]}
+check("etf: 单基金top含510300(-2.6)与159915(+1.0)", tf["510300"]["delta"] == -2.6 and tf["159915"]["delta"] == 1.0)
+check("etf: 小于500万份的变动视为噪声剔除(510050 +0.03亿份)",
+      "510050" not in tf, str(tf.get("510050")))
+check("etf: total_delta=-1.63", V["total_delta"] == -1.63, str(V["total_delta"]))
+check("etf: summary 含净赎回", "净赎回 1.63 亿份" in (V.get("summary") or ""), str(V.get("summary")))
+B = an.build_etf_view(E_TODAY, None)
+check("etf: 首次运行 -> bootstrap", B["bootstrap"] is True and B["by_index"] == [] and "首次采集" in B["note"])
+B2 = an.build_etf_view(E_TODAY, {})
+check("etf: 空前日dict同bootstrap", B2["bootstrap"] is True)

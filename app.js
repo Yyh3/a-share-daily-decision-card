@@ -182,6 +182,25 @@ function renderMargin(margin) {
     + `当日融资净买入 ${margin.financing_net_buy === null ? "—" : `${signed(margin.financing_net_buy)} 亿`}。${escapeHtml(margin.note)}</p>`;
 }
 
+function renderEtf(etf) {
+  const box = $("#etf-shares");
+  if (!box) return;
+  if (!etf) {
+    box.innerHTML = `<h4>宽基 ETF 份额申赎</h4><p class="unit-note">本次快照未采集到 ETF 份额数据（软依赖）。</p>`;
+    return;
+  }
+  if (etf.bootstrap) {
+    box.innerHTML = `<h4>宽基 ETF 份额申赎</h4><p class="unit-note">${escapeHtml(etf.note)}</p>`;
+    return;
+  }
+  const idxRows = (etf.by_index || []).map(r => `<tr><td><strong>${escapeHtml(r.index)}</strong></td><td>${r.shares.toFixed(1)} 亿份</td><td class="${directionClass(r.delta)}">${signed(r.delta, " 亿份")}</td><td>${escapeHtml(r.direction)}</td></tr>`).join("");
+  const movers = (etf.top_funds || []).map(r => `${escapeHtml(r.name)}（${escapeHtml(r.index)}，${signed(r.delta, " 亿份")}）`).join("、");
+  box.innerHTML = `<h4>宽基 ETF 份额申赎</h4>
+    ${etf.summary ? `<p class="unit-note">${escapeHtml(etf.summary)}。</p>` : ""}
+    <div class="table-wrap"><table><thead><tr><th>跟踪指数</th><th>总份额</th><th>较前日</th><th>方向</th></tr></thead><tbody>${idxRows || `<tr><td colspan="4" class="empty-row">跟踪范围内暂无份额数据。</td></tr>`}</tbody></table></div>
+    ${movers ? `<p class="unit-note">单基金变动居前：${movers}。${escapeHtml(etf.method)}</p>` : `<p class="unit-note">${escapeHtml(etf.method)}</p>`}`;
+}
+
 function renderRotation(rotation, mainline) {
   const box = $("#mainline");
   if (mainline) {
@@ -345,6 +364,7 @@ function render(data) {
   renderDirection(dragon, noise);
   renderLift(lift);
   renderMargin(margin);
+  renderEtf(data.etf_shares);
   renderRotation(rotation, mainline);
   renderForecast(forecast);
   renderVerify(verify);

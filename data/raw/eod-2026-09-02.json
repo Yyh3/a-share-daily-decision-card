@@ -1,0 +1,7595 @@
+{
+  "meta": {
+    "market_date": "2026-09-02",
+    "updated_at": "2026-09-02 19:01",
+    "demo": false,
+    "sources": [
+      {
+        "name": "腾讯行情接口 fqkline（指数日线涨跌幅）",
+        "as_of": "2026-09-02 收盘",
+        "note": "上证指数、创业板指、科创50 涨跌幅，由相邻收盘价计算。"
+      },
+      {
+        "name": "中证指数有限公司官网（上证指数成交额）",
+        "as_of": "2026-09-02 收盘",
+        "note": "index-perf 接口 tradingValue 字段，单位亿元。"
+      },
+      {
+        "name": "深圳证券交易所官网（深市股票成交金额）",
+        "as_of": "2026-09-02 收盘",
+        "note": "每日行情-证券类别统计中「股票」行，单位亿元。两市成交额=沪+深。历史值由本地缓存提供。"
+      },
+      {
+        "name": "东方财富 涨停/跌停/炸板池接口（push2ex）",
+        "as_of": "2026-09-02 收盘",
+        "note": "涨跌停家数按东财涨停池判定，行业归属按池内 hybk 字段；连板数取 lbc、封单额取 fund、炸板次数取 zbc、炸板家数取炸板池。"
+      },
+      {
+        "name": "新浪财经 A 股全列表接口（涨跌家数）",
+        "as_of": "2026-09-02 收盘",
+        "note": "沪深北全市场；停牌个股（无有效报价）不计入。"
+      },
+      {
+        "name": "东方财富 行业板块主力资金流接口（clist 排行，实时集群不可用时自动切换延时集群）",
+        "as_of": "2026-09-02 收盘",
+        "note": "当日/5日/10日主力净流入均来自板块资金排行的东财官方聚合字段（f62/f164/f174），单次请求全量。主力=超大单+大单（东财单因子口径）。"
+      },
+      {
+        "name": "腾讯行情 ifzq 30 分钟线（上证指数）",
+        "as_of": "2026-09-02 收盘",
+        "note": "盘中节奏为 30 分钟线规则检测：阈值穿越、高低点、上下午摆幅与尾盘动作；指数级口径，不含板块分时。"
+      },
+      {
+        "name": "东方财富数据中心 融资融券历史汇总（RPTA_RZRQ_LSHJ）",
+        "as_of": "2026-09-01（T+1 披露）",
+        "note": "沪深两市合计融资融券余额，单位亿元；交易所 T+1 披露，数据日期落后卡片市场日。"
+      },
+      {
+        "name": "东方财富延时集群 / 新浪财经 / 腾讯行情（全球市场）",
+        "as_of": "2026-09-02",
+        "note": "美股与欧股为北京时间次日凌晨收盘价，亚太与港股为当日收盘；美债收益率取自美国财政部官方日收益率曲线，单列一节。"
+      },
+      {
+        "name": "东方财富数据中心 龙虎榜（RPT_DAILYBILLBOARD_DETAILSNEW + RPT_BILLBOARD_DAILYDETAILSBUY）",
+        "as_of": "2026-09-02（交易所披露）",
+        "note": "个股榜与席位明细各一次请求全量取回（pageSize=500）；席位明细含净买入与净卖出双向，机构专用/沪股通/深股通席位全量保留。"
+      },
+      {
+        "name": "美国财政部官方日收益率曲线（美国财政部官方日收益率曲线 CSV）",
+        "as_of": "2026-09-01",
+        "note": "constant-maturity 收益率，单位为百分比；美东时间当日下午发布，对应北京时间次日凌晨，故日期通常落后卡片市场日 1 个自然日。"
+      },
+      {
+        "name": "中证指数有限公司官网 index-perf（指数市盈率 peg 序列，自算分位）",
+        "as_of": "2026-09-02 收盘",
+        "note": "近 10 年 PE 历史百分位，样本 2429 个交易日；历史序列本地缓存、每日增量追加（冷启动一次取全窗口）。"
+      },
+      {
+        "name": "东方财富数据中心 解禁时间表（RPT_LIFT_STAGE）",
+        "as_of": "2026-09-02 ~ 2026-09-09（预告口径）",
+        "note": "卡片市场日起 7 个自然日内的限售解禁事件；市值为披露值（数据源更新时点价格），非最新收盘价。"
+      },
+      {
+        "name": "东方财富数据中心 ETF 基金列表（RPT_FUND_ETFLIST）",
+        "as_of": "2026-09-02（份额披露可能滞后一日）",
+        "note": "宽基指数 ETF 总份额按日差分（净增=申购、净减=赎回），历史值由本地缓存提供；仅统计跟踪沪深300/中证500/1000/上证50/创业板指/科创50/中证红利/A500 的 ETF。"
+      }
+    ]
+  },
+  "market_days": [
+    {
+      "date": "08-27",
+      "shanghai": 1.13,
+      "chinext": 1.71,
+      "star50": 3.77,
+      "turnover": 2.13,
+      "limit_up": 77,
+      "limit_down": 3,
+      "feature": "放量上攻"
+    },
+    {
+      "date": "08-28",
+      "shanghai": -0.11,
+      "chinext": -1.41,
+      "star50": -1.85,
+      "turnover": 2.1,
+      "limit_up": 82,
+      "limit_down": 1,
+      "feature": "缩量回调"
+    },
+    {
+      "date": "08-31",
+      "shanghai": 0.86,
+      "chinext": 0.42,
+      "star50": 1.34,
+      "turnover": 2.13,
+      "limit_up": 88,
+      "limit_down": 11,
+      "feature": "缩量反弹"
+    },
+    {
+      "date": "09-01",
+      "shanghai": -0.16,
+      "chinext": -1.32,
+      "star50": -2.19,
+      "turnover": 2.03,
+      "limit_up": 83,
+      "limit_down": 0,
+      "feature": "缩量回调"
+    },
+    {
+      "date": "09-02",
+      "shanghai": -0.97,
+      "chinext": -2.39,
+      "star50": -1.82,
+      "turnover": 1.79,
+      "limit_up": 52,
+      "limit_down": 8,
+      "feature": "缩量回调"
+    }
+  ],
+  "breadth": {
+    "up": 1541,
+    "down": 3900,
+    "flat": 107,
+    "new_high": 1123,
+    "new_low": 1714,
+    "limit_up": 52,
+    "limit_down": 8
+  },
+  "flows": [
+    {
+      "sector": "国防军工",
+      "today": 27.4,
+      "day5": 38.6,
+      "day10": -13.3,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "线缆部件及其他",
+      "today": 20.1,
+      "day5": 1.9,
+      "day10": 25.0,
+      "change_pct": 1.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "电网设备",
+      "today": 14.8,
+      "day5": -25.2,
+      "day10": -12.5,
+      "change_pct": 0.49,
+      "limit_up": 4
+    },
+    {
+      "sector": "航空装备Ⅲ",
+      "today": 13.6,
+      "day5": 31.0,
+      "day10": 27.5,
+      "change_pct": 1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空装备Ⅱ",
+      "today": 13.6,
+      "day5": 31.0,
+      "day10": 27.5,
+      "change_pct": 1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "地面兵装Ⅲ",
+      "today": 12.8,
+      "day5": 19.0,
+      "day10": 16.3,
+      "change_pct": 5.9,
+      "limit_up": 0
+    },
+    {
+      "sector": "地面兵装Ⅱ",
+      "today": 12.8,
+      "day5": 19.0,
+      "day10": 16.3,
+      "change_pct": 5.9,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗研发外包",
+      "today": 12.8,
+      "day5": -10.3,
+      "day10": -25.9,
+      "change_pct": -0.92,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗服务",
+      "today": 10.6,
+      "day5": -14.6,
+      "day10": -24.6,
+      "change_pct": -1.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "消费电子零部件及组装",
+      "today": 9.9,
+      "day5": 20.3,
+      "day10": 29.4,
+      "change_pct": 0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "消费电子",
+      "today": 9.7,
+      "day5": 20.0,
+      "day10": 32.3,
+      "change_pct": 0.79,
+      "limit_up": 1
+    },
+    {
+      "sector": "玻璃玻纤",
+      "today": 9.1,
+      "day5": 15.8,
+      "day10": -22.7,
+      "change_pct": 1.0,
+      "limit_up": 2
+    },
+    {
+      "sector": "玻纤制造",
+      "today": 8.6,
+      "day5": 15.7,
+      "day10": -22.8,
+      "change_pct": 2.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他通用设备",
+      "today": 7.3,
+      "day5": 7.5,
+      "day10": 13.8,
+      "change_pct": 0.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "建筑材料",
+      "today": 7.0,
+      "day5": 12.2,
+      "day10": -26.7,
+      "change_pct": -0.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车零部件",
+      "today": 6.7,
+      "day5": 17.1,
+      "day10": 35.5,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "石油石化",
+      "today": 5.7,
+      "day5": 10.2,
+      "day10": -3.9,
+      "change_pct": -1.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "底盘与发动机系统",
+      "today": 5.4,
+      "day5": 5.7,
+      "day10": 29.0,
+      "change_pct": 0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学制品",
+      "today": 4.6,
+      "day5": 4.6,
+      "day10": 12.1,
+      "change_pct": -0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "油服工程",
+      "today": 4.2,
+      "day5": 0.1,
+      "day10": -5.5,
+      "change_pct": -1.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信线缆及配套",
+      "today": 3.9,
+      "day5": -37.8,
+      "day10": 2.4,
+      "change_pct": 0.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他自动化设备",
+      "today": 3.2,
+      "day5": 7.8,
+      "day10": 15.1,
+      "change_pct": -0.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "核力发电",
+      "today": 3.0,
+      "day5": -3.1,
+      "day10": -0.3,
+      "change_pct": 0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "非金属材料Ⅲ",
+      "today": 3.0,
+      "day5": 4.9,
+      "day10": 9.9,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "非金属材料Ⅱ",
+      "today": 3.0,
+      "day5": 4.9,
+      "day10": 9.9,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "水力发电",
+      "today": 2.9,
+      "day5": 6.6,
+      "day10": 5.9,
+      "change_pct": 0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "制冷空调设备",
+      "today": 2.8,
+      "day5": 5.4,
+      "day10": 12.0,
+      "change_pct": 0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "军工电子Ⅲ",
+      "today": 2.8,
+      "day5": -3.1,
+      "day10": -31.7,
+      "change_pct": 0.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "军工电子Ⅱ",
+      "today": 2.8,
+      "day5": -3.1,
+      "day10": -31.7,
+      "change_pct": 0.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他生物制品",
+      "today": 2.6,
+      "day5": -10.8,
+      "day10": -8.5,
+      "change_pct": -0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "通用设备",
+      "today": 2.5,
+      "day5": 13.0,
+      "day10": 8.0,
+      "change_pct": 0.02,
+      "limit_up": 2
+    },
+    {
+      "sector": "调味发酵品Ⅲ",
+      "today": 2.3,
+      "day5": -2.6,
+      "day10": -7.9,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "调味发酵品Ⅱ",
+      "today": 2.3,
+      "day5": -2.6,
+      "day10": -7.9,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游及景区",
+      "today": 2.3,
+      "day5": 3.1,
+      "day10": 7.4,
+      "change_pct": 1.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气及炼化工程",
+      "today": 2.2,
+      "day5": 1.3,
+      "day10": -3.0,
+      "change_pct": -2.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "油田服务",
+      "today": 2.0,
+      "day5": -1.2,
+      "day10": -2.5,
+      "change_pct": -0.95,
+      "limit_up": 0
+    },
+    {
+      "sector": "服装家纺",
+      "today": 1.9,
+      "day5": 5.9,
+      "day10": 1.4,
+      "change_pct": 0.36,
+      "limit_up": 3
+    },
+    {
+      "sector": "鞋帽及其他",
+      "today": 1.8,
+      "day5": 3.0,
+      "day10": 1.1,
+      "change_pct": 2.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他汽车零部件",
+      "today": 1.6,
+      "day5": 6.8,
+      "day10": -0.3,
+      "change_pct": 0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "改性塑料",
+      "today": 1.5,
+      "day5": 4.3,
+      "day10": 7.3,
+      "change_pct": 0.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "化妆品",
+      "today": 1.5,
+      "day5": 0.9,
+      "day10": 2.9,
+      "change_pct": 2.96,
+      "limit_up": 1
+    },
+    {
+      "sector": "美容护理",
+      "today": 1.4,
+      "day5": 0.0,
+      "day10": 2.8,
+      "change_pct": 1.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "磨具磨料",
+      "today": 1.3,
+      "day5": 3.6,
+      "day10": 1.0,
+      "change_pct": -0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "人工景区",
+      "today": 1.3,
+      "day5": 1.7,
+      "day10": 1.7,
+      "change_pct": 1.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃气Ⅲ",
+      "today": 1.2,
+      "day5": -0.2,
+      "day10": -1.2,
+      "change_pct": 0.58,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃气Ⅱ",
+      "today": 1.2,
+      "day5": -0.2,
+      "day10": -1.2,
+      "change_pct": 0.58,
+      "limit_up": 1
+    },
+    {
+      "sector": "通信终端及配件",
+      "today": 1.2,
+      "day5": -7.9,
+      "day10": 12.8,
+      "change_pct": -0.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气开采Ⅲ",
+      "today": 1.2,
+      "day5": -1.3,
+      "day10": -6.4,
+      "change_pct": -0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "油气开采Ⅱ",
+      "today": 1.2,
+      "day5": -1.3,
+      "day10": -6.4,
+      "change_pct": -0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "自然景区",
+      "today": 1.2,
+      "day5": 1.1,
+      "day10": 2.1,
+      "change_pct": 0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "煤化工",
+      "today": 1.1,
+      "day5": 0.8,
+      "day10": -0.7,
+      "change_pct": -0.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "化妆品制造及其他",
+      "today": 1.1,
+      "day5": 0.5,
+      "day10": 0.6,
+      "change_pct": 5.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他石化",
+      "today": 1.1,
+      "day5": 1.3,
+      "day10": 3.4,
+      "change_pct": -1.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "包装印刷",
+      "today": 1.1,
+      "day5": 4.3,
+      "day10": 6.4,
+      "change_pct": 0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "生物制品",
+      "today": 1.0,
+      "day5": -21.1,
+      "day10": -7.8,
+      "change_pct": -1.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "能源及重型设备",
+      "today": 1.0,
+      "day5": -4.1,
+      "day10": -5.7,
+      "change_pct": 0.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "塑料包装",
+      "today": 0.9,
+      "day5": 2.8,
+      "day10": 6.0,
+      "change_pct": 1.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "房屋建设Ⅲ",
+      "today": 0.9,
+      "day5": -0.5,
+      "day10": -0.2,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "房屋建设Ⅱ",
+      "today": 0.9,
+      "day5": -0.5,
+      "day10": -0.2,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "高速公路",
+      "today": 0.8,
+      "day5": -0.4,
+      "day10": -1.7,
+      "change_pct": -0.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "冰洗",
+      "today": 0.8,
+      "day5": 3.3,
+      "day10": 1.3,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "合成树脂",
+      "today": 0.8,
+      "day5": 2.6,
+      "day10": -3.3,
+      "change_pct": -0.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "车身附件及饰件",
+      "today": 0.8,
+      "day5": 4.0,
+      "day10": 5.1,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "油品石化贸易",
+      "today": 0.8,
+      "day5": 0.4,
+      "day10": 0.4,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "股份制银行Ⅲ",
+      "today": 0.8,
+      "day5": 0.6,
+      "day10": -1.5,
+      "change_pct": -0.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用载客车",
+      "today": 0.7,
+      "day5": 0.9,
+      "day10": 1.3,
+      "change_pct": -1.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "非运动服装",
+      "today": 0.7,
+      "day5": 1.3,
+      "day10": 0.4,
+      "change_pct": -0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "特钢Ⅲ",
+      "today": 0.7,
+      "day5": 1.8,
+      "day10": 2.1,
+      "change_pct": -0.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "特钢Ⅱ",
+      "today": 0.7,
+      "day5": 1.8,
+      "day10": 2.1,
+      "change_pct": -0.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "蓄电池及其他电池",
+      "today": 0.6,
+      "day5": -0.7,
+      "day10": 1.1,
+      "change_pct": -0.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车电子电气系统",
+      "today": 0.6,
+      "day5": 5.6,
+      "day10": 7.3,
+      "change_pct": -0.09,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他橡胶制品",
+      "today": 0.6,
+      "day5": 0.7,
+      "day10": 1.2,
+      "change_pct": 2.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦炭Ⅲ",
+      "today": 0.6,
+      "day5": 0.0,
+      "day10": -0.0,
+      "change_pct": -3.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦炭Ⅱ",
+      "today": 0.6,
+      "day5": 0.0,
+      "day10": -0.0,
+      "change_pct": -3.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "民爆制品",
+      "today": 0.6,
+      "day5": 2.5,
+      "day10": 0.9,
+      "change_pct": -0.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "社会服务",
+      "today": 0.5,
+      "day5": 5.4,
+      "day10": 5.1,
+      "change_pct": 0.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "玻璃制造",
+      "today": 0.5,
+      "day5": 0.1,
+      "day10": 0.1,
+      "change_pct": -0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "商业地产",
+      "today": 0.5,
+      "day5": -4.1,
+      "day10": -4.1,
+      "change_pct": -0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "复合肥",
+      "today": 0.5,
+      "day5": 1.5,
+      "day10": 1.4,
+      "change_pct": -2.8,
+      "limit_up": 0
+    },
+    {
+      "sector": "有机硅",
+      "today": 0.4,
+      "day5": -0.4,
+      "day10": -6.0,
+      "change_pct": 0.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "白色家电",
+      "today": 0.4,
+      "day5": 5.5,
+      "day10": -2.3,
+      "change_pct": 0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "品牌化妆品",
+      "today": 0.4,
+      "day5": 0.4,
+      "day10": 2.4,
+      "change_pct": 0.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "模拟芯片设计",
+      "today": 0.3,
+      "day5": 11.4,
+      "day10": 11.0,
+      "change_pct": -0.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他农产品加工",
+      "today": 0.3,
+      "day5": -1.2,
+      "day10": -1.0,
+      "change_pct": -1.39,
+      "limit_up": 0
+    },
+    {
+      "sector": "橡胶",
+      "today": 0.3,
+      "day5": -1.2,
+      "day10": -2.2,
+      "change_pct": 1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "园林工程",
+      "today": 0.3,
+      "day5": 0.3,
+      "day10": 0.7,
+      "change_pct": -0.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "端到端供应链服务",
+      "today": 0.3,
+      "day5": 0.3,
+      "day10": 0.5,
+      "change_pct": -0.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "线下药店",
+      "today": 0.3,
+      "day5": 0.4,
+      "day10": 0.5,
+      "change_pct": -1.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "管材",
+      "today": 0.3,
+      "day5": 0.5,
+      "day10": 0.6,
+      "change_pct": 0.17,
+      "limit_up": 0
+    },
+    {
+      "sector": "宠物食品",
+      "today": 0.3,
+      "day5": 0.4,
+      "day10": -0.3,
+      "change_pct": 1.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "炼化及贸易",
+      "today": 0.2,
+      "day5": 11.4,
+      "day10": 8.0,
+      "change_pct": -1.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "辅料",
+      "today": 0.2,
+      "day5": -0.4,
+      "day10": -1.2,
+      "change_pct": 1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业连锁Ⅲ",
+      "today": 0.2,
+      "day5": 0.4,
+      "day10": -0.0,
+      "change_pct": -0.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业连锁Ⅱ",
+      "today": 0.2,
+      "day5": 0.4,
+      "day10": -0.0,
+      "change_pct": -0.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "酒店",
+      "today": 0.2,
+      "day5": 0.6,
+      "day10": 1.5,
+      "change_pct": -0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程咨询服务Ⅲ",
+      "today": 0.2,
+      "day5": -6.2,
+      "day10": -12.6,
+      "change_pct": -0.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程咨询服务Ⅱ",
+      "today": 0.2,
+      "day5": -6.2,
+      "day10": -12.6,
+      "change_pct": -0.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属包装",
+      "today": 0.2,
+      "day5": 0.9,
+      "day10": -1.2,
+      "change_pct": -1.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学纤维",
+      "today": 0.2,
+      "day5": 0.1,
+      "day10": -2.4,
+      "change_pct": 0.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车综合服务",
+      "today": 0.2,
+      "day5": 0.5,
+      "day10": 0.6,
+      "change_pct": -0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "仓储物流",
+      "today": 0.2,
+      "day5": 0.5,
+      "day10": 0.1,
+      "change_pct": -0.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他金属新材料",
+      "today": 0.2,
+      "day5": -4.9,
+      "day10": -16.5,
+      "change_pct": 0.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车服务",
+      "today": 0.2,
+      "day5": 0.5,
+      "day10": 0.6,
+      "change_pct": -0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "肉制品",
+      "today": 0.1,
+      "day5": 0.9,
+      "day10": 1.1,
+      "change_pct": -1.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "公路货运",
+      "today": 0.1,
+      "day5": -0.5,
+      "day10": -0.6,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "港口",
+      "today": 0.1,
+      "day5": -0.0,
+      "day10": -1.9,
+      "change_pct": -0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "熟食",
+      "today": 0.1,
+      "day5": 0.4,
+      "day10": 0.7,
+      "change_pct": -1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "粘胶",
+      "today": 0.1,
+      "day5": -0.7,
+      "day10": 0.6,
+      "change_pct": -1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥",
+      "today": 0.1,
+      "day5": -0.6,
+      "day10": 0.1,
+      "change_pct": -0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "人力资源服务",
+      "today": 0.1,
+      "day5": 0.4,
+      "day10": 0.4,
+      "change_pct": 0.72,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他酒类",
+      "today": 0.1,
+      "day5": -1.0,
+      "day10": -0.0,
+      "change_pct": -0.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他医疗服务",
+      "today": 0.1,
+      "day5": 0.2,
+      "day10": 0.7,
+      "change_pct": -1.02,
+      "limit_up": 0
+    },
+    {
+      "sector": "炭黑",
+      "today": 0.1,
+      "day5": -0.0,
+      "day10": -0.3,
+      "change_pct": 0.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "学历教育",
+      "today": 0.1,
+      "day5": 0.0,
+      "day10": 0.2,
+      "change_pct": 0.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "配电设备",
+      "today": 0.1,
+      "day5": -2.8,
+      "day10": -2.1,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专业服务",
+      "today": 0.1,
+      "day5": 0.3,
+      "day10": 0.3,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥制品",
+      "today": 0.1,
+      "day5": 0.1,
+      "day10": 0.0,
+      "change_pct": -0.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "农商行Ⅲ",
+      "today": 0.1,
+      "day5": -2.3,
+      "day10": -4.7,
+      "change_pct": -0.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "水泥制造",
+      "today": 0.0,
+      "day5": -0.7,
+      "day10": 0.0,
+      "change_pct": -1.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他纺织",
+      "today": 0.0,
+      "day5": -1.3,
+      "day10": -1.6,
+      "change_pct": 0.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "火电设备",
+      "today": 0.0,
+      "day5": 1.1,
+      "day10": 0.2,
+      "change_pct": 0.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "个护小家电",
+      "today": 0.0,
+      "day5": -0.1,
+      "day10": 0.2,
+      "change_pct": 0.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "长材",
+      "today": 0.0,
+      "day5": 0.0,
+      "day10": -0.0,
+      "change_pct": -1.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "文化用品",
+      "today": 0.0,
+      "day5": -0.0,
+      "day10": 0.3,
+      "change_pct": -1.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家居用品",
+      "today": 0.0,
+      "day5": 0.3,
+      "day10": 2.0,
+      "change_pct": -0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "卫浴电器",
+      "today": 0.0,
+      "day5": 0.0,
+      "day10": 0.1,
+      "change_pct": 1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他数字媒体",
+      "today": 0.0,
+      "day5": 1.4,
+      "day10": 0.2,
+      "change_pct": -0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "酒店餐饮",
+      "today": 0.0,
+      "day5": 1.7,
+      "day10": 3.2,
+      "change_pct": -0.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "水产饲料",
+      "today": 0.0,
+      "day5": 0.3,
+      "day10": -1.8,
+      "change_pct": -1.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "洗护用品",
+      "today": 0.0,
+      "day5": -0.0,
+      "day10": 0.0,
+      "change_pct": 0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "燃料电池",
+      "today": 0.0,
+      "day5": -0.0,
+      "day10": -0.1,
+      "change_pct": 0.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合包装",
+      "today": 0.0,
+      "day5": 0.2,
+      "day10": 0.1,
+      "change_pct": -0.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "个护用品",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": 0.9,
+      "change_pct": -0.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "摩托车",
+      "today": -0.0,
+      "day5": 0.5,
+      "day10": -0.3,
+      "change_pct": -1.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产综合服务",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": -0.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他能源发电",
+      "today": -0.0,
+      "day5": 0.0,
+      "day10": 0.1,
+      "change_pct": -0.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "定制家居",
+      "today": -0.0,
+      "day5": 1.3,
+      "day10": 2.9,
+      "change_pct": -0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车经销商",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": 0.0,
+      "change_pct": -0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "生活用纸",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": 0.9,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "大气治理",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": 0.0,
+      "change_pct": 1.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织鞋类制造",
+      "today": -0.0,
+      "day5": 0.1,
+      "day10": 0.1,
+      "change_pct": -1.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "农业综合Ⅲ",
+      "today": -0.0,
+      "day5": 0.1,
+      "day10": -0.1,
+      "change_pct": 0.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "农业综合Ⅱ",
+      "today": -0.0,
+      "day5": 0.1,
+      "day10": -0.1,
+      "change_pct": 0.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "纸包装",
+      "today": -0.0,
+      "day5": 0.5,
+      "day10": 1.6,
+      "change_pct": 0.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械器件",
+      "today": -0.0,
+      "day5": -0.3,
+      "day10": -1.5,
+      "change_pct": 0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "胶黏剂及胶带",
+      "today": -0.0,
+      "day5": 1.0,
+      "day10": 0.5,
+      "change_pct": -1.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "医美服务",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": -0.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织服装设备",
+      "today": -0.0,
+      "day5": 0.8,
+      "day10": 0.5,
+      "change_pct": -1.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "印刷",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.1,
+      "change_pct": 0.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "照明设备Ⅲ",
+      "today": -0.0,
+      "day5": -0.5,
+      "day10": -0.8,
+      "change_pct": 0.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "照明设备Ⅱ",
+      "today": -0.0,
+      "day5": -0.5,
+      "day10": -0.8,
+      "change_pct": 0.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "肉鸡养殖",
+      "today": -0.0,
+      "day5": 0.9,
+      "day10": -0.1,
+      "change_pct": -2.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "住宅开发",
+      "today": -0.0,
+      "day5": -0.1,
+      "day10": -0.7,
+      "change_pct": -0.8,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他饰品",
+      "today": -0.0,
+      "day5": -0.0,
+      "day10": 0.0,
+      "change_pct": -0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "印刷包装机械",
+      "today": -0.1,
+      "day5": 0.1,
+      "day10": -0.1,
+      "change_pct": 0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "预加工食品",
+      "today": -0.1,
+      "day5": 0.5,
+      "day10": 1.2,
+      "change_pct": -1.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "涂料",
+      "today": -0.1,
+      "day5": -0.5,
+      "day10": -0.9,
+      "change_pct": 1.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "家纺",
+      "today": -0.1,
+      "day5": -0.0,
+      "day10": 0.1,
+      "change_pct": -0.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "培训教育",
+      "today": -0.1,
+      "day5": 0.4,
+      "day10": -3.1,
+      "change_pct": 0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "医美耗材",
+      "today": -0.1,
+      "day5": -0.7,
+      "day10": -0.9,
+      "change_pct": 0.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专业工程",
+      "today": -0.1,
+      "day5": 0.5,
+      "day10": -2.6,
+      "change_pct": -0.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他运输设备",
+      "today": -0.1,
+      "day5": -0.8,
+      "day10": -2.0,
+      "change_pct": -0.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "钢结构",
+      "today": -0.1,
+      "day5": 0.0,
+      "day10": 1.1,
+      "change_pct": -0.74,
+      "limit_up": 0
+    },
+    {
+      "sector": "摩托车及其他",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -2.3,
+      "change_pct": -0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗美容",
+      "today": -0.1,
+      "day5": -0.8,
+      "day10": -1.0,
+      "change_pct": -0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "耐火材料",
+      "today": -0.1,
+      "day5": -0.2,
+      "day10": -0.4,
+      "change_pct": 0.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨房小家电",
+      "today": -0.1,
+      "day5": -0.3,
+      "day10": -0.7,
+      "change_pct": -0.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用车",
+      "today": -0.1,
+      "day5": 0.7,
+      "day10": -0.8,
+      "change_pct": -1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "动物保健Ⅲ",
+      "today": -0.1,
+      "day5": 0.7,
+      "day10": -0.3,
+      "change_pct": -1.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "动物保健Ⅱ",
+      "today": -0.1,
+      "day5": 0.7,
+      "day10": -0.3,
+      "change_pct": -1.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "成品家居",
+      "today": -0.1,
+      "day5": -0.7,
+      "day10": -0.8,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合电商",
+      "today": -0.1,
+      "day5": 0.2,
+      "day10": 0.3,
+      "change_pct": -2.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "钢铁管材",
+      "today": -0.1,
+      "day5": -0.5,
+      "day10": -1.2,
+      "change_pct": -0.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "血液制品",
+      "today": -0.1,
+      "day5": 0.1,
+      "day10": 0.5,
+      "change_pct": -2.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "乳品",
+      "today": -0.1,
+      "day5": -0.6,
+      "day10": 1.0,
+      "change_pct": -2.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "贸易Ⅲ",
+      "today": -0.1,
+      "day5": -1.3,
+      "day10": -1.0,
+      "change_pct": -1.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "贸易Ⅱ",
+      "today": -0.1,
+      "day5": -1.3,
+      "day10": -1.0,
+      "change_pct": -1.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "快递",
+      "today": -0.1,
+      "day5": -0.4,
+      "day10": -2.3,
+      "change_pct": -0.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "航天装备Ⅲ",
+      "today": -0.1,
+      "day5": -7.3,
+      "day10": -27.2,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "航天装备Ⅱ",
+      "today": -0.1,
+      "day5": -7.3,
+      "day10": -27.2,
+      "change_pct": 0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "钴",
+      "today": -0.2,
+      "day5": -1.0,
+      "day10": -0.7,
+      "change_pct": -2.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "体育Ⅲ",
+      "today": -0.2,
+      "day5": -0.3,
+      "day10": -0.4,
+      "change_pct": -1.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "体育Ⅱ",
+      "today": -0.2,
+      "day5": -0.3,
+      "day10": -0.4,
+      "change_pct": -1.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产开发",
+      "today": -0.2,
+      "day5": -5.9,
+      "day10": -6.8,
+      "change_pct": -0.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "大众出版",
+      "today": -0.2,
+      "day5": 3.4,
+      "day10": 2.6,
+      "change_pct": -1.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家电Ⅲ",
+      "today": -0.2,
+      "day5": -0.4,
+      "day10": 0.0,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他家电Ⅱ",
+      "today": -0.2,
+      "day5": -0.4,
+      "day10": 0.0,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "会展服务",
+      "today": -0.2,
+      "day5": 0.1,
+      "day10": -1.0,
+      "change_pct": -1.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "塑料",
+      "today": -0.2,
+      "day5": 6.7,
+      "day10": 10.0,
+      "change_pct": 0.15,
+      "limit_up": 2
+    },
+    {
+      "sector": "餐饮",
+      "today": -0.2,
+      "day5": 1.1,
+      "day10": 1.7,
+      "change_pct": -0.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "非白酒",
+      "today": -0.2,
+      "day5": -1.6,
+      "day10": -0.8,
+      "change_pct": -0.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "信托",
+      "today": -0.2,
+      "day5": -1.4,
+      "day10": -1.3,
+      "change_pct": -1.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他黑色家电",
+      "today": -0.2,
+      "day5": -1.1,
+      "day10": -1.2,
+      "change_pct": -0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "软饮料",
+      "today": -0.2,
+      "day5": 0.0,
+      "day10": -2.7,
+      "change_pct": -2.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "品牌消费电子",
+      "today": -0.2,
+      "day5": -0.3,
+      "day10": 2.9,
+      "change_pct": 2.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "氨纶",
+      "today": -0.2,
+      "day5": 0.7,
+      "day10": 1.5,
+      "change_pct": -2.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "棉纺",
+      "today": -0.2,
+      "day5": 0.1,
+      "day10": -0.4,
+      "change_pct": -1.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "资产管理",
+      "today": -0.2,
+      "day5": 0.9,
+      "day10": 1.0,
+      "change_pct": -1.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "租赁",
+      "today": -0.2,
+      "day5": 0.1,
+      "day10": -0.6,
+      "change_pct": -1.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "机场",
+      "today": -0.3,
+      "day5": -0.3,
+      "day10": -0.6,
+      "change_pct": -0.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游综合",
+      "today": -0.3,
+      "day5": 0.3,
+      "day10": 3.6,
+      "change_pct": 0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "锦纶",
+      "today": -0.3,
+      "day5": -1.4,
+      "day10": -1.8,
+      "change_pct": -0.61,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织制造",
+      "today": -0.3,
+      "day5": -2.0,
+      "day10": -3.8,
+      "change_pct": -0.44,
+      "limit_up": 0
+    },
+    {
+      "sector": "纯碱",
+      "today": -0.3,
+      "day5": 0.5,
+      "day10": 1.0,
+      "change_pct": -2.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "跨境电商",
+      "today": -0.3,
+      "day5": -0.0,
+      "day10": 1.1,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁路公路",
+      "today": -0.3,
+      "day5": 0.4,
+      "day10": -3.4,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "印染",
+      "today": -0.3,
+      "day5": -0.5,
+      "day10": -0.7,
+      "change_pct": -3.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "啤酒",
+      "today": -0.3,
+      "day5": -0.7,
+      "day10": -0.8,
+      "change_pct": -1.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "食用菌",
+      "today": -0.3,
+      "day5": 0.4,
+      "day10": -0.7,
+      "change_pct": -6.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "大宗用纸",
+      "today": -0.3,
+      "day5": -1.8,
+      "day10": -1.4,
+      "change_pct": -1.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "海洋捕捞",
+      "today": -0.3,
+      "day5": 0.5,
+      "day10": 0.7,
+      "change_pct": -2.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "多业态零售",
+      "today": -0.3,
+      "day5": 2.7,
+      "day10": 4.1,
+      "change_pct": -1.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "饮料乳品",
+      "today": -0.4,
+      "day5": -0.6,
+      "day10": -1.7,
+      "change_pct": -2.36,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁路运输",
+      "today": -0.4,
+      "day5": 0.4,
+      "day10": -2.0,
+      "change_pct": -0.96,
+      "limit_up": 0
+    },
+    {
+      "sector": "烘焙食品",
+      "today": -0.4,
+      "day5": -0.2,
+      "day10": -0.6,
+      "change_pct": -1.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "空调",
+      "today": -0.4,
+      "day5": 2.2,
+      "day10": -3.5,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "橡胶助剂",
+      "today": -0.4,
+      "day5": -1.9,
+      "day10": -3.1,
+      "change_pct": -1.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "期货",
+      "today": -0.4,
+      "day5": 0.7,
+      "day10": 2.5,
+      "change_pct": -2.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨卫电器",
+      "today": -0.4,
+      "day5": 0.4,
+      "day10": -0.6,
+      "change_pct": 1.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "饲料",
+      "today": -0.4,
+      "day5": 2.1,
+      "day10": -1.7,
+      "change_pct": -0.28,
+      "limit_up": 1
+    },
+    {
+      "sector": "教育出版",
+      "today": -0.4,
+      "day5": 0.7,
+      "day10": -0.2,
+      "change_pct": -0.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "厨房电器",
+      "today": -0.4,
+      "day5": 0.4,
+      "day10": -0.7,
+      "change_pct": 0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他养殖",
+      "today": -0.4,
+      "day5": -0.8,
+      "day10": -0.6,
+      "change_pct": -3.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "电工仪器仪表",
+      "today": -0.4,
+      "day5": 2.9,
+      "day10": 2.0,
+      "change_pct": -1.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合乘用车",
+      "today": -0.4,
+      "day5": -0.3,
+      "day10": 0.2,
+      "change_pct": -1.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保设备Ⅲ",
+      "today": -0.4,
+      "day5": 0.1,
+      "day10": 2.2,
+      "change_pct": -0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保设备Ⅱ",
+      "today": -0.4,
+      "day5": 0.1,
+      "day10": 2.2,
+      "change_pct": -0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "冶钢辅料",
+      "today": -0.4,
+      "day5": -0.9,
+      "day10": -0.6,
+      "change_pct": -0.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "水务及水治理",
+      "today": -0.4,
+      "day5": -0.5,
+      "day10": 5.6,
+      "change_pct": -0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "图片媒体",
+      "today": -0.4,
+      "day5": 0.5,
+      "day10": 0.1,
+      "change_pct": -3.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品加工",
+      "today": -0.5,
+      "day5": 0.1,
+      "day10": -0.5,
+      "change_pct": -1.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "电商服务",
+      "today": -0.5,
+      "day5": 1.1,
+      "day10": 3.6,
+      "change_pct": -0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "零食",
+      "today": -0.5,
+      "day5": 0.3,
+      "day10": 1.2,
+      "change_pct": -1.74,
+      "limit_up": 0
+    },
+    {
+      "sector": "涤纶",
+      "today": -0.5,
+      "day5": -0.5,
+      "day10": 0.0,
+      "change_pct": -1.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "纺织服饰",
+      "today": -0.5,
+      "day5": 2.1,
+      "day10": 1.5,
+      "change_pct": -0.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "物业管理",
+      "today": -0.5,
+      "day5": -0.6,
+      "day10": -1.4,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "跨境物流",
+      "today": -0.5,
+      "day5": -0.6,
+      "day10": -1.1,
+      "change_pct": -0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏辅材",
+      "today": -0.5,
+      "day5": 1.3,
+      "day10": -4.9,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "果蔬加工",
+      "today": -0.5,
+      "day5": -0.1,
+      "day10": 0.6,
+      "change_pct": -2.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "农用机械",
+      "today": -0.5,
+      "day5": 1.3,
+      "day10": 1.8,
+      "change_pct": -0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "水产养殖",
+      "today": -0.5,
+      "day5": 0.0,
+      "day10": -0.5,
+      "change_pct": -2.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "国际工程",
+      "today": -0.6,
+      "day5": -0.8,
+      "day10": -0.1,
+      "change_pct": -2.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "保健品",
+      "today": -0.6,
+      "day5": -1.2,
+      "day10": -2.8,
+      "change_pct": -1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "运动服装",
+      "today": -0.6,
+      "day5": 1.5,
+      "day10": -0.3,
+      "change_pct": -0.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "出版",
+      "today": -0.6,
+      "day5": 4.1,
+      "day10": 2.4,
+      "change_pct": -1.35,
+      "limit_up": 1
+    },
+    {
+      "sector": "诊断服务",
+      "today": -0.6,
+      "day5": -0.7,
+      "day10": 3.8,
+      "change_pct": -2.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "产业地产",
+      "today": -0.6,
+      "day5": -1.7,
+      "day10": -2.0,
+      "change_pct": -0.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "院线",
+      "today": -0.6,
+      "day5": -0.6,
+      "day10": -0.9,
+      "change_pct": -2.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "教育运营及其他",
+      "today": -0.6,
+      "day5": 0.1,
+      "day10": 0.9,
+      "change_pct": 0.32,
+      "limit_up": 0
+    },
+    {
+      "sector": "楼宇设备",
+      "today": -0.6,
+      "day5": -0.4,
+      "day10": -0.7,
+      "change_pct": -0.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "畜禽饲料",
+      "today": -0.7,
+      "day5": 1.4,
+      "day10": 0.4,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "教育",
+      "today": -0.7,
+      "day5": 0.6,
+      "day10": -2.1,
+      "change_pct": 0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "家电零部件Ⅲ",
+      "today": -0.7,
+      "day5": -5.1,
+      "day10": -7.8,
+      "change_pct": -0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "家电零部件Ⅱ",
+      "today": -0.7,
+      "day5": -5.1,
+      "day10": -7.8,
+      "change_pct": -0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏电池组件",
+      "today": -0.7,
+      "day5": -5.4,
+      "day10": -6.0,
+      "change_pct": -0.64,
+      "limit_up": 0
+    },
+    {
+      "sector": "汽车",
+      "today": -0.7,
+      "day5": -2.3,
+      "day10": 27.0,
+      "change_pct": 0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学纤维",
+      "today": -0.7,
+      "day5": -1.9,
+      "day10": -2.1,
+      "change_pct": -0.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游零售Ⅲ",
+      "today": -0.7,
+      "day5": -0.0,
+      "day10": 0.4,
+      "change_pct": -1.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "旅游零售Ⅱ",
+      "today": -0.7,
+      "day5": -0.0,
+      "day10": 0.4,
+      "change_pct": -1.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "粮食种植",
+      "today": -0.7,
+      "day5": -1.4,
+      "day10": -0.7,
+      "change_pct": -8.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "休闲食品",
+      "today": -0.7,
+      "day5": 0.5,
+      "day10": 1.2,
+      "change_pct": -1.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "原材料供应链服务",
+      "today": -0.7,
+      "day5": 0.6,
+      "day10": 0.9,
+      "change_pct": -1.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "锂电专用设备",
+      "today": -0.7,
+      "day5": -4.6,
+      "day10": -6.5,
+      "change_pct": -0.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "公交",
+      "today": -0.7,
+      "day5": 0.4,
+      "day10": 0.3,
+      "change_pct": -1.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "林业Ⅲ",
+      "today": -0.7,
+      "day5": 5.2,
+      "day10": 3.7,
+      "change_pct": -2.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "林业Ⅱ",
+      "today": -0.7,
+      "day5": 5.2,
+      "day10": 3.7,
+      "change_pct": -2.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗耗材",
+      "today": -0.8,
+      "day5": -2.5,
+      "day10": -6.4,
+      "change_pct": -0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏发电",
+      "today": -0.8,
+      "day5": -3.9,
+      "day10": -4.9,
+      "change_pct": -1.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "百货",
+      "today": -0.8,
+      "day5": 4.6,
+      "day10": 4.7,
+      "change_pct": -0.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学工程",
+      "today": -0.8,
+      "day5": -2.7,
+      "day10": -2.7,
+      "change_pct": -0.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "机床工具",
+      "today": -0.8,
+      "day5": -0.9,
+      "day10": -2.3,
+      "change_pct": -0.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "物流",
+      "today": -0.8,
+      "day5": -0.2,
+      "day10": -2.4,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "商用载货车",
+      "today": -0.8,
+      "day5": -0.2,
+      "day10": -2.1,
+      "change_pct": -1.58,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他建材Ⅲ",
+      "today": -0.9,
+      "day5": -0.9,
+      "day10": -1.6,
+      "change_pct": 0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他通信设备",
+      "today": -0.9,
+      "day5": -2.3,
+      "day10": -1.1,
+      "change_pct": -0.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "互联网电商",
+      "today": -0.9,
+      "day5": 1.3,
+      "day10": 5.0,
+      "change_pct": -0.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "金融信息服务",
+      "today": -0.9,
+      "day5": -2.8,
+      "day10": 0.4,
+      "change_pct": -0.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "渔业",
+      "today": -0.9,
+      "day5": 0.5,
+      "day10": 0.1,
+      "change_pct": -2.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "检测服务",
+      "today": -0.9,
+      "day5": -0.5,
+      "day10": -2.7,
+      "change_pct": -0.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信工程及服务",
+      "today": -0.9,
+      "day5": -2.2,
+      "day10": -3.0,
+      "change_pct": -0.2,
+      "limit_up": 0
+    },
+    {
+      "sector": "固废治理",
+      "today": -0.9,
+      "day5": 2.1,
+      "day10": 3.6,
+      "change_pct": -0.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "板材",
+      "today": -0.9,
+      "day5": -2.9,
+      "day10": -6.8,
+      "change_pct": -1.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业服务",
+      "today": -0.9,
+      "day5": 0.3,
+      "day10": -3.0,
+      "change_pct": -0.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合电力设备商",
+      "today": -1.0,
+      "day5": -2.1,
+      "day10": -3.4,
+      "change_pct": -2.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "电信运营商",
+      "today": -1.0,
+      "day5": 1.9,
+      "day10": 1.4,
+      "change_pct": 0.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "氟化工",
+      "today": -1.0,
+      "day5": -8.9,
+      "day10": -30.9,
+      "change_pct": -1.44,
+      "limit_up": 0
+    },
+    {
+      "sector": "清洁小家电",
+      "today": -1.0,
+      "day5": -0.2,
+      "day10": -0.6,
+      "change_pct": -1.56,
+      "limit_up": 0
+    },
+    {
+      "sector": "生猪养殖",
+      "today": -1.0,
+      "day5": 3.3,
+      "day10": 5.2,
+      "change_pct": -1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "文娱用品",
+      "today": -1.0,
+      "day5": 0.5,
+      "day10": 0.7,
+      "change_pct": -0.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "安防设备",
+      "today": -1.0,
+      "day5": -1.4,
+      "day10": 1.7,
+      "change_pct": 0.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "娱乐用品",
+      "today": -1.0,
+      "day5": 0.5,
+      "day10": 0.4,
+      "change_pct": -0.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空运输",
+      "today": -1.0,
+      "day5": -2.0,
+      "day10": 0.6,
+      "change_pct": -1.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "普钢",
+      "today": -1.0,
+      "day5": -3.3,
+      "day10": -8.1,
+      "change_pct": -1.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "瓷砖地板",
+      "today": -1.0,
+      "day5": -0.4,
+      "day10": -2.8,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "钛白粉",
+      "today": -1.0,
+      "day5": -0.8,
+      "day10": -0.6,
+      "change_pct": -3.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "铁矿石",
+      "today": -1.0,
+      "day5": 7.4,
+      "day10": 10.2,
+      "change_pct": -2.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "小家电",
+      "today": -1.0,
+      "day5": -0.6,
+      "day10": -1.1,
+      "change_pct": -0.78,
+      "limit_up": 0
+    },
+    {
+      "sector": "卫浴制品",
+      "today": -1.0,
+      "day5": -1.0,
+      "day10": -0.7,
+      "change_pct": -0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "膜材料",
+      "today": -1.1,
+      "day5": 0.1,
+      "day10": 1.7,
+      "change_pct": 0.33,
+      "limit_up": 0
+    },
+    {
+      "sector": "医药商业",
+      "today": -1.1,
+      "day5": -0.6,
+      "day10": -0.1,
+      "change_pct": -1.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "装修装饰Ⅲ",
+      "today": -1.1,
+      "day5": -0.3,
+      "day10": 0.3,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "装修装饰Ⅱ",
+      "today": -1.1,
+      "day5": -0.3,
+      "day10": 0.3,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合环境治理",
+      "today": -1.2,
+      "day5": -2.8,
+      "day10": -4.9,
+      "change_pct": -0.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "商业物业经营",
+      "today": -1.2,
+      "day5": 0.5,
+      "day10": 3.9,
+      "change_pct": -0.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "广告媒体",
+      "today": -1.2,
+      "day5": -1.4,
+      "day10": -0.8,
+      "change_pct": -1.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "硅料硅片",
+      "today": -1.2,
+      "day5": -0.3,
+      "day10": -4.0,
+      "change_pct": -1.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "房产租赁经纪",
+      "today": -1.2,
+      "day5": 0.7,
+      "day10": 1.1,
+      "change_pct": -1.05,
+      "limit_up": 0
+    },
+    {
+      "sector": "电能综合服务",
+      "today": -1.2,
+      "day5": -3.2,
+      "day10": -1.1,
+      "change_pct": -0.74,
+      "limit_up": 0
+    },
+    {
+      "sector": "磷肥及磷化工",
+      "today": -1.2,
+      "day5": -4.7,
+      "day10": -4.6,
+      "change_pct": -1.92,
+      "limit_up": 0
+    },
+    {
+      "sector": "彩电",
+      "today": -1.2,
+      "day5": -0.6,
+      "day10": -2.0,
+      "change_pct": -1.08,
+      "limit_up": 0
+    },
+    {
+      "sector": "钾肥",
+      "today": -1.2,
+      "day5": 1.5,
+      "day10": 6.4,
+      "change_pct": -2.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "激光设备",
+      "today": -1.3,
+      "day5": -1.1,
+      "day10": -9.3,
+      "change_pct": -0.65,
+      "limit_up": 0
+    },
+    {
+      "sector": "航空机场",
+      "today": -1.3,
+      "day5": -2.3,
+      "day10": -0.0,
+      "change_pct": -1.06,
+      "limit_up": 0
+    },
+    {
+      "sector": "体外诊断",
+      "today": -1.3,
+      "day5": 2.9,
+      "day10": 4.4,
+      "change_pct": -0.97,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他种植业",
+      "today": -1.3,
+      "day5": 0.7,
+      "day10": 3.3,
+      "change_pct": -0.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电零部件",
+      "today": -1.3,
+      "day5": -2.7,
+      "day10": -8.7,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "医药流通",
+      "today": -1.4,
+      "day5": -1.0,
+      "day10": -0.6,
+      "change_pct": -1.79,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他塑料制品",
+      "today": -1.4,
+      "day5": -0.3,
+      "day10": 4.2,
+      "change_pct": 0.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "黑色家电",
+      "today": -1.4,
+      "day5": -1.7,
+      "day10": -3.2,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "基础建设",
+      "today": -1.4,
+      "day5": -5.7,
+      "day10": -6.7,
+      "change_pct": -0.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "防水材料",
+      "today": -1.4,
+      "day5": -1.9,
+      "day10": -1.7,
+      "change_pct": -2.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "养殖业",
+      "today": -1.4,
+      "day5": 3.4,
+      "day10": 4.5,
+      "change_pct": -1.89,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属新材料",
+      "today": -1.5,
+      "day5": -8.4,
+      "day10": -20.5,
+      "change_pct": -0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "疫苗",
+      "today": -1.5,
+      "day5": -10.5,
+      "day10": 0.2,
+      "change_pct": -1.77,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品及饲料添加剂",
+      "today": -1.5,
+      "day5": -2.2,
+      "day10": -4.5,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "电机Ⅲ",
+      "today": -1.5,
+      "day5": -4.1,
+      "day10": -9.1,
+      "change_pct": -0.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "电机Ⅱ",
+      "today": -1.5,
+      "day5": -4.1,
+      "day10": -9.1,
+      "change_pct": -0.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "冶钢原料",
+      "today": -1.5,
+      "day5": 6.5,
+      "day10": 9.6,
+      "change_pct": -1.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "热力服务",
+      "today": -1.5,
+      "day5": 1.9,
+      "day10": 5.3,
+      "change_pct": 0.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "专业工程",
+      "today": -1.6,
+      "day5": -2.9,
+      "day10": -4.4,
+      "change_pct": -0.7,
+      "limit_up": 0
+    },
+    {
+      "sector": "炼油化工",
+      "today": -1.6,
+      "day5": 9.8,
+      "day10": 4.1,
+      "change_pct": -2.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "农药",
+      "today": -1.6,
+      "day5": -1.8,
+      "day10": -1.1,
+      "change_pct": -2.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "磁性材料",
+      "today": -1.6,
+      "day5": -3.5,
+      "day10": -4.0,
+      "change_pct": -1.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "无机盐",
+      "today": -1.6,
+      "day5": -4.5,
+      "day10": 1.2,
+      "change_pct": -1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "航海装备Ⅲ",
+      "today": -1.6,
+      "day5": -1.0,
+      "day10": 1.9,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "航海装备Ⅱ",
+      "today": -1.6,
+      "day5": -1.0,
+      "day10": 1.9,
+      "change_pct": 0.47,
+      "limit_up": 0
+    },
+    {
+      "sector": "LED",
+      "today": -1.6,
+      "day5": -6.4,
+      "day10": -13.0,
+      "change_pct": -0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "医院",
+      "today": -1.7,
+      "day5": -3.7,
+      "day10": -3.2,
+      "change_pct": -1.28,
+      "limit_up": 0
+    },
+    {
+      "sector": "轮胎轮毂",
+      "today": -1.7,
+      "day5": -5.0,
+      "day10": -5.7,
+      "change_pct": -1.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "钼",
+      "today": -1.7,
+      "day5": -6.3,
+      "day10": -0.9,
+      "change_pct": -3.01,
+      "limit_up": 0
+    },
+    {
+      "sector": "基建市政工程",
+      "today": -1.7,
+      "day5": -6.0,
+      "day10": -7.4,
+      "change_pct": -0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产服务",
+      "today": -1.7,
+      "day5": -0.0,
+      "day10": -0.4,
+      "change_pct": -0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "氯碱",
+      "today": -1.7,
+      "day5": -1.1,
+      "day10": -0.0,
+      "change_pct": -0.62,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合Ⅲ",
+      "today": -1.8,
+      "day5": -1.2,
+      "day10": -0.9,
+      "change_pct": -1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合",
+      "today": -1.8,
+      "day5": -1.2,
+      "day10": -0.9,
+      "change_pct": -1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "综合Ⅱ",
+      "today": -1.8,
+      "day5": -1.2,
+      "day10": -0.9,
+      "change_pct": -1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "涂料油墨",
+      "today": -1.8,
+      "day5": -3.2,
+      "day10": -5.8,
+      "change_pct": -0.41,
+      "limit_up": 0
+    },
+    {
+      "sector": "钢铁",
+      "today": -1.8,
+      "day5": 5.0,
+      "day10": 3.6,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "输变电设备",
+      "today": -1.9,
+      "day5": -16.1,
+      "day10": -22.5,
+      "change_pct": 0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "房地产",
+      "today": -1.9,
+      "day5": -5.9,
+      "day10": -7.2,
+      "change_pct": -0.71,
+      "limit_up": 0
+    },
+    {
+      "sector": "特种纸",
+      "today": -2.0,
+      "day5": -0.7,
+      "day10": 1.0,
+      "change_pct": -0.72,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏加工设备",
+      "today": -2.0,
+      "day5": -10.3,
+      "day10": -10.7,
+      "change_pct": -0.75,
+      "limit_up": 0
+    },
+    {
+      "sector": "航运港口",
+      "today": -2.0,
+      "day5": -13.0,
+      "day10": -21.6,
+      "change_pct": -1.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "城商行Ⅲ",
+      "today": -2.0,
+      "day5": -0.5,
+      "day10": -11.9,
+      "change_pct": -0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他化学原料",
+      "today": -2.0,
+      "day5": 2.9,
+      "day10": 2.7,
+      "change_pct": -2.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "氮肥",
+      "today": -2.0,
+      "day5": -0.3,
+      "day10": 4.2,
+      "change_pct": -3.82,
+      "limit_up": 0
+    },
+    {
+      "sector": "钟表珠宝",
+      "today": -2.1,
+      "day5": -1.8,
+      "day10": 3.9,
+      "change_pct": -1.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "电视广播Ⅲ",
+      "today": -2.1,
+      "day5": 2.1,
+      "day10": 2.7,
+      "change_pct": -2.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "电视广播Ⅱ",
+      "today": -2.1,
+      "day5": 2.1,
+      "day10": 2.7,
+      "change_pct": -2.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "饰品",
+      "today": -2.1,
+      "day5": -1.8,
+      "day10": 3.9,
+      "change_pct": -1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "航运",
+      "today": -2.2,
+      "day5": -13.0,
+      "day10": -19.7,
+      "change_pct": -1.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "聚氨酯",
+      "today": -2.2,
+      "day5": 5.6,
+      "day10": 6.3,
+      "change_pct": -0.88,
+      "limit_up": 0
+    },
+    {
+      "sector": "家居用品",
+      "today": -2.2,
+      "day5": -0.6,
+      "day10": 0.7,
+      "change_pct": -0.39,
+      "limit_up": 1
+    },
+    {
+      "sector": "装修建材",
+      "today": -2.2,
+      "day5": -3.1,
+      "day10": -4.1,
+      "change_pct": 0.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电整机",
+      "today": -2.2,
+      "day5": -9.6,
+      "day10": -29.9,
+      "change_pct": -1.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "超市",
+      "today": -2.2,
+      "day5": 1.8,
+      "day10": 2.3,
+      "change_pct": -1.66,
+      "limit_up": 0
+    },
+    {
+      "sector": "造纸",
+      "today": -2.3,
+      "day5": -2.5,
+      "day10": -0.4,
+      "change_pct": -0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "镍",
+      "today": -2.4,
+      "day5": -6.9,
+      "day10": -6.2,
+      "change_pct": -3.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "游戏Ⅲ",
+      "today": -2.4,
+      "day5": -1.2,
+      "day10": 0.9,
+      "change_pct": -1.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "游戏Ⅱ",
+      "today": -2.4,
+      "day5": -1.2,
+      "day10": 0.9,
+      "change_pct": -1.29,
+      "limit_up": 1
+    },
+    {
+      "sector": "其他电子Ⅲ",
+      "today": -2.4,
+      "day5": 12.9,
+      "day10": 4.9,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电子Ⅱ",
+      "today": -2.4,
+      "day5": 12.9,
+      "day10": 4.9,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "轨交设备Ⅲ",
+      "today": -2.5,
+      "day5": -0.3,
+      "day10": -0.5,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "轨交设备Ⅱ",
+      "today": -2.5,
+      "day5": -0.3,
+      "day10": -0.5,
+      "change_pct": -0.55,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信应用增值服务",
+      "today": -2.5,
+      "day5": -6.1,
+      "day10": -20.3,
+      "change_pct": -0.91,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他专用设备",
+      "today": -2.5,
+      "day5": 14.6,
+      "day10": 54.6,
+      "change_pct": -0.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "环境治理",
+      "today": -2.5,
+      "day5": -1.2,
+      "day10": 4.4,
+      "change_pct": -0.45,
+      "limit_up": 1
+    },
+    {
+      "sector": "纺织化学制品",
+      "today": -2.6,
+      "day5": 0.7,
+      "day10": 2.4,
+      "change_pct": -2.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "金融控股",
+      "today": -2.6,
+      "day5": -7.8,
+      "day10": -3.5,
+      "change_pct": -0.87,
+      "limit_up": 0
+    },
+    {
+      "sector": "专用设备",
+      "today": -2.8,
+      "day5": 12.3,
+      "day10": 50.4,
+      "change_pct": -0.13,
+      "limit_up": 1
+    },
+    {
+      "sector": "工控设备",
+      "today": -2.9,
+      "day5": -4.2,
+      "day10": 5.7,
+      "change_pct": -0.49,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏主材",
+      "today": -2.9,
+      "day5": -3.8,
+      "day10": -5.8,
+      "change_pct": -3.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "原料药",
+      "today": -3.0,
+      "day5": -5.8,
+      "day10": -6.5,
+      "change_pct": -1.03,
+      "limit_up": 0
+    },
+    {
+      "sector": "环保",
+      "today": -3.0,
+      "day5": -1.1,
+      "day10": 6.6,
+      "change_pct": -0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "建筑装饰",
+      "today": -3.0,
+      "day5": -15.6,
+      "day10": -23.6,
+      "change_pct": -0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "电网自动化设备",
+      "today": -3.0,
+      "day5": -11.2,
+      "day10": -14.9,
+      "change_pct": -0.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "文字媒体",
+      "today": -3.2,
+      "day5": 9.7,
+      "day10": 9.5,
+      "change_pct": -4.99,
+      "limit_up": 0
+    },
+    {
+      "sector": "食品饮料",
+      "today": -3.2,
+      "day5": -14.2,
+      "day10": -32.7,
+      "change_pct": -1.43,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗设备",
+      "today": -3.3,
+      "day5": -6.3,
+      "day10": 0.5,
+      "change_pct": -0.86,
+      "limit_up": 0
+    },
+    {
+      "sector": "家用电器",
+      "today": -3.3,
+      "day5": -2.3,
+      "day10": -15.8,
+      "change_pct": -0.13,
+      "limit_up": 0
+    },
+    {
+      "sector": "仪器仪表",
+      "today": -3.3,
+      "day5": -4.1,
+      "day10": -5.2,
+      "change_pct": -0.51,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制品",
+      "today": -3.3,
+      "day5": -0.2,
+      "day10": -24.9,
+      "change_pct": -0.74,
+      "limit_up": 1
+    },
+    {
+      "sector": "其他小金属",
+      "today": -3.5,
+      "day5": -12.5,
+      "day10": -27.8,
+      "change_pct": -1.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "风电设备",
+      "today": -3.5,
+      "day5": -12.3,
+      "day10": -38.6,
+      "change_pct": -1.23,
+      "limit_up": 0
+    },
+    {
+      "sector": "粮油加工",
+      "today": -3.6,
+      "day5": -0.0,
+      "day10": -0.3,
+      "change_pct": -4.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "焦煤",
+      "today": -3.6,
+      "day5": -8.8,
+      "day10": -12.3,
+      "change_pct": -4.15,
+      "limit_up": 0
+    },
+    {
+      "sector": "白酒Ⅲ",
+      "today": -3.8,
+      "day5": -10.0,
+      "day10": -23.0,
+      "change_pct": -1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "白酒Ⅱ",
+      "today": -3.8,
+      "day5": -10.0,
+      "day10": -23.0,
+      "change_pct": -1.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他计算机设备",
+      "today": -3.8,
+      "day5": 12.1,
+      "day10": -3.4,
+      "change_pct": -0.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "动力煤",
+      "today": -3.8,
+      "day5": -2.2,
+      "day10": -2.6,
+      "change_pct": -2.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "农产品加工",
+      "today": -3.8,
+      "day5": -1.3,
+      "day10": -0.7,
+      "change_pct": -2.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "国有大型银行Ⅲ",
+      "today": -3.9,
+      "day5": 3.2,
+      "day10": -2.9,
+      "change_pct": 0.67,
+      "limit_up": 0
+    },
+    {
+      "sector": "光学元件",
+      "today": -3.9,
+      "day5": 3.9,
+      "day10": 9.0,
+      "change_pct": -1.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "铅锌",
+      "today": -4.1,
+      "day5": -9.5,
+      "day10": 0.9,
+      "change_pct": -1.92,
+      "limit_up": 0
+    },
+    {
+      "sector": "稀土",
+      "today": -4.3,
+      "day5": -4.8,
+      "day10": -20.0,
+      "change_pct": -3.1,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信服务",
+      "today": -4.3,
+      "day5": -6.4,
+      "day10": -21.9,
+      "change_pct": -0.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "轻工制造",
+      "today": -4.4,
+      "day5": 1.7,
+      "day10": 7.4,
+      "change_pct": -0.37,
+      "limit_up": 0
+    },
+    {
+      "sector": "交通运输",
+      "today": -4.4,
+      "day5": -15.0,
+      "day10": -27.5,
+      "change_pct": -1.04,
+      "limit_up": 0
+    },
+    {
+      "sector": "风力发电",
+      "today": -4.5,
+      "day5": -9.3,
+      "day10": -7.2,
+      "change_pct": -1.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "多元金融",
+      "today": -4.5,
+      "day5": -10.3,
+      "day10": -1.3,
+      "change_pct": -1.41,
+      "limit_up": 1
+    },
+    {
+      "sector": "一般零售",
+      "today": -4.5,
+      "day5": 9.6,
+      "day10": 14.9,
+      "change_pct": -0.83,
+      "limit_up": 2
+    },
+    {
+      "sector": "逆变器",
+      "today": -4.6,
+      "day5": -46.7,
+      "day10": -46.9,
+      "change_pct": -2.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制剂",
+      "today": -4.7,
+      "day5": -23.2,
+      "day10": -38.0,
+      "change_pct": -1.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "火力发电",
+      "today": -4.8,
+      "day5": -17.4,
+      "day10": -26.4,
+      "change_pct": -1.24,
+      "limit_up": 0
+    },
+    {
+      "sector": "计算机设备",
+      "today": -4.8,
+      "day5": 10.7,
+      "day10": -1.7,
+      "change_pct": -0.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "金属制品",
+      "today": -4.8,
+      "day5": 1.5,
+      "day10": -11.2,
+      "change_pct": 0.09,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械整机",
+      "today": -5.0,
+      "day5": -1.8,
+      "day10": -4.1,
+      "change_pct": -1.38,
+      "limit_up": 0
+    },
+    {
+      "sector": "工程机械",
+      "today": -5.0,
+      "day5": -2.1,
+      "day10": -5.6,
+      "change_pct": -0.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "银行",
+      "today": -5.1,
+      "day5": 1.1,
+      "day10": -21.0,
+      "change_pct": -0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "银行Ⅱ",
+      "today": -5.1,
+      "day5": 1.1,
+      "day10": -21.0,
+      "change_pct": -0.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "医疗器械",
+      "today": -5.3,
+      "day5": -5.9,
+      "day10": -1.5,
+      "change_pct": -0.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "视频媒体",
+      "today": -5.4,
+      "day5": 1.1,
+      "day10": 0.8,
+      "change_pct": 0.69,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电源设备Ⅲ",
+      "today": -5.6,
+      "day5": -0.8,
+      "day10": 8.3,
+      "change_pct": -0.25,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学原料",
+      "today": -5.6,
+      "day5": -2.4,
+      "day10": 3.5,
+      "change_pct": -1.62,
+      "limit_up": 2
+    },
+    {
+      "sector": "公用事业",
+      "today": -5.6,
+      "day5": -28.7,
+      "day10": -29.9,
+      "change_pct": -0.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "农化制品",
+      "today": -5.6,
+      "day5": -3.8,
+      "day10": 6.3,
+      "change_pct": -2.5,
+      "limit_up": 1
+    },
+    {
+      "sector": "商贸零售",
+      "today": -6.0,
+      "day5": 10.0,
+      "day10": 19.1,
+      "change_pct": -0.76,
+      "limit_up": 0
+    },
+    {
+      "sector": "门户网站",
+      "today": -6.0,
+      "day5": 2.8,
+      "day10": -1.5,
+      "change_pct": -0.94,
+      "limit_up": 0
+    },
+    {
+      "sector": "中药Ⅲ",
+      "today": -6.1,
+      "day5": -7.3,
+      "day10": -17.0,
+      "change_pct": -1.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "中药Ⅱ",
+      "today": -6.1,
+      "day5": -7.3,
+      "day10": -17.0,
+      "change_pct": -1.5,
+      "limit_up": 0
+    },
+    {
+      "sector": "钨",
+      "today": -6.1,
+      "day5": -17.4,
+      "day10": -26.7,
+      "change_pct": -3.85,
+      "limit_up": 0
+    },
+    {
+      "sector": "影视动漫制作",
+      "today": -6.2,
+      "day5": 0.9,
+      "day10": 1.5,
+      "change_pct": -2.26,
+      "limit_up": 0
+    },
+    {
+      "sector": "其他电源设备Ⅱ",
+      "today": -6.5,
+      "day5": -1.8,
+      "day10": 5.1,
+      "change_pct": -0.31,
+      "limit_up": 0
+    },
+    {
+      "sector": "白银",
+      "today": -6.6,
+      "day5": -17.0,
+      "day10": 15.7,
+      "change_pct": -1.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "煤炭",
+      "today": -6.8,
+      "day5": -10.9,
+      "day10": -14.9,
+      "change_pct": -3.35,
+      "limit_up": 0
+    },
+    {
+      "sector": "电力",
+      "today": -6.9,
+      "day5": -28.5,
+      "day10": -28.6,
+      "change_pct": -0.73,
+      "limit_up": 1
+    },
+    {
+      "sector": "影视院线",
+      "today": -6.9,
+      "day5": 0.3,
+      "day10": 0.5,
+      "change_pct": -2.3,
+      "limit_up": 1
+    },
+    {
+      "sector": "电动乘用车",
+      "today": -6.9,
+      "day5": -19.9,
+      "day10": -6.2,
+      "change_pct": -2.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "分立器件",
+      "today": -7.1,
+      "day5": -17.7,
+      "day10": -30.2,
+      "change_pct": -1.63,
+      "limit_up": 0
+    },
+    {
+      "sector": "电子化学品Ⅲ",
+      "today": -7.1,
+      "day5": -3.6,
+      "day10": -35.1,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "电子化学品Ⅱ",
+      "today": -7.1,
+      "day5": -3.6,
+      "day10": -35.1,
+      "change_pct": -1.3,
+      "limit_up": 0
+    },
+    {
+      "sector": "乘用车",
+      "today": -7.3,
+      "day5": -20.3,
+      "day10": -5.9,
+      "change_pct": -1.6,
+      "limit_up": 0
+    },
+    {
+      "sector": "集成电路制造",
+      "today": -7.3,
+      "day5": -6.3,
+      "day10": -22.7,
+      "change_pct": -2.0,
+      "limit_up": 0
+    },
+    {
+      "sector": "煤炭开采",
+      "today": -7.4,
+      "day5": -11.0,
+      "day10": -14.9,
+      "change_pct": -3.22,
+      "limit_up": 0
+    },
+    {
+      "sector": "化学制药",
+      "today": -7.6,
+      "day5": -29.0,
+      "day10": -44.5,
+      "change_pct": -1.12,
+      "limit_up": 1
+    },
+    {
+      "sector": "面板",
+      "today": -8.2,
+      "day5": -5.0,
+      "day10": -42.3,
+      "change_pct": -1.27,
+      "limit_up": 0
+    },
+    {
+      "sector": "保险Ⅲ",
+      "today": -8.4,
+      "day5": -5.9,
+      "day10": 11.7,
+      "change_pct": -1.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "保险Ⅱ",
+      "today": -8.4,
+      "day5": -5.9,
+      "day10": 11.7,
+      "change_pct": -1.11,
+      "limit_up": 0
+    },
+    {
+      "sector": "医药生物",
+      "today": -8.5,
+      "day5": -78.4,
+      "day10": -95.5,
+      "change_pct": -1.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "铝",
+      "today": -8.8,
+      "day5": -14.6,
+      "day10": -22.2,
+      "change_pct": -1.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "IT服务Ⅲ",
+      "today": -9.1,
+      "day5": 30.5,
+      "day10": -13.2,
+      "change_pct": -0.42,
+      "limit_up": 0
+    },
+    {
+      "sector": "IT服务Ⅱ",
+      "today": -9.1,
+      "day5": 30.5,
+      "day10": -13.2,
+      "change_pct": -0.42,
+      "limit_up": 2
+    },
+    {
+      "sector": "黄金",
+      "today": -9.3,
+      "day5": -37.8,
+      "day10": -18.6,
+      "change_pct": 0.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "机器人",
+      "today": -9.3,
+      "day5": -26.5,
+      "day10": -61.5,
+      "change_pct": -0.81,
+      "limit_up": 0
+    },
+    {
+      "sector": "种子",
+      "today": -9.6,
+      "day5": 8.9,
+      "day10": 12.5,
+      "change_pct": -7.7,
+      "limit_up": 0
+    },
+    {
+      "sector": "锂",
+      "today": -9.8,
+      "day5": -3.7,
+      "day10": 0.4,
+      "change_pct": -3.68,
+      "limit_up": 0
+    },
+    {
+      "sector": "自动化设备",
+      "today": -10.2,
+      "day5": -24.1,
+      "day10": -50.1,
+      "change_pct": -0.45,
+      "limit_up": 0
+    },
+    {
+      "sector": "集成电路封测",
+      "today": -10.6,
+      "day5": -19.1,
+      "day10": -51.0,
+      "change_pct": -1.4,
+      "limit_up": 0
+    },
+    {
+      "sector": "电池化学品",
+      "today": -11.3,
+      "day5": -39.6,
+      "day10": -46.0,
+      "change_pct": -1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体材料",
+      "today": -11.5,
+      "day5": -45.0,
+      "day10": -101.9,
+      "change_pct": -1.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "光伏设备",
+      "today": -11.9,
+      "day5": -65.3,
+      "day10": -78.2,
+      "change_pct": -1.19,
+      "limit_up": 1
+    },
+    {
+      "sector": "种植业",
+      "today": -11.9,
+      "day5": 8.6,
+      "day10": 14.3,
+      "change_pct": -5.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "营销代理",
+      "today": -12.1,
+      "day5": 5.6,
+      "day10": -2.6,
+      "change_pct": -2.12,
+      "limit_up": 0
+    },
+    {
+      "sector": "基础化工",
+      "today": -12.1,
+      "day5": 2.2,
+      "day10": 0.5,
+      "change_pct": -0.83,
+      "limit_up": 0
+    },
+    {
+      "sector": "能源金属",
+      "today": -12.3,
+      "day5": -11.6,
+      "day10": -6.5,
+      "change_pct": -3.39,
+      "limit_up": 0
+    },
+    {
+      "sector": "横向通用软件",
+      "today": -12.8,
+      "day5": 11.1,
+      "day10": 1.0,
+      "change_pct": -2.21,
+      "limit_up": 0
+    },
+    {
+      "sector": "广告营销",
+      "today": -13.3,
+      "day5": 4.2,
+      "day10": -3.4,
+      "change_pct": -2.09,
+      "limit_up": 0
+    },
+    {
+      "sector": "光学光电子",
+      "today": -13.8,
+      "day5": -7.5,
+      "day10": -46.3,
+      "change_pct": -1.07,
+      "limit_up": 0
+    },
+    {
+      "sector": "数字媒体",
+      "today": -15.0,
+      "day5": 15.5,
+      "day10": 9.0,
+      "change_pct": -1.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "小金属",
+      "today": -15.7,
+      "day5": -41.0,
+      "day10": -75.4,
+      "change_pct": -2.19,
+      "limit_up": 0
+    },
+    {
+      "sector": "贵金属",
+      "today": -15.8,
+      "day5": -54.7,
+      "day10": -2.9,
+      "change_pct": -0.16,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体设备",
+      "today": -16.4,
+      "day5": -46.4,
+      "day10": -62.5,
+      "change_pct": -1.93,
+      "limit_up": 0
+    },
+    {
+      "sector": "垂直应用软件",
+      "today": -16.9,
+      "day5": -9.6,
+      "day10": 5.7,
+      "change_pct": -1.29,
+      "limit_up": 0
+    },
+    {
+      "sector": "锂电池",
+      "today": -17.3,
+      "day5": -41.4,
+      "day10": -59.4,
+      "change_pct": -0.74,
+      "limit_up": 0
+    },
+    {
+      "sector": "机械设备",
+      "today": -18.0,
+      "day5": -1.3,
+      "day10": 2.2,
+      "change_pct": -0.18,
+      "limit_up": 0
+    },
+    {
+      "sector": "农林牧渔",
+      "today": -19.3,
+      "day5": 19.3,
+      "day10": 19.7,
+      "change_pct": -2.53,
+      "limit_up": 0
+    },
+    {
+      "sector": "被动元件",
+      "today": -20.2,
+      "day5": -14.4,
+      "day10": -59.1,
+      "change_pct": -1.54,
+      "limit_up": 0
+    },
+    {
+      "sector": "铜",
+      "today": -20.4,
+      "day5": -67.8,
+      "day10": 35.0,
+      "change_pct": -1.82,
+      "limit_up": 0
+    },
+    {
+      "sector": "印制电路板",
+      "today": -25.9,
+      "day5": 7.3,
+      "day10": 35.2,
+      "change_pct": -0.98,
+      "limit_up": 0
+    },
+    {
+      "sector": "电池",
+      "today": -28.8,
+      "day5": -86.3,
+      "day10": -111.0,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "软件开发",
+      "today": -29.7,
+      "day5": 1.5,
+      "day10": 6.7,
+      "change_pct": -1.52,
+      "limit_up": 0
+    },
+    {
+      "sector": "工业金属",
+      "today": -33.3,
+      "day5": -91.9,
+      "day10": 13.7,
+      "change_pct": -1.59,
+      "limit_up": 0
+    },
+    {
+      "sector": "电力设备",
+      "today": -37.3,
+      "day5": -195.1,
+      "day10": -244.2,
+      "change_pct": -0.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "证券Ⅲ",
+      "today": -37.8,
+      "day5": -31.2,
+      "day10": 11.3,
+      "change_pct": -2.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "证券Ⅱ",
+      "today": -37.8,
+      "day5": -31.2,
+      "day10": 11.3,
+      "change_pct": -2.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "数字芯片设计",
+      "today": -38.4,
+      "day5": -58.7,
+      "day10": -203.0,
+      "change_pct": -1.57,
+      "limit_up": 0
+    },
+    {
+      "sector": "传媒",
+      "today": -40.2,
+      "day5": 25.0,
+      "day10": 12.1,
+      "change_pct": -1.73,
+      "limit_up": 0
+    },
+    {
+      "sector": "计算机",
+      "today": -43.5,
+      "day5": 42.7,
+      "day10": -8.2,
+      "change_pct": -0.8,
+      "limit_up": 0
+    },
+    {
+      "sector": "元件",
+      "today": -46.1,
+      "day5": -7.1,
+      "day10": -23.9,
+      "change_pct": -1.14,
+      "limit_up": 0
+    },
+    {
+      "sector": "非银金融",
+      "today": -50.7,
+      "day5": -47.4,
+      "day10": 21.7,
+      "change_pct": -1.84,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信设备",
+      "today": -67.1,
+      "day5": -78.6,
+      "day10": -103.8,
+      "change_pct": -0.47,
+      "limit_up": 1
+    },
+    {
+      "sector": "通信网络设备及器件",
+      "today": -71.4,
+      "day5": -30.5,
+      "day10": -118.0,
+      "change_pct": -1.46,
+      "limit_up": 0
+    },
+    {
+      "sector": "通信",
+      "today": -71.5,
+      "day5": -84.9,
+      "day10": -125.8,
+      "change_pct": -0.48,
+      "limit_up": 0
+    },
+    {
+      "sector": "有色金属",
+      "today": -78.6,
+      "day5": -207.6,
+      "day10": -91.6,
+      "change_pct": -1.34,
+      "limit_up": 0
+    },
+    {
+      "sector": "半导体",
+      "today": -90.9,
+      "day5": -181.8,
+      "day10": -460.4,
+      "change_pct": -1.39,
+      "limit_up": 1
+    },
+    {
+      "sector": "电子",
+      "today": -150.7,
+      "day5": -166.9,
+      "day10": -528.5,
+      "change_pct": -0.86,
+      "limit_up": 0
+    }
+  ],
+  "index_panel": [
+    {
+      "key": "shanghai",
+      "name": "上证指数",
+      "date": "2026-09-02",
+      "close": 3941.39,
+      "pct": -0.97,
+      "ret5": 0.74,
+      "ret20": 1.62,
+      "ret60": -1.71
+    },
+    {
+      "key": "szcheng",
+      "name": "深证成指",
+      "date": "2026-09-02",
+      "close": 13611.55,
+      "pct": -1.88,
+      "ret5": -1.66,
+      "ret20": -3.77,
+      "ret60": -10.85
+    },
+    {
+      "key": "chinext",
+      "name": "创业板指",
+      "date": "2026-09-02",
+      "close": 3312.24,
+      "pct": -2.39,
+      "ret5": -3.01,
+      "ret20": -6.31,
+      "ret60": -16.39
+    },
+    {
+      "key": "star50",
+      "name": "科创50",
+      "date": "2026-09-02",
+      "close": 1617.6,
+      "pct": -1.82,
+      "ret5": -0.88,
+      "ret20": -4.49,
+      "ret60": -2.74
+    },
+    {
+      "key": "hs300",
+      "name": "沪深300",
+      "date": "2026-09-02",
+      "close": 4547.96,
+      "pct": -1.38,
+      "ret5": -0.93,
+      "ret20": -2.37,
+      "ret60": -5.29
+    },
+    {
+      "key": "zz1000",
+      "name": "中证1000",
+      "date": "2026-09-02",
+      "close": 7583.76,
+      "pct": -1.4,
+      "ret5": 0.52,
+      "ret20": 1.21,
+      "ret60": -8.83
+    },
+    {
+      "key": "zzdiv",
+      "name": "中证红利",
+      "date": "2026-09-02",
+      "close": 5634.58,
+      "pct": -1.48,
+      "ret5": -0.43,
+      "ret20": 3.43,
+      "ret60": 0.08
+    }
+  ],
+  "limit_ladder": {
+    "date": "2026-09-02",
+    "ladder": [
+      {
+        "code": "003005",
+        "stock": "竞业达",
+        "sector": "IT服务Ⅱ",
+        "board": 4,
+        "seal_ratio": 6.73,
+        "seal_fund": 1.81,
+        "amount": 0.88,
+        "turnover_rate": 3.27,
+        "zbc": 0,
+        "note": "4连板"
+      },
+      {
+        "code": "601086",
+        "stock": "国芳集团",
+        "sector": "一般零售",
+        "board": 4,
+        "seal_ratio": 4.14,
+        "seal_fund": 3.06,
+        "amount": 0.64,
+        "turnover_rate": 0.87,
+        "zbc": 0,
+        "note": "4连板"
+      },
+      {
+        "code": "000892",
+        "stock": "欢瑞世纪",
+        "sector": "影视院线",
+        "board": 3,
+        "seal_ratio": 10.69,
+        "seal_fund": 3.95,
+        "amount": 1.13,
+        "turnover_rate": 3.06,
+        "zbc": 0,
+        "note": "3连板"
+      },
+      {
+        "code": "600892",
+        "stock": "大晟文化",
+        "sector": "游戏Ⅱ",
+        "board": 3,
+        "seal_ratio": 4.46,
+        "seal_fund": 1.34,
+        "amount": 0.6,
+        "turnover_rate": 2.01,
+        "zbc": 0,
+        "note": "3连板"
+      },
+      {
+        "code": "002909",
+        "stock": "集泰股份",
+        "sector": "化学制品",
+        "board": 3,
+        "seal_ratio": 2.69,
+        "seal_fund": 0.74,
+        "amount": 1.92,
+        "turnover_rate": 6.94,
+        "zbc": 0,
+        "note": "3连板"
+      },
+      {
+        "code": "605577",
+        "stock": "龙版传媒",
+        "sector": "出版",
+        "board": 3,
+        "seal_ratio": 1.3,
+        "seal_fund": 0.74,
+        "amount": 3.26,
+        "turnover_rate": 6.0,
+        "zbc": 0,
+        "note": "3连板"
+      },
+      {
+        "code": "000635",
+        "stock": "英力特",
+        "sector": "化学原料",
+        "board": 2,
+        "seal_ratio": 3.2,
+        "seal_fund": 0.93,
+        "amount": 0.82,
+        "turnover_rate": 2.81,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "603207",
+        "stock": "小方制药",
+        "sector": "化学制药",
+        "board": 2,
+        "seal_ratio": 3.05,
+        "seal_fund": 0.47,
+        "amount": 3.66,
+        "turnover_rate": 24.16,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "600967",
+        "stock": "内蒙一机",
+        "sector": "地面兵装",
+        "board": 2,
+        "seal_ratio": 1.21,
+        "seal_fund": 2.76,
+        "amount": 8.46,
+        "turnover_rate": 3.82,
+        "zbc": 0,
+        "note": "2连板"
+      },
+      {
+        "code": "600830",
+        "stock": "香溢融通",
+        "sector": "多元金融",
+        "board": 2,
+        "seal_ratio": 1.16,
+        "seal_fund": 0.54,
+        "amount": 3.81,
+        "turnover_rate": 8.37,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "002104",
+        "stock": "恒宝股份",
+        "sector": "通信设备",
+        "board": 2,
+        "seal_ratio": 1.12,
+        "seal_fund": 0.92,
+        "amount": 17.72,
+        "turnover_rate": 22.99,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "601566",
+        "stock": "九牧王",
+        "sector": "服装家纺",
+        "board": 2,
+        "seal_ratio": 0.78,
+        "seal_fund": 0.46,
+        "amount": 4.92,
+        "turnover_rate": 8.5,
+        "zbc": 2,
+        "note": "2连板"
+      },
+      {
+        "code": "600828",
+        "stock": "茂业商业",
+        "sector": "一般零售",
+        "board": 2,
+        "seal_ratio": 0.77,
+        "seal_fund": 0.64,
+        "amount": 2.18,
+        "turnover_rate": 2.66,
+        "zbc": 1,
+        "note": "2连板"
+      },
+      {
+        "code": "001326",
+        "stock": "联域股份",
+        "sector": "照明设备",
+        "board": 1,
+        "seal_ratio": 8.22,
+        "seal_fund": 1.45,
+        "amount": 2.1,
+        "turnover_rate": 12.7,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "920176",
+        "stock": "维琪科技",
+        "sector": "化妆品",
+        "board": 1,
+        "seal_ratio": 6.64,
+        "seal_fund": 0.37,
+        "amount": 2.24,
+        "turnover_rate": 44.12,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "920212",
+        "stock": "智新电子",
+        "sector": "消费电子",
+        "board": 1,
+        "seal_ratio": 6.6,
+        "seal_fund": 0.48,
+        "amount": 1.33,
+        "turnover_rate": 19.5,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "603270",
+        "stock": "金帝股份",
+        "sector": "通用设备",
+        "board": 1,
+        "seal_ratio": 3.42,
+        "seal_fund": 0.77,
+        "amount": 4.87,
+        "turnover_rate": 22.46,
+        "zbc": 2,
+        "note": "3天2板"
+      },
+      {
+        "code": "001278",
+        "stock": "一彬科技",
+        "sector": "汽车零部",
+        "board": 1,
+        "seal_ratio": 3.38,
+        "seal_fund": 0.53,
+        "amount": 0.62,
+        "turnover_rate": 4.14,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "920006",
+        "stock": "晟楠科技",
+        "sector": "航空装备",
+        "board": 1,
+        "seal_ratio": 3.22,
+        "seal_fund": 0.34,
+        "amount": 2.59,
+        "turnover_rate": 26.07,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "002886",
+        "stock": "沃特股份",
+        "sector": "塑料",
+        "board": 1,
+        "seal_ratio": 2.97,
+        "seal_fund": 1.91,
+        "amount": 11.58,
+        "turnover_rate": 18.78,
+        "zbc": 0,
+        "note": "9天5板"
+      },
+      {
+        "code": "002297",
+        "stock": "博云新材",
+        "sector": "航空装备",
+        "board": 1,
+        "seal_ratio": 2.44,
+        "seal_fund": 2.79,
+        "amount": 13.16,
+        "turnover_rate": 12.02,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "603958",
+        "stock": "哈森股份",
+        "sector": "服装家纺",
+        "board": 1,
+        "seal_ratio": 2.15,
+        "seal_fund": 1.12,
+        "amount": 7.44,
+        "turnover_rate": 14.88,
+        "zbc": 0,
+        "note": "1连板"
+      },
+      {
+        "code": "002300",
+        "stock": "太阳电缆",
+        "sector": "电网设备",
+        "board": 1,
+        "seal_ratio": 2.13,
+        "seal_fund": 1.18,
+        "amount": 4.24,
+        "turnover_rate": 7.86,
+        "zbc": 2,
+        "note": "1连板"
+      },
+      {
+        "code": "603978",
+        "stock": "深圳新星",
+        "sector": "金属新材",
+        "board": 1,
+        "seal_ratio": 2.13,
+        "seal_fund": 1.02,
+        "amount": 4.15,
+        "turnover_rate": 8.87,
+        "zbc": 1,
+        "note": "3天2板"
+      }
+    ],
+    "distribution": {
+      "4": 2,
+      "3": 4,
+      "2": 7,
+      "1": 39
+    },
+    "metrics": {
+      "limit_up": 52,
+      "limit_down": 8,
+      "zha_ban": 15,
+      "seal_rate": 77.6,
+      "promotion_rate": 15.7,
+      "promoted": 13,
+      "prev_limit_up": 83,
+      "max_board": 4,
+      "two_board_plus": 13
+    },
+    "notes": [
+      "封板率 = 收盘涨停 /（收盘涨停 + 炸板），采用东财涨停池与炸板池口径；与按「盘中曾触及涨停」统计的口径不同，数值不可直接比较。",
+      "晋级率 = 上一交易日涨停个股中今日仍收涨停的占比，依据东财涨停池个股代码比对，上一交易日名单由本地缓存提供（首次运行会多取一次历史涨停池）。",
+      "连板数取东财涨停池 lbc 字段；「n 天 m 板」取 zttj 字段；封单力度 = 封单金额 / 流通市值。"
+    ]
+  },
+  "intraday": {
+    "summary": "低开 -0.42%，收盘 -0.97%（收绿）",
+    "events": [
+      {
+        "time": "10:00",
+        "text": "低开 -0.42%（首 30 分钟开盘价）"
+      },
+      {
+        "time": "10:00",
+        "text": "较昨收跌超 0.5%"
+      },
+      {
+        "time": "10:30",
+        "text": "较昨收跌超 1.0%"
+      },
+      {
+        "time": "11:30",
+        "text": "较昨收涨超 0.5%"
+      },
+      {
+        "time": "14:00",
+        "text": "盘中高点 -0.58%"
+      },
+      {
+        "time": "11:00",
+        "text": "盘中低点 -1.08%"
+      },
+      {
+        "time": "10:00",
+        "text": "全日最大 30 分钟成交时段"
+      }
+    ],
+    "method": "30 分钟线规则检测：开盘定性、±0.5pct 阈值穿越、高低点时点、上下午摆幅 ≥0.5pct 的拐点、尾盘 ±0.2pct 动作、最大量时段。指数级（上证）。"
+  },
+  "margin": {
+    "balance": 26665.22,
+    "change": 17.72,
+    "financing": 26369.15,
+    "securities_loan": 296.07,
+    "financing_net_buy": 14.23,
+    "pct_of_float": 2.61,
+    "as_of": "2026-09-01",
+    "prev_as_of": "2026-08-31",
+    "note": "两融余额为沪深两市合计（东财数据中心历史汇总），交易所 T+1 披露，数据日期通常落后卡片市场日 1 个交易日，请以 as_of 字段为准。"
+  },
+  "global_markets": [
+    {
+      "name": "道琼斯",
+      "category": "美股",
+      "close": 52766.88,
+      "pct": -0.79,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "纳斯达克",
+      "category": "美股",
+      "close": 26099.77,
+      "pct": -1.03,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "标普500",
+      "category": "美股",
+      "close": 7631.47,
+      "pct": -0.71,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "日经225",
+      "category": "亚太",
+      "close": 64325.64,
+      "pct": -2.85,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "韩国KOSPI",
+      "category": "亚太",
+      "close": 6562.72,
+      "pct": -3.99,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "台湾加权",
+      "category": "亚太",
+      "close": 46164.72,
+      "pct": -1.67,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "恒生指数",
+      "category": "亚太",
+      "close": 25311.21,
+      "pct": -0.07,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "英国富时100",
+      "category": "欧洲",
+      "close": 10713.31,
+      "pct": -0.7,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "德国DAX",
+      "category": "欧洲",
+      "close": 25738.0,
+      "pct": -0.89,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "美元指数",
+      "category": "汇率",
+      "close": 99.83,
+      "pct": 0.17,
+      "as_of": null,
+      "unit": "点"
+    },
+    {
+      "name": "费城半导体",
+      "category": "美股",
+      "close": 11288.6119,
+      "pct": -2.14,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "伦敦金现货",
+      "category": "商品",
+      "close": 4308.73,
+      "pct": -0.45,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "伦敦银现货",
+      "category": "商品",
+      "close": 63.73,
+      "pct": -0.52,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "纽约原油",
+      "category": "商品",
+      "close": 90.257,
+      "pct": 0.04,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "LME铜",
+      "category": "商品",
+      "close": 14125.215,
+      "pct": -1.05,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "离岸人民币",
+      "category": "汇率",
+      "close": 6.7233,
+      "pct": 0.02,
+      "as_of": "2026-09-02",
+      "unit": null,
+      "lagged": false
+    },
+    {
+      "name": "恒生科技",
+      "category": "亚太",
+      "close": 4517.16,
+      "pct": -0.74,
+      "as_of": "2026-09-02",
+      "unit": "点",
+      "lagged": false
+    }
+  ],
+  "global_as_of": "2026-09-02",
+  "global_us_session": "intraday",
+  "us_treasury": {
+    "as_of": "2026-09-01",
+    "tenors": {
+      "1 Mo": 3.85,
+      "3 Mo": 3.92,
+      "6 Mo": 4.0,
+      "1 Yr": 4.18,
+      "2 Yr": 4.39,
+      "3 Yr": 4.46,
+      "5 Yr": 4.55,
+      "7 Yr": 4.66,
+      "10 Yr": 4.79,
+      "20 Yr": 5.27,
+      "30 Yr": 5.27
+    },
+    "y10": 4.79,
+    "y2": 4.39,
+    "y30": 5.27,
+    "change_bp": 4.0,
+    "spread_2s10s_bp": 40.0,
+    "ytd_high": 4.79,
+    "ytd_low": 3.97,
+    "percentile": 99.7,
+    "percentile_years": 2,
+    "percentile_samples": 667,
+    "history": [
+      {
+        "date": "2026-08-05",
+        "y10": 4.63
+      },
+      {
+        "date": "2026-08-06",
+        "y10": 4.69
+      },
+      {
+        "date": "2026-08-07",
+        "y10": 4.65
+      },
+      {
+        "date": "2026-08-10",
+        "y10": 4.72
+      },
+      {
+        "date": "2026-08-11",
+        "y10": 4.7
+      },
+      {
+        "date": "2026-08-12",
+        "y10": 4.68
+      },
+      {
+        "date": "2026-08-13",
+        "y10": 4.63
+      },
+      {
+        "date": "2026-08-14",
+        "y10": 4.68
+      },
+      {
+        "date": "2026-08-17",
+        "y10": 4.72
+      },
+      {
+        "date": "2026-08-18",
+        "y10": 4.71
+      },
+      {
+        "date": "2026-08-19",
+        "y10": 4.65
+      },
+      {
+        "date": "2026-08-20",
+        "y10": 4.69
+      },
+      {
+        "date": "2026-08-21",
+        "y10": 4.74
+      },
+      {
+        "date": "2026-08-24",
+        "y10": 4.7
+      },
+      {
+        "date": "2026-08-25",
+        "y10": 4.64
+      },
+      {
+        "date": "2026-08-26",
+        "y10": 4.66
+      },
+      {
+        "date": "2026-08-27",
+        "y10": 4.67
+      },
+      {
+        "date": "2026-08-28",
+        "y10": 4.73
+      },
+      {
+        "date": "2026-08-31",
+        "y10": 4.75
+      },
+      {
+        "date": "2026-09-01",
+        "y10": 4.79
+      }
+    ],
+    "source": "美国财政部官方日收益率曲线 CSV"
+  },
+  "dragon_tiger": {
+    "as_of": "2026-09-02",
+    "record_count": 77,
+    "stock_count": 71,
+    "seat_count": 385,
+    "broker_count": 160,
+    "stocks": [
+      {
+        "code": "002536",
+        "name": "飞龙股份",
+        "close": 58.07,
+        "pct": 10.0,
+        "net_wan": 45878.2,
+        "buy_wan": 78695.1,
+        "sell_wan": 32816.9,
+        "amount_yi": 32.6,
+        "turnover": 10.6,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构买入，成功率45.67%",
+        "window": "当日"
+      },
+      {
+        "code": "300189",
+        "name": "神农种业",
+        "close": 6.69,
+        "pct": -11.39,
+        "net_wan": -29916.2,
+        "buy_wan": 16020.1,
+        "sell_wan": 45936.3,
+        "amount_yi": 25.58,
+        "turnover": 42.0,
+        "reason": "日换手率达到30%的前5只证券",
+        "seat_note": "1家机构卖出，成功率17.82%",
+        "window": "当日"
+      },
+      {
+        "code": "300164",
+        "name": "通源石油",
+        "close": 10.75,
+        "pct": 1.13,
+        "net_wan": -22017.0,
+        "buy_wan": 21785.8,
+        "sell_wan": 43802.7,
+        "amount_yi": 22.86,
+        "turnover": 34.97,
+        "reason": "日换手率达到30%的前5只证券",
+        "seat_note": "西藏自治区资金买入，成功率19.98%",
+        "window": "当日"
+      },
+      {
+        "code": "600967",
+        "name": "内蒙一机",
+        "close": 13.41,
+        "pct": 10.01,
+        "net_wan": 21206.2,
+        "buy_wan": 31149.6,
+        "sell_wan": 9943.3,
+        "amount_yi": 16.61,
+        "turnover": 3.82,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率34.06%",
+        "window": "3日"
+      },
+      {
+        "code": "002297",
+        "name": "博云新材",
+        "close": 20,
+        "pct": 10.01,
+        "net_wan": 13636.6,
+        "buy_wan": 29712.2,
+        "sell_wan": 16075.6,
+        "amount_yi": 13.16,
+        "turnover": 12.02,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "seat_note": "2家机构买入，成功率43.90%",
+        "window": "当日"
+      },
+      {
+        "code": "002886",
+        "name": "沃特股份",
+        "close": 30.84,
+        "pct": 9.99,
+        "net_wan": 13616.2,
+        "buy_wan": 32659.3,
+        "sell_wan": 19043.0,
+        "amount_yi": 11.58,
+        "turnover": 18.78,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构买入，成功率46.86%",
+        "window": "当日"
+      },
+      {
+        "code": "003040",
+        "name": "楚天龙",
+        "close": 21.12,
+        "pct": 7.87,
+        "net_wan": -10854.9,
+        "buy_wan": 22976.9,
+        "sell_wan": 33831.8,
+        "amount_yi": 30.52,
+        "turnover": 32.33,
+        "reason": "日换手率达到20%的前5只证券",
+        "seat_note": "主力做T，成功率26.54%",
+        "window": "当日"
+      },
+      {
+        "code": "600508",
+        "name": "上海能源",
+        "close": 11.2,
+        "pct": -7.97,
+        "net_wan": -8857.0,
+        "buy_wan": 9626.1,
+        "sell_wan": 18483.2,
+        "amount_yi": 9.83,
+        "turnover": 8.39,
+        "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+        "seat_note": "卖一主卖，成功率42.93%",
+        "window": "当日"
+      },
+      {
+        "code": "003040",
+        "name": "楚天龙",
+        "close": 21.12,
+        "pct": 7.87,
+        "net_wan": -8340.5,
+        "buy_wan": 41894.3,
+        "sell_wan": 50234.8,
+        "amount_yi": 48.03,
+        "turnover": 32.33,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "1家机构买入，成功率12.22%",
+        "window": "3日"
+      },
+      {
+        "code": "000019",
+        "name": "深粮控股",
+        "close": 7.18,
+        "pct": -9.34,
+        "net_wan": -8209.1,
+        "buy_wan": 3087.9,
+        "sell_wan": 11297.0,
+        "amount_yi": 4.54,
+        "turnover": 14.8,
+        "reason": "日跌幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构卖出，成功率21.65%",
+        "window": "当日"
+      },
+      {
+        "code": "301688",
+        "name": "格林生物",
+        "close": 53.82,
+        "pct": 104.41,
+        "net_wan": 7971.2,
+        "buy_wan": 10619.2,
+        "sell_wan": 2647.9,
+        "amount_yi": 12.05,
+        "turnover": 77.78,
+        "reason": "无价格涨跌幅限制的证券",
+        "seat_note": "2家机构买入，成功率51.93%",
+        "window": "当日"
+      },
+      {
+        "code": "301591",
+        "name": "肯特股份",
+        "close": 54.22,
+        "pct": 2.86,
+        "net_wan": -7835.8,
+        "buy_wan": 7080.4,
+        "sell_wan": 14916.3,
+        "amount_yi": 11.65,
+        "turnover": 47.24,
+        "reason": "日换手率达到30%的前5只证券",
+        "seat_note": "2家机构买入，成功率21.96%",
+        "window": "当日"
+      },
+      {
+        "code": "000560",
+        "name": "我爱我家",
+        "close": 3.18,
+        "pct": -0.31,
+        "net_wan": -7567.5,
+        "buy_wan": 23806.7,
+        "sell_wan": 31374.3,
+        "amount_yi": 25.61,
+        "turnover": 36.05,
+        "reason": "日振幅值达到15%的前5只证券 / 日换手率达到20%的前5只证券",
+        "seat_note": "1家机构卖出，成功率24.90%",
+        "window": "当日"
+      },
+      {
+        "code": "123282",
+        "name": "震裕转02",
+        "close": 157.3,
+        "pct": 57.3,
+        "net_wan": 7359.8,
+        "buy_wan": 18268.8,
+        "sell_wan": 10909.1,
+        "amount_yi": 3.95,
+        "turnover": null,
+        "reason": "上市首日可转债",
+        "seat_note": "",
+        "window": "当日"
+      },
+      {
+        "code": "600721",
+        "name": "百花医药",
+        "close": 12.86,
+        "pct": -2.5,
+        "net_wan": 7203.9,
+        "buy_wan": 21692.5,
+        "sell_wan": 14488.6,
+        "amount_yi": 18.49,
+        "turnover": 38.34,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "seat_note": "西藏自治区资金卖出，成功率44.01%",
+        "window": "当日"
+      },
+      {
+        "code": "600227",
+        "name": "赤天化",
+        "close": 4.91,
+        "pct": -5.03,
+        "net_wan": -7122.8,
+        "buy_wan": 17449.9,
+        "sell_wan": 24572.8,
+        "amount_yi": 19.72,
+        "turnover": 31.89,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "seat_note": "卖一主卖，成功率38.13%",
+        "window": "当日"
+      },
+      {
+        "code": "603778",
+        "name": "国晟科技",
+        "close": 10.75,
+        "pct": 10.03,
+        "net_wan": 6944.2,
+        "buy_wan": 19271.6,
+        "sell_wan": 12327.4,
+        "amount_yi": 8.37,
+        "turnover": 12.55,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "seat_note": "买一主买，成功率45.10%",
+        "window": "当日"
+      },
+      {
+        "code": "603978",
+        "name": "深圳新星",
+        "close": 22.61,
+        "pct": 10.02,
+        "net_wan": 6671.4,
+        "buy_wan": 14417.1,
+        "sell_wan": 7745.6,
+        "amount_yi": 4.15,
+        "turnover": 8.87,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "seat_note": "买一主买，成功率41.83%",
+        "window": "当日"
+      },
+      {
+        "code": "002418",
+        "name": "康盛股份",
+        "close": 5.81,
+        "pct": 2.29,
+        "net_wan": -6407.1,
+        "buy_wan": 21904.8,
+        "sell_wan": 28311.9,
+        "amount_yi": 22.95,
+        "turnover": 35.45,
+        "reason": "日换手率达到20%的前5只证券",
+        "seat_note": "1家机构买入，成功率15.91%",
+        "window": "当日"
+      },
+      {
+        "code": "000628",
+        "name": "高新发展",
+        "close": 54.79,
+        "pct": 10.0,
+        "net_wan": 5903.1,
+        "buy_wan": 22344.0,
+        "sell_wan": 16440.9,
+        "amount_yi": 9.29,
+        "turnover": 9.08,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "seat_note": "2家机构买入，成功率20.93%",
+        "window": "当日"
+      },
+      {
+        "code": "002104",
+        "name": "恒宝股份",
+        "close": 13.51,
+        "pct": 10.02,
+        "net_wan": -5816.5,
+        "buy_wan": 21234.3,
+        "sell_wan": 27050.8,
+        "amount_yi": 17.72,
+        "turnover": 22.99,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构买入，成功率28.04%",
+        "window": "当日"
+      },
+      {
+        "code": "600354",
+        "name": "敦煌种业",
+        "close": 8.21,
+        "pct": -9.98,
+        "net_wan": -5649.7,
+        "buy_wan": 7192.2,
+        "sell_wan": 12841.8,
+        "amount_yi": 11.33,
+        "turnover": 25.63,
+        "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位卖出，成功率36.15%",
+        "window": "当日"
+      },
+      {
+        "code": "002418",
+        "name": "康盛股份",
+        "close": 5.81,
+        "pct": 2.29,
+        "net_wan": -5522.5,
+        "buy_wan": 66812.6,
+        "sell_wan": 72335.1,
+        "amount_yi": 63.73,
+        "turnover": 35.45,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "2家机构买入，成功率7.88%",
+        "window": "3日"
+      },
+      {
+        "code": "002679",
+        "name": "福建金森",
+        "close": 12.24,
+        "pct": -5.19,
+        "net_wan": -5394.6,
+        "buy_wan": 4548.3,
+        "sell_wan": 9943.0,
+        "amount_yi": 5.79,
+        "turnover": 19.56,
+        "reason": "日振幅值达到15%的前5只证券",
+        "seat_note": "1家机构卖出，成功率41.61%",
+        "window": "当日"
+      },
+      {
+        "code": "002412",
+        "name": "汉森制药",
+        "close": 10.26,
+        "pct": -8.06,
+        "net_wan": -5262.1,
+        "buy_wan": 23404.8,
+        "sell_wan": 28667.0,
+        "amount_yi": 29.8,
+        "turnover": 21.58,
+        "reason": "连续三个交易日内，跌幅偏离值累计达到20%的证券",
+        "seat_note": "2家机构卖出，成功率16.91%",
+        "window": "3日"
+      },
+      {
+        "code": "600371",
+        "name": "万向德农",
+        "close": 14.42,
+        "pct": 3.3,
+        "net_wan": -5187.1,
+        "buy_wan": 11900.5,
+        "sell_wan": 17087.6,
+        "amount_yi": 14.53,
+        "turnover": 34.86,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "seat_note": "普通席位买入，成功率43.84%",
+        "window": "当日"
+      },
+      {
+        "code": "000713",
+        "name": "国投丰乐",
+        "close": 6.43,
+        "pct": -9.94,
+        "net_wan": -4733.8,
+        "buy_wan": 1731.0,
+        "sell_wan": 6464.9,
+        "amount_yi": 3.42,
+        "turnover": 8.54,
+        "reason": "日跌幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构卖出，成功率42.37%",
+        "window": "当日"
+      },
+      {
+        "code": "118058",
+        "name": "微导转债",
+        "close": 377.705,
+        "pct": -20.0,
+        "net_wan": -4686.7,
+        "buy_wan": 46991.5,
+        "sell_wan": 51678.2,
+        "amount_yi": 27.24,
+        "turnover": null,
+        "reason": "非上市首日,当日收盘价跌幅达15%的前五只可转债",
+        "seat_note": "",
+        "window": "当日"
+      },
+      {
+        "code": "002696",
+        "name": "百洋股份",
+        "close": 6.68,
+        "pct": -8.24,
+        "net_wan": -4612.9,
+        "buy_wan": 5292.9,
+        "sell_wan": 9905.9,
+        "amount_yi": 3.81,
+        "turnover": 16.69,
+        "reason": "日振幅值达到15%的前5只证券",
+        "seat_note": "3家机构卖出，成功率34.07%",
+        "window": "当日"
+      },
+      {
+        "code": "002742",
+        "name": "冀衡医药",
+        "close": 5.03,
+        "pct": -10.02,
+        "net_wan": -4413.5,
+        "buy_wan": 3346.1,
+        "sell_wan": 7759.6,
+        "amount_yi": 5.18,
+        "turnover": 19.23,
+        "reason": "日跌幅偏离值达到7%的前5只证券",
+        "seat_note": "主力做T，成功率31.81%",
+        "window": "当日"
+      },
+      {
+        "code": "123258",
+        "name": "胜蓝转02",
+        "close": 262.4,
+        "pct": -20.0,
+        "net_wan": -4373.5,
+        "buy_wan": 56033.6,
+        "sell_wan": 60407.1,
+        "amount_yi": 20.1,
+        "turnover": null,
+        "reason": "日跌幅达到15%的前5只可转债",
+        "seat_note": "",
+        "window": "当日"
+      },
+      {
+        "code": "003005",
+        "name": "竞业达",
+        "close": 20,
+        "pct": 10.01,
+        "net_wan": 3987.5,
+        "buy_wan": 6623.1,
+        "sell_wan": 2635.6,
+        "amount_yi": 1.61,
+        "turnover": 3.27,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率38.33%",
+        "window": "3日"
+      },
+      {
+        "code": "600828",
+        "name": "茂业商业",
+        "close": 4.81,
+        "pct": 10.07,
+        "net_wan": 3704.7,
+        "buy_wan": 8108.8,
+        "sell_wan": 4404.2,
+        "amount_yi": 2.88,
+        "turnover": 2.66,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率45.09%",
+        "window": "3日"
+      },
+      {
+        "code": "920176",
+        "name": "维琪科技",
+        "close": 70.66,
+        "pct": 29.99,
+        "net_wan": 3465.8,
+        "buy_wan": 5729.4,
+        "sell_wan": 2263.6,
+        "amount_yi": 2.24,
+        "turnover": 44.12,
+        "reason": "当日收盘价涨幅达到20%的前5只股票 / 当日价格振幅达到30%的前5只股票 / 当日换手率达到20%的前5只股票",
+        "seat_note": "2家机构买入，成功率37.68%",
+        "window": "当日"
+      },
+      {
+        "code": "002328",
+        "name": "新朋股份",
+        "close": 9.18,
+        "pct": 3.61,
+        "net_wan": -3240.3,
+        "buy_wan": 32881.2,
+        "sell_wan": 36121.5,
+        "amount_yi": 29.46,
+        "turnover": 22.68,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "3家机构买入，成功率10.51%",
+        "window": "3日"
+      },
+      {
+        "code": "920223",
+        "name": "荣亿精密",
+        "close": 16.5,
+        "pct": 2.48,
+        "net_wan": -2919.9,
+        "buy_wan": 3056.6,
+        "sell_wan": 5976.4,
+        "amount_yi": 3.52,
+        "turnover": 24.67,
+        "reason": "当日价格振幅达到30%的前5只股票",
+        "seat_note": "1家机构买入，成功率24.72%",
+        "window": "当日"
+      },
+      {
+        "code": "002104",
+        "name": "恒宝股份",
+        "close": 13.51,
+        "pct": 10.02,
+        "net_wan": -2754.4,
+        "buy_wan": 30556.7,
+        "sell_wan": 33311.1,
+        "amount_yi": 22.57,
+        "turnover": 22.99,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "1家机构买入，成功率16.42%",
+        "window": "3日"
+      },
+      {
+        "code": "000505",
+        "name": "京粮控股",
+        "close": 7.09,
+        "pct": -8.4,
+        "net_wan": -2692.6,
+        "buy_wan": 7623.4,
+        "sell_wan": 10315.9,
+        "amount_yi": 9.22,
+        "turnover": 18.53,
+        "reason": "日振幅值达到15%的前5只证券",
+        "seat_note": "3家机构卖出，成功率23.33%",
+        "window": "当日"
+      },
+      {
+        "code": "920895",
+        "name": "花溪科技",
+        "close": 28,
+        "pct": 6.38,
+        "net_wan": -2611.0,
+        "buy_wan": 3345.9,
+        "sell_wan": 5956.9,
+        "amount_yi": 3.45,
+        "turnover": 44.53,
+        "reason": "当日价格振幅达到30%的前5只股票 / 当日换手率达到20%的前5只股票",
+        "seat_note": "西藏自治区资金买入，成功率37.81%",
+        "window": "当日"
+      },
+      {
+        "code": "601086",
+        "name": "国芳集团",
+        "close": 11.1,
+        "pct": 10.01,
+        "net_wan": 2458.8,
+        "buy_wan": 5259.9,
+        "sell_wan": 2801.1,
+        "amount_yi": 3.68,
+        "turnover": 0.87,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率56.65%",
+        "window": "3日"
+      },
+      {
+        "code": "600828",
+        "name": "茂业商业",
+        "close": 4.81,
+        "pct": 10.07,
+        "net_wan": 2302.9,
+        "buy_wan": 5500.2,
+        "sell_wan": 3197.3,
+        "amount_yi": 2.18,
+        "turnover": 2.66,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位买入，成功率44.08%",
+        "window": "当日"
+      },
+      {
+        "code": "603395",
+        "name": "红四方",
+        "close": 27.81,
+        "pct": -10.0,
+        "net_wan": -2207.3,
+        "buy_wan": 4097.5,
+        "sell_wan": 6304.9,
+        "amount_yi": 5.82,
+        "turnover": 31.7,
+        "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位卖出，成功率40.37%",
+        "window": "当日"
+      },
+      {
+        "code": "002855",
+        "name": "捷荣技术",
+        "close": 19.01,
+        "pct": 7.34,
+        "net_wan": -2163.9,
+        "buy_wan": 12607.2,
+        "sell_wan": 14771.1,
+        "amount_yi": 14.02,
+        "turnover": 21.67,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "3家机构买入，成功率30.04%",
+        "window": "3日"
+      },
+      {
+        "code": "600892",
+        "name": "大晟文化",
+        "close": 5.35,
+        "pct": 10.08,
+        "net_wan": 2152.0,
+        "buy_wan": 4484.7,
+        "sell_wan": 2332.7,
+        "amount_yi": 0.6,
+        "turnover": 2.01,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位买入，成功率40.90%",
+        "window": "当日"
+      },
+      {
+        "code": "301655",
+        "name": "绿控传动",
+        "close": 26,
+        "pct": -7.96,
+        "net_wan": -2104.7,
+        "buy_wan": 2548.9,
+        "sell_wan": 4653.6,
+        "amount_yi": 3.68,
+        "turnover": 31.2,
+        "reason": "日换手率达到30%的前5只证券",
+        "seat_note": "2家机构卖出，成功率24.55%",
+        "window": "当日"
+      },
+      {
+        "code": "600657",
+        "name": "信达地产",
+        "close": 3.05,
+        "pct": 10.11,
+        "net_wan": 2052.1,
+        "buy_wan": 8717.0,
+        "sell_wan": 6664.9,
+        "amount_yi": 3.63,
+        "turnover": 4.36,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "seat_note": "买一主买，成功率46.24%",
+        "window": "当日"
+      },
+      {
+        "code": "920006",
+        "name": "晟楠科技",
+        "close": 22.21,
+        "pct": 29.96,
+        "net_wan": 1665.6,
+        "buy_wan": 4020.0,
+        "sell_wan": 2354.4,
+        "amount_yi": 2.59,
+        "turnover": 26.07,
+        "reason": "当日价格振幅达到30%的前5只股票 / 当日收盘价涨幅达到20%的前5只股票",
+        "seat_note": "普通席位买入，成功率49.35%",
+        "window": "当日"
+      },
+      {
+        "code": "002955",
+        "name": "鸿合科技",
+        "close": 40.01,
+        "pct": 2.28,
+        "net_wan": 1540.4,
+        "buy_wan": 24941.8,
+        "sell_wan": 23401.4,
+        "amount_yi": 9.11,
+        "turnover": 5.14,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "4家机构买入，成功率21.02%",
+        "window": "3日"
+      },
+      {
+        "code": "601566",
+        "name": "九牧王",
+        "close": 10.36,
+        "pct": 9.98,
+        "net_wan": -1517.3,
+        "buy_wan": 8913.0,
+        "sell_wan": 10430.3,
+        "amount_yi": 6.35,
+        "turnover": 8.5,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "买一主买，成功率40.40%",
+        "window": "3日"
+      },
+      {
+        "code": "605068",
+        "name": "明新旭腾",
+        "close": 21.36,
+        "pct": 4.81,
+        "net_wan": 1503.8,
+        "buy_wan": 11335.2,
+        "sell_wan": 9831.4,
+        "amount_yi": 5.87,
+        "turnover": 8.53,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "上海资金买入，成功率44.68%",
+        "window": "3日"
+      },
+      {
+        "code": "301151",
+        "name": "冠龙节能",
+        "close": 22.3,
+        "pct": 3.58,
+        "net_wan": -1344.3,
+        "buy_wan": 10383.1,
+        "sell_wan": 11727.4,
+        "amount_yi": 8.7,
+        "turnover": 8.52,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到30%的证券",
+        "seat_note": "4家机构买入，成功率5.84%",
+        "window": "3日"
+      },
+      {
+        "code": "920748",
+        "name": "路桥信息",
+        "close": 32.71,
+        "pct": 21.64,
+        "net_wan": -1143.4,
+        "buy_wan": 2596.0,
+        "sell_wan": 3739.4,
+        "amount_yi": 2.2,
+        "turnover": 11.23,
+        "reason": "当日收盘价涨幅达到20%的前5只股票",
+        "seat_note": "主力做T，成功率34.62%",
+        "window": "当日"
+      },
+      {
+        "code": "000545",
+        "name": "金浦钛业",
+        "close": 2.13,
+        "pct": -10.13,
+        "net_wan": -1106.2,
+        "buy_wan": 3387.7,
+        "sell_wan": 4493.9,
+        "amount_yi": 4.02,
+        "turnover": 18.89,
+        "reason": "日跌幅偏离值达到7%的前5只证券",
+        "seat_note": "1家机构卖出，成功率35.06%",
+        "window": "当日"
+      },
+      {
+        "code": "002942",
+        "name": "新农股份",
+        "close": 19.88,
+        "pct": -10.0,
+        "net_wan": 1015.7,
+        "buy_wan": 3643.9,
+        "sell_wan": 2628.2,
+        "amount_yi": 3.21,
+        "turnover": 11.44,
+        "reason": "日跌幅偏离值达到7%的前5只证券",
+        "seat_note": "主力做T，成功率31.87%",
+        "window": "当日"
+      },
+      {
+        "code": "600613",
+        "name": "神奇制药",
+        "close": 10.04,
+        "pct": -10.04,
+        "net_wan": -982.2,
+        "buy_wan": 9010.2,
+        "sell_wan": 9992.5,
+        "amount_yi": 12.08,
+        "turnover": 24.54,
+        "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位卖出，成功率31.76%",
+        "window": "当日"
+      },
+      {
+        "code": "920288",
+        "name": "华大海天",
+        "close": 20.94,
+        "pct": 7.38,
+        "net_wan": 941.5,
+        "buy_wan": 2660.3,
+        "sell_wan": 1718.9,
+        "amount_yi": 2.12,
+        "turnover": 56.39,
+        "reason": "当日换手率达到20%的前5只股票",
+        "seat_note": "1家机构买入，成功率42.15%",
+        "window": "当日"
+      },
+      {
+        "code": "000635",
+        "name": "英力特",
+        "close": 7.94,
+        "pct": 9.97,
+        "net_wan": 879.1,
+        "buy_wan": 4191.9,
+        "sell_wan": 3312.8,
+        "amount_yi": 1.04,
+        "turnover": 2.81,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率70.16%",
+        "window": "3日"
+      },
+      {
+        "code": "920165",
+        "name": "珈凯生物",
+        "close": 39.49,
+        "pct": 2.79,
+        "net_wan": -856.3,
+        "buy_wan": 1755.4,
+        "sell_wan": 2611.8,
+        "amount_yi": 1.33,
+        "turnover": 34.57,
+        "reason": "当日换手率达到20%的前5只股票",
+        "seat_note": "1家机构买入，成功率25.11%",
+        "window": "当日"
+      },
+      {
+        "code": "002437",
+        "name": "誉衡药业",
+        "close": 4.53,
+        "pct": 4.14,
+        "net_wan": 804.9,
+        "buy_wan": 33215.7,
+        "sell_wan": 32410.8,
+        "amount_yi": 31.16,
+        "turnover": 32.5,
+        "reason": "日换手率达到20%的前5只证券",
+        "seat_note": "1家机构买入，成功率28.46%",
+        "window": "当日"
+      },
+      {
+        "code": "600830",
+        "name": "香溢融通",
+        "close": 10.15,
+        "pct": 9.97,
+        "net_wan": 748.9,
+        "buy_wan": 8457.1,
+        "sell_wan": 7708.2,
+        "amount_yi": 5.15,
+        "turnover": 8.37,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率50.08%",
+        "window": "3日"
+      },
+      {
+        "code": "600121",
+        "name": "郑州煤电",
+        "close": 5.3,
+        "pct": -1.85,
+        "net_wan": 677.3,
+        "buy_wan": 19084.7,
+        "sell_wan": 18407.4,
+        "amount_yi": 19.06,
+        "turnover": 27.82,
+        "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+        "seat_note": "普通席位卖出，成功率44.16%",
+        "window": "当日"
+      },
+      {
+        "code": "301520",
+        "name": "万邦医药",
+        "close": 59.3,
+        "pct": -7.05,
+        "net_wan": 592.0,
+        "buy_wan": 4991.9,
+        "sell_wan": 4399.9,
+        "amount_yi": 6.03,
+        "turnover": 30.94,
+        "reason": "日换手率达到30%的前5只证券",
+        "seat_note": "西藏自治区资金卖出，成功率41.41%",
+        "window": "当日"
+      },
+      {
+        "code": "603221",
+        "name": "爱丽家居",
+        "close": 33.37,
+        "pct": 9.23,
+        "net_wan": 552.9,
+        "buy_wan": 7741.5,
+        "sell_wan": 7188.6,
+        "amount_yi": 11.75,
+        "turnover": 11.34,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率39.56%",
+        "window": "3日"
+      },
+      {
+        "code": "603207",
+        "name": "小方制药",
+        "close": 27.94,
+        "pct": 10.0,
+        "net_wan": 436.6,
+        "buy_wan": 5779.9,
+        "sell_wan": 5343.3,
+        "amount_yi": 5.14,
+        "turnover": 24.16,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "seat_note": "普通席位买入，成功率44.50%",
+        "window": "3日"
+      },
+      {
+        "code": "600403",
+        "name": "大有能源",
+        "close": 7.17,
+        "pct": -4.4,
+        "net_wan": -433.6,
+        "buy_wan": 11333.1,
+        "sell_wan": 11766.8,
+        "amount_yi": 11.71,
+        "turnover": 6.53,
+        "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+        "seat_note": "普通席位卖出，成功率39.82%",
+        "window": "当日"
+      },
+      {
+        "code": "600127",
+        "name": "金健米业",
+        "close": 12.4,
+        "pct": -6.34,
+        "net_wan": 362.0,
+        "buy_wan": 28590.6,
+        "sell_wan": 28228.7,
+        "amount_yi": 36.64,
+        "turnover": 44.41,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "seat_note": "卖一主卖，成功率43.57%",
+        "window": "当日"
+      },
+      {
+        "code": "920222",
+        "name": "益坤电气",
+        "close": 28.77,
+        "pct": 17.24,
+        "net_wan": -354.0,
+        "buy_wan": 2297.3,
+        "sell_wan": 2651.3,
+        "amount_yi": 1.68,
+        "turnover": 52.3,
+        "reason": "当日换手率达到20%的前5只股票",
+        "seat_note": "1家机构买入，成功率44.95%",
+        "window": "当日"
+      },
+      {
+        "code": "118062",
+        "name": "天准转债",
+        "close": 171.518,
+        "pct": -20.0,
+        "net_wan": -257.9,
+        "buy_wan": 24224.8,
+        "sell_wan": 24482.7,
+        "amount_yi": 13.3,
+        "turnover": null,
+        "reason": "非上市首日,当日收盘价跌幅达15%的前五只可转债",
+        "seat_note": "",
+        "window": "当日"
+      },
+      {
+        "code": "002855",
+        "name": "捷荣技术",
+        "close": 19.01,
+        "pct": 7.34,
+        "net_wan": 255.0,
+        "buy_wan": 9799.9,
+        "sell_wan": 9545.0,
+        "amount_yi": 9.67,
+        "turnover": 21.67,
+        "reason": "日振幅值达到15%的前5只证券",
+        "seat_note": "2家机构买入，成功率45.23%",
+        "window": "当日"
+      },
+      {
+        "code": "605179",
+        "name": "一鸣食品",
+        "close": 31.2,
+        "pct": -10.01,
+        "net_wan": -253.0,
+        "buy_wan": 973.8,
+        "sell_wan": 1226.8,
+        "amount_yi": 1.24,
+        "turnover": 0.99,
+        "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位卖出，成功率33.81%",
+        "window": "当日"
+      },
+      {
+        "code": "600540",
+        "name": "新赛股份",
+        "close": 6.73,
+        "pct": 9.97,
+        "net_wan": -77.2,
+        "buy_wan": 14807.3,
+        "sell_wan": 14884.6,
+        "amount_yi": 14.44,
+        "turnover": 37.5,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "seat_note": "普通席位买入，成功率56.90%",
+        "window": "当日"
+      },
+      {
+        "code": "920212",
+        "name": "智新电子",
+        "close": 14.1,
+        "pct": 29.95,
+        "net_wan": 45.8,
+        "buy_wan": 2422.4,
+        "sell_wan": 2376.6,
+        "amount_yi": 1.33,
+        "turnover": 19.5,
+        "reason": "当日价格振幅达到30%的前5只股票 / 当日收盘价涨幅达到20%的前5只股票",
+        "seat_note": "普通席位买入，成功率35.74%",
+        "window": "当日"
+      },
+      {
+        "code": "600272",
+        "name": "开开实业",
+        "close": 18.08,
+        "pct": -10.01,
+        "net_wan": -34.8,
+        "buy_wan": 5452.6,
+        "sell_wan": 5487.5,
+        "amount_yi": 7.77,
+        "turnover": 25.96,
+        "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+        "seat_note": "普通席位卖出，成功率34.85%",
+        "window": "当日"
+      },
+      {
+        "code": "002084",
+        "name": "海鸥住工",
+        "close": 7.12,
+        "pct": 1.42,
+        "net_wan": 32.9,
+        "buy_wan": 13318.9,
+        "sell_wan": 13286.0,
+        "amount_yi": 15.4,
+        "turnover": 33.27,
+        "reason": "日换手率达到20%的前5只证券",
+        "seat_note": "2家机构买入，成功率41.56%",
+        "window": "当日"
+      },
+      {
+        "code": "920212",
+        "name": "智新电子",
+        "close": 14.1,
+        "pct": 29.95,
+        "net_wan": 29.2,
+        "buy_wan": 2839.2,
+        "sell_wan": 2809.9,
+        "amount_yi": 1.77,
+        "turnover": 19.5,
+        "reason": "北交所股票连续3个交易日内日收盘价涨跌幅偏离值累计达到+40%(-40%)",
+        "seat_note": "普通席位买入，成功率35.74%",
+        "window": "3日"
+      },
+      {
+        "code": "002514",
+        "name": "*ST宝馨",
+        "close": 2.27,
+        "pct": 10.19,
+        "net_wan": -13.1,
+        "buy_wan": 2178.7,
+        "sell_wan": 2191.8,
+        "amount_yi": 2.51,
+        "turnover": 12.43,
+        "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+        "seat_note": "主力做T，成功率25.76%",
+        "window": "3日"
+      },
+      {
+        "code": "000017",
+        "name": "深中华A",
+        "close": 11.75,
+        "pct": 0.0,
+        "net_wan": 0.0,
+        "buy_wan": 775860.2,
+        "sell_wan": 775860.2,
+        "amount_yi": 77.59,
+        "turnover": 24.23,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "seat_note": "主力做T，成功率9.07%",
+        "window": "当日"
+      }
+    ],
+    "top_seats": [
+      {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "中小投资者",
+        "buy_wan": 352210.2,
+        "sell_wan": 325130.9,
+        "net_wan": 27079.3,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      },
+      {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "自然人",
+        "buy_wan": 538003.5,
+        "sell_wan": 520776.2,
+        "net_wan": 17227.3,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      },
+      {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "机构投资者",
+        "buy_wan": 237856.7,
+        "sell_wan": 255084.0,
+        "net_wan": -17227.3,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      },
+      {
+        "code": "118058",
+        "name": "微导转债",
+        "seat": "华宝证券股份有限公司上海东大名路证券营业部",
+        "buy_wan": 15556.9,
+        "sell_wan": 0.0,
+        "net_wan": 15556.9,
+        "pct": -20.0,
+        "rise_prob": 56.25,
+        "buy_times": 16,
+        "reason": "非上市首日,当日收盘价跌幅达15%的前五只可转债",
+        "window": "当日"
+      },
+      {
+        "code": "002536",
+        "name": "飞龙股份",
+        "seat": "国泰海通证券股份有限公司无锡湖滨路证券营业部",
+        "buy_wan": 15079.8,
+        "sell_wan": 4.0,
+        "net_wan": 15075.8,
+        "pct": 10.0,
+        "rise_prob": 50.0,
+        "buy_times": 2,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "002536",
+        "name": "飞龙股份",
+        "seat": "国泰海通证券股份有限公司武汉紫阳东路证券营业部",
+        "buy_wan": 12755.0,
+        "sell_wan": 101.2,
+        "net_wan": 12653.9,
+        "pct": 10.0,
+        "rise_prob": 52.55,
+        "buy_times": 137,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "300189",
+        "name": "神农种业",
+        "seat": "深股通专用",
+        "buy_wan": 4708.9,
+        "sell_wan": 16836.6,
+        "net_wan": -12127.8,
+        "pct": -11.39,
+        "rise_prob": 39.89,
+        "buy_times": 1331,
+        "reason": "日换手率达到30%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "118058",
+        "name": "微导转债",
+        "seat": "中信证券股份有限公司上海分公司",
+        "buy_wan": 11067.7,
+        "sell_wan": 0.0,
+        "net_wan": 11067.7,
+        "pct": -20.0,
+        "rise_prob": 42.92,
+        "buy_times": 869,
+        "reason": "非上市首日,当日收盘价跌幅达15%的前五只可转债",
+        "window": "当日"
+      },
+      {
+        "code": "002886",
+        "name": "沃特股份",
+        "seat": "开源证券股份有限公司西安西大街证券营业部",
+        "buy_wan": 10411.9,
+        "sell_wan": 3.1,
+        "net_wan": 10408.8,
+        "pct": 9.99,
+        "rise_prob": 48.28,
+        "buy_times": 87,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "002536",
+        "name": "飞龙股份",
+        "seat": "机构专用",
+        "buy_wan": 9864.1,
+        "sell_wan": 0.0,
+        "net_wan": 9864.1,
+        "pct": 10.0,
+        "rise_prob": 39.42,
+        "buy_times": 2524,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "其他自然人",
+        "buy_wan": 185793.3,
+        "sell_wan": 195645.4,
+        "net_wan": -9852.0,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      },
+      {
+        "code": "600127",
+        "name": "金健米业",
+        "seat": "沪股通专用",
+        "buy_wan": 9838.6,
+        "sell_wan": 0.0,
+        "net_wan": 9838.6,
+        "pct": -6.34,
+        "rise_prob": 44.18,
+        "buy_times": 1159,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "window": "当日"
+      },
+      {
+        "code": "002886",
+        "name": "沃特股份",
+        "seat": "国新证券股份有限公司北京分公司",
+        "buy_wan": 9237.2,
+        "sell_wan": 0.0,
+        "net_wan": 9237.2,
+        "pct": 9.99,
+        "rise_prob": 50.0,
+        "buy_times": 156,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "300164",
+        "name": "通源石油",
+        "seat": "深股通专用",
+        "buy_wan": 7320.0,
+        "sell_wan": 16455.3,
+        "net_wan": -9135.3,
+        "pct": 1.13,
+        "rise_prob": 39.89,
+        "buy_times": 1331,
+        "reason": "日换手率达到30%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "600967",
+        "name": "内蒙一机",
+        "seat": "沪股通专用",
+        "buy_wan": 8592.6,
+        "sell_wan": 0.0,
+        "net_wan": 8592.6,
+        "pct": 10.01,
+        "rise_prob": 44.18,
+        "buy_times": 1159,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "window": "3日"
+      },
+      {
+        "code": "002536",
+        "name": "飞龙股份",
+        "seat": "国泰海通证券股份有限公司上海自贸试验区第二分公司",
+        "buy_wan": 8276.5,
+        "sell_wan": 25.7,
+        "net_wan": 8250.8,
+        "pct": 10.0,
+        "rise_prob": 49.09,
+        "buy_times": 55,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      },
+      {
+        "code": "600967",
+        "name": "内蒙一机",
+        "seat": "浙商证券股份有限公司乐清千帆东路证券营业部",
+        "buy_wan": 8156.5,
+        "sell_wan": 0.0,
+        "net_wan": 8156.5,
+        "pct": 10.01,
+        "rise_prob": null,
+        "buy_times": null,
+        "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+        "window": "3日"
+      },
+      {
+        "code": "603778",
+        "name": "国晟科技",
+        "seat": "沪股通专用",
+        "buy_wan": 7941.5,
+        "sell_wan": 0.0,
+        "net_wan": 7941.5,
+        "pct": 10.03,
+        "rise_prob": 44.18,
+        "buy_times": 1159,
+        "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+        "window": "当日"
+      },
+      {
+        "code": "600721",
+        "name": "百花医药",
+        "seat": "华泰证券股份有限公司苏州吴中大道证券营业部",
+        "buy_wan": 7480.0,
+        "sell_wan": 0.0,
+        "net_wan": 7480.0,
+        "pct": -2.5,
+        "rise_prob": 43.75,
+        "buy_times": 16,
+        "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+        "window": "当日"
+      },
+      {
+        "code": "002297",
+        "name": "博云新材",
+        "seat": "开源证券股份有限公司西安西大街证券营业部",
+        "buy_wan": 7402.0,
+        "sell_wan": 13.2,
+        "net_wan": 7388.8,
+        "pct": 10.01,
+        "rise_prob": 48.28,
+        "buy_times": 87,
+        "reason": "日涨幅偏离值达到7%的前5只证券",
+        "window": "当日"
+      }
+    ],
+    "special": {
+      "机构专用": [
+        {
+          "code": "002536",
+          "name": "飞龙股份",
+          "seat": "机构专用",
+          "buy_wan": 9864.1,
+          "sell_wan": 0.0,
+          "net_wan": 9864.1,
+          "pct": 10.0,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "118058",
+          "name": "微导转债",
+          "seat": "机构专用",
+          "buy_wan": 6788.0,
+          "sell_wan": 0.0,
+          "net_wan": 6788.0,
+          "pct": -20.0,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "非上市首日,当日收盘价跌幅达15%的前五只可转债",
+          "window": "当日"
+        },
+        {
+          "code": "002955",
+          "name": "鸿合科技",
+          "seat": "机构专用",
+          "buy_wan": 3559.6,
+          "sell_wan": 0.0,
+          "net_wan": 3559.6,
+          "pct": 2.28,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002297",
+          "name": "博云新材",
+          "seat": "机构专用",
+          "buy_wan": 2541.8,
+          "sell_wan": 433.6,
+          "net_wan": 2108.2,
+          "pct": 10.01,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002855",
+          "name": "捷荣技术",
+          "seat": "机构专用",
+          "buy_wan": 2718.7,
+          "sell_wan": 727.1,
+          "net_wan": 1991.7,
+          "pct": 7.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002418",
+          "name": "康盛股份",
+          "seat": "机构专用",
+          "buy_wan": 9144.7,
+          "sell_wan": 7203.9,
+          "net_wan": 1940.8,
+          "pct": 2.29,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002855",
+          "name": "捷荣技术",
+          "seat": "机构专用",
+          "buy_wan": 2838.3,
+          "sell_wan": 991.1,
+          "net_wan": 1847.1,
+          "pct": 7.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "301688",
+          "name": "格林生物",
+          "seat": "机构专用",
+          "buy_wan": 1808.3,
+          "sell_wan": 0.0,
+          "net_wan": 1808.3,
+          "pct": 104.41,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "无价格涨跌幅限制的证券",
+          "window": "当日"
+        },
+        {
+          "code": "000628",
+          "name": "高新发展",
+          "seat": "机构专用",
+          "buy_wan": 2086.4,
+          "sell_wan": 391.1,
+          "net_wan": 1695.4,
+          "pct": 10.0,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "920176",
+          "name": "维琪科技",
+          "seat": "机构专用",
+          "buy_wan": 1242.0,
+          "sell_wan": 2.2,
+          "net_wan": 1239.8,
+          "pct": 29.99,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日价格振幅达到30%的前5只股票 / 当日换手率达到20%的前5只股票 / 当日收盘价涨幅达到20%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "301688",
+          "name": "格林生物",
+          "seat": "机构专用",
+          "buy_wan": 1089.9,
+          "sell_wan": 17.3,
+          "net_wan": 1072.6,
+          "pct": 104.41,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "无价格涨跌幅限制的证券",
+          "window": "当日"
+        },
+        {
+          "code": "920176",
+          "name": "维琪科技",
+          "seat": "机构专用",
+          "buy_wan": 1058.5,
+          "sell_wan": 0.0,
+          "net_wan": 1058.5,
+          "pct": 29.99,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日价格振幅达到30%的前5只股票 / 当日换手率达到20%的前5只股票 / 当日收盘价涨幅达到20%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "002886",
+          "name": "沃特股份",
+          "seat": "机构专用",
+          "buy_wan": 2009.1,
+          "sell_wan": 1062.9,
+          "net_wan": 946.2,
+          "pct": 9.99,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002297",
+          "name": "博云新材",
+          "seat": "机构专用",
+          "buy_wan": 2856.8,
+          "sell_wan": 1967.1,
+          "net_wan": 889.7,
+          "pct": 10.01,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "123258",
+          "name": "胜蓝转02",
+          "seat": "机构专用",
+          "buy_wan": 6651.4,
+          "sell_wan": 5795.0,
+          "net_wan": 856.3,
+          "pct": -20.0,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅达到15%的前5只可转债",
+          "window": "当日"
+        },
+        {
+          "code": "002855",
+          "name": "捷荣技术",
+          "seat": "机构专用",
+          "buy_wan": 2530.8,
+          "sell_wan": 1757.5,
+          "net_wan": 773.3,
+          "pct": 7.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002679",
+          "name": "福建金森",
+          "seat": "机构专用",
+          "buy_wan": 946.6,
+          "sell_wan": 262.9,
+          "net_wan": 683.7,
+          "pct": -5.19,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002696",
+          "name": "百洋股份",
+          "seat": "机构专用",
+          "buy_wan": 1118.7,
+          "sell_wan": 454.4,
+          "net_wan": 664.4,
+          "pct": -8.24,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002955",
+          "name": "鸿合科技",
+          "seat": "机构专用",
+          "buy_wan": 7084.8,
+          "sell_wan": 6427.3,
+          "net_wan": 657.4,
+          "pct": 2.28,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002084",
+          "name": "海鸥住工",
+          "seat": "机构专用",
+          "buy_wan": 3425.9,
+          "sell_wan": 2797.2,
+          "net_wan": 628.8,
+          "pct": 1.42,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002328",
+          "name": "新朋股份",
+          "seat": "机构专用",
+          "buy_wan": 6709.8,
+          "sell_wan": 6132.0,
+          "net_wan": 577.8,
+          "pct": 3.61,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "920222",
+          "name": "益坤电气",
+          "seat": "机构专用",
+          "buy_wan": 689.9,
+          "sell_wan": 116.7,
+          "net_wan": 573.3,
+          "pct": 17.24,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日换手率达到20%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "920895",
+          "name": "花溪科技",
+          "seat": "机构专用",
+          "buy_wan": 720.4,
+          "sell_wan": 262.7,
+          "net_wan": 457.7,
+          "pct": 6.38,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日换手率达到20%的前5只股票 / 当日价格振幅达到30%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "002955",
+          "name": "鸿合科技",
+          "seat": "机构专用",
+          "buy_wan": 1605.5,
+          "sell_wan": 1176.9,
+          "net_wan": 428.6,
+          "pct": 2.28,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002084",
+          "name": "海鸥住工",
+          "seat": "机构专用",
+          "buy_wan": 2528.3,
+          "sell_wan": 2149.5,
+          "net_wan": 378.8,
+          "pct": 1.42,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "920288",
+          "name": "华大海天",
+          "seat": "机构专用",
+          "buy_wan": 659.3,
+          "sell_wan": 325.9,
+          "net_wan": 333.4,
+          "pct": 7.38,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日换手率达到20%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "002679",
+          "name": "福建金森",
+          "seat": "机构专用",
+          "buy_wan": 539.4,
+          "sell_wan": 238.1,
+          "net_wan": 301.3,
+          "pct": -5.19,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "000713",
+          "name": "国投丰乐",
+          "seat": "机构专用",
+          "buy_wan": 299.5,
+          "sell_wan": 0.0,
+          "net_wan": 299.5,
+          "pct": -9.94,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002696",
+          "name": "百洋股份",
+          "seat": "机构专用",
+          "buy_wan": 1089.3,
+          "sell_wan": 812.1,
+          "net_wan": 277.2,
+          "pct": -8.24,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "920165",
+          "name": "珈凯生物",
+          "seat": "机构专用",
+          "buy_wan": 403.2,
+          "sell_wan": 161.6,
+          "net_wan": 241.6,
+          "pct": 2.79,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日换手率达到20%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "000713",
+          "name": "国投丰乐",
+          "seat": "机构专用",
+          "buy_wan": 214.5,
+          "sell_wan": 17.1,
+          "net_wan": 197.4,
+          "pct": -9.94,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "000560",
+          "name": "我爱我家",
+          "seat": "机构专用",
+          "buy_wan": 2795.6,
+          "sell_wan": 2629.9,
+          "net_wan": 165.6,
+          "pct": -0.31,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到20%的前5只证券 / 日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "301591",
+          "name": "肯特股份",
+          "seat": "机构专用",
+          "buy_wan": 1043.3,
+          "sell_wan": 895.2,
+          "net_wan": 148.0,
+          "pct": 2.86,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "000545",
+          "name": "金浦钛业",
+          "seat": "机构专用",
+          "buy_wan": 1186.3,
+          "sell_wan": 1067.6,
+          "net_wan": 118.7,
+          "pct": -10.13,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "000545",
+          "name": "金浦钛业",
+          "seat": "机构专用",
+          "buy_wan": 437.2,
+          "sell_wan": 365.0,
+          "net_wan": 72.2,
+          "pct": -10.13,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002696",
+          "name": "百洋股份",
+          "seat": "机构专用",
+          "buy_wan": 918.0,
+          "sell_wan": 848.3,
+          "net_wan": 69.6,
+          "pct": -8.24,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "920223",
+          "name": "荣亿精密",
+          "seat": "机构专用",
+          "buy_wan": 661.3,
+          "sell_wan": 655.4,
+          "net_wan": 5.9,
+          "pct": 2.48,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "当日价格振幅达到30%的前5只股票",
+          "window": "当日"
+        },
+        {
+          "code": "002328",
+          "name": "新朋股份",
+          "seat": "机构专用",
+          "buy_wan": 6017.7,
+          "sell_wan": 6029.1,
+          "net_wan": -11.4,
+          "pct": 3.61,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "301655",
+          "name": "绿控传动",
+          "seat": "机构专用",
+          "buy_wan": 771.4,
+          "sell_wan": 797.5,
+          "net_wan": -26.1,
+          "pct": -7.96,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002418",
+          "name": "康盛股份",
+          "seat": "机构专用",
+          "buy_wan": 4271.4,
+          "sell_wan": 4354.6,
+          "net_wan": -83.2,
+          "pct": 2.29,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "301151",
+          "name": "冠龙节能",
+          "seat": "机构专用",
+          "buy_wan": 2587.0,
+          "sell_wan": 2694.3,
+          "net_wan": -107.3,
+          "pct": 3.58,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到30%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "301151",
+          "name": "冠龙节能",
+          "seat": "机构专用",
+          "buy_wan": 1295.5,
+          "sell_wan": 1484.3,
+          "net_wan": -188.7,
+          "pct": 3.58,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到30%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "301591",
+          "name": "肯特股份",
+          "seat": "机构专用",
+          "buy_wan": 1371.3,
+          "sell_wan": 1565.5,
+          "net_wan": -194.3,
+          "pct": 2.86,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002418",
+          "name": "康盛股份",
+          "seat": "机构专用",
+          "buy_wan": 7365.6,
+          "sell_wan": 7656.3,
+          "net_wan": -290.7,
+          "pct": 2.29,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "000505",
+          "name": "京粮控股",
+          "seat": "机构专用",
+          "buy_wan": 1043.6,
+          "sell_wan": 1507.6,
+          "net_wan": -464.0,
+          "pct": -8.4,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "301151",
+          "name": "冠龙节能",
+          "seat": "机构专用",
+          "buy_wan": 2235.0,
+          "sell_wan": 2707.3,
+          "net_wan": -472.3,
+          "pct": 3.58,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到30%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "000019",
+          "name": "深粮控股",
+          "seat": "机构专用",
+          "buy_wan": 437.5,
+          "sell_wan": 1034.8,
+          "net_wan": -597.2,
+          "pct": -9.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002696",
+          "name": "百洋股份",
+          "seat": "机构专用",
+          "buy_wan": 892.9,
+          "sell_wan": 1523.7,
+          "net_wan": -630.8,
+          "pct": -8.24,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002855",
+          "name": "捷荣技术",
+          "seat": "机构专用",
+          "buy_wan": 1505.4,
+          "sell_wan": 2137.8,
+          "net_wan": -632.4,
+          "pct": 7.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "000505",
+          "name": "京粮控股",
+          "seat": "机构专用",
+          "buy_wan": 1963.0,
+          "sell_wan": 2627.5,
+          "net_wan": -664.5,
+          "pct": -8.4,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002955",
+          "name": "鸿合科技",
+          "seat": "机构专用",
+          "buy_wan": 1844.7,
+          "sell_wan": 2523.5,
+          "net_wan": -678.8,
+          "pct": 2.28,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002855",
+          "name": "捷荣技术",
+          "seat": "机构专用",
+          "buy_wan": 3357.4,
+          "sell_wan": 4141.0,
+          "net_wan": -783.7,
+          "pct": 7.34,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "301151",
+          "name": "冠龙节能",
+          "seat": "机构专用",
+          "buy_wan": 1756.0,
+          "sell_wan": 2586.5,
+          "net_wan": -830.5,
+          "pct": 3.58,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到30%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002328",
+          "name": "新朋股份",
+          "seat": "机构专用",
+          "buy_wan": 3384.4,
+          "sell_wan": 4371.1,
+          "net_wan": -986.7,
+          "pct": 3.61,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "300189",
+          "name": "神农种业",
+          "seat": "机构专用",
+          "buy_wan": 2987.1,
+          "sell_wan": 4942.9,
+          "net_wan": -1955.8,
+          "pct": -11.39,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002437",
+          "name": "誉衡药业",
+          "seat": "机构专用",
+          "buy_wan": 4156.8,
+          "sell_wan": 6296.8,
+          "net_wan": -2140.0,
+          "pct": 4.14,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002104",
+          "name": "恒宝股份",
+          "seat": "机构专用",
+          "buy_wan": 3806.0,
+          "sell_wan": 6022.8,
+          "net_wan": -2216.8,
+          "pct": 10.02,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002104",
+          "name": "恒宝股份",
+          "seat": "机构专用",
+          "buy_wan": 2049.4,
+          "sell_wan": 4889.7,
+          "net_wan": -2840.3,
+          "pct": 10.02,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "003040",
+          "name": "楚天龙",
+          "seat": "机构专用",
+          "buy_wan": 4410.3,
+          "sell_wan": 7363.7,
+          "net_wan": -2953.4,
+          "pct": 7.87,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002412",
+          "name": "汉森制药",
+          "seat": "机构专用",
+          "buy_wan": 7215.3,
+          "sell_wan": 10670.0,
+          "net_wan": -3454.7,
+          "pct": -8.06,
+          "rise_prob": 39.42,
+          "buy_times": 2524,
+          "reason": "连续三个交易日内，跌幅偏离值累计达到20%的证券",
+          "window": "3日"
+        }
+      ],
+      "沪股通专用": [
+        {
+          "code": "600127",
+          "name": "金健米业",
+          "seat": "沪股通专用",
+          "buy_wan": 9838.6,
+          "sell_wan": 0.0,
+          "net_wan": 9838.6,
+          "pct": -6.34,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600967",
+          "name": "内蒙一机",
+          "seat": "沪股通专用",
+          "buy_wan": 8592.6,
+          "sell_wan": 0.0,
+          "net_wan": 8592.6,
+          "pct": 10.01,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "603778",
+          "name": "国晟科技",
+          "seat": "沪股通专用",
+          "buy_wan": 7941.5,
+          "sell_wan": 0.0,
+          "net_wan": 7941.5,
+          "pct": 10.03,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600227",
+          "name": "赤天化",
+          "seat": "沪股通专用",
+          "buy_wan": 7032.0,
+          "sell_wan": 0.0,
+          "net_wan": 7032.0,
+          "pct": -5.03,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日换手率达到20%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600121",
+          "name": "郑州煤电",
+          "seat": "沪股通专用",
+          "buy_wan": 6521.9,
+          "sell_wan": 0.0,
+          "net_wan": 6521.9,
+          "pct": -1.85,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600403",
+          "name": "大有能源",
+          "seat": "沪股通专用",
+          "buy_wan": 4680.9,
+          "sell_wan": 0.0,
+          "net_wan": 4680.9,
+          "pct": -4.4,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600508",
+          "name": "上海能源",
+          "seat": "沪股通专用",
+          "buy_wan": 4366.3,
+          "sell_wan": 0.0,
+          "net_wan": 4366.3,
+          "pct": -7.97,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日价格振幅达到15%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "601566",
+          "name": "九牧王",
+          "seat": "沪股通专用",
+          "buy_wan": 3349.9,
+          "sell_wan": 0.0,
+          "net_wan": 3349.9,
+          "pct": 9.98,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "603978",
+          "name": "深圳新星",
+          "seat": "沪股通专用",
+          "buy_wan": 2765.0,
+          "sell_wan": 0.0,
+          "net_wan": 2765.0,
+          "pct": 10.02,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600828",
+          "name": "茂业商业",
+          "seat": "沪股通专用",
+          "buy_wan": 2032.9,
+          "sell_wan": 0.0,
+          "net_wan": 2032.9,
+          "pct": 10.07,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "600657",
+          "name": "信达地产",
+          "seat": "沪股通专用",
+          "buy_wan": 1699.4,
+          "sell_wan": 0.0,
+          "net_wan": 1699.4,
+          "pct": 10.11,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "600828",
+          "name": "茂业商业",
+          "seat": "沪股通专用",
+          "buy_wan": 1583.4,
+          "sell_wan": 0.0,
+          "net_wan": 1583.4,
+          "pct": 10.07,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日收盘价格涨幅偏离值达到7%的前五只证券",
+          "window": "当日"
+        },
+        {
+          "code": "603207",
+          "name": "小方制药",
+          "seat": "沪股通专用",
+          "buy_wan": 1294.5,
+          "sell_wan": 0.0,
+          "net_wan": 1294.5,
+          "pct": 10.0,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "非S证券连续三个交易日内收盘价格涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "603395",
+          "name": "红四方",
+          "seat": "沪股通专用",
+          "buy_wan": 1047.4,
+          "sell_wan": 0.0,
+          "net_wan": 1047.4,
+          "pct": -10.0,
+          "rise_prob": 44.18,
+          "buy_times": 1159,
+          "reason": "有价格涨跌幅限制的日收盘价格跌幅偏离值达到7%的前五只证券",
+          "window": "当日"
+        }
+      ],
+      "深股通专用": [
+        {
+          "code": "000628",
+          "name": "高新发展",
+          "seat": "深股通专用",
+          "buy_wan": 8003.6,
+          "sell_wan": 5941.2,
+          "net_wan": 2062.4,
+          "pct": 10.0,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002297",
+          "name": "博云新材",
+          "seat": "深股通专用",
+          "buy_wan": 7528.2,
+          "sell_wan": 5790.7,
+          "net_wan": 1737.5,
+          "pct": 10.01,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002536",
+          "name": "飞龙股份",
+          "seat": "深股通专用",
+          "buy_wan": 15151.7,
+          "sell_wan": 15008.1,
+          "net_wan": 143.6,
+          "pct": 10.0,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002437",
+          "name": "誉衡药业",
+          "seat": "深股通专用",
+          "buy_wan": 10433.7,
+          "sell_wan": 10428.8,
+          "net_wan": 4.9,
+          "pct": 4.14,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "000560",
+          "name": "我爱我家",
+          "seat": "深股通专用",
+          "buy_wan": 10365.7,
+          "sell_wan": 10366.8,
+          "net_wan": -1.1,
+          "pct": -0.31,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到20%的前5只证券 / 日振幅值达到15%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002955",
+          "name": "鸿合科技",
+          "seat": "深股通专用",
+          "buy_wan": 9127.1,
+          "sell_wan": 9389.3,
+          "net_wan": -262.2,
+          "pct": 2.28,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "000019",
+          "name": "深粮控股",
+          "seat": "深股通专用",
+          "buy_wan": 1163.4,
+          "sell_wan": 1787.0,
+          "net_wan": -623.5,
+          "pct": -9.34,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日跌幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "003040",
+          "name": "楚天龙",
+          "seat": "深股通专用",
+          "buy_wan": 5774.4,
+          "sell_wan": 6462.2,
+          "net_wan": -687.8,
+          "pct": 7.87,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002328",
+          "name": "新朋股份",
+          "seat": "深股通专用",
+          "buy_wan": 13203.1,
+          "sell_wan": 14006.1,
+          "net_wan": -803.0,
+          "pct": 3.61,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002104",
+          "name": "恒宝股份",
+          "seat": "深股通专用",
+          "buy_wan": 13963.2,
+          "sell_wan": 16281.7,
+          "net_wan": -2318.5,
+          "pct": 10.02,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002418",
+          "name": "康盛股份",
+          "seat": "深股通专用",
+          "buy_wan": 22281.0,
+          "sell_wan": 24797.3,
+          "net_wan": -2516.3,
+          "pct": 2.29,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "003040",
+          "name": "楚天龙",
+          "seat": "深股通专用",
+          "buy_wan": 11505.2,
+          "sell_wan": 14063.1,
+          "net_wan": -2557.9,
+          "pct": 7.87,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "连续三个交易日内，涨幅偏离值累计达到20%的证券",
+          "window": "3日"
+        },
+        {
+          "code": "002418",
+          "name": "康盛股份",
+          "seat": "深股通专用",
+          "buy_wan": 7587.3,
+          "sell_wan": 10153.9,
+          "net_wan": -2566.6,
+          "pct": 2.29,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到20%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "002104",
+          "name": "恒宝股份",
+          "seat": "深股通专用",
+          "buy_wan": 9226.0,
+          "sell_wan": 13384.1,
+          "net_wan": -4158.1,
+          "pct": 10.02,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日涨幅偏离值达到7%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "300164",
+          "name": "通源石油",
+          "seat": "深股通专用",
+          "buy_wan": 7320.0,
+          "sell_wan": 16455.3,
+          "net_wan": -9135.3,
+          "pct": 1.13,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        },
+        {
+          "code": "300189",
+          "name": "神农种业",
+          "seat": "深股通专用",
+          "buy_wan": 4708.9,
+          "sell_wan": 16836.6,
+          "net_wan": -12127.8,
+          "pct": -11.39,
+          "rise_prob": 39.89,
+          "buy_times": 1331,
+          "reason": "日换手率达到30%的前5只证券",
+          "window": "当日"
+        }
+      ]
+    },
+    "summary": {
+      "basis": "当日窗口（已去重），3日窗口记录单独标注不并入合计",
+      "net_in_stocks": 23,
+      "net_out_stocks": 33,
+      "total_net_wan": -40139.7,
+      "seat_net_wan": 462401.5,
+      "inst_net_wan": 27113.0,
+      "inst_count": 41,
+      "inst_buy_count": 31,
+      "north_net_wan": 22124.6,
+      "north_count": 21,
+      "top_buy_seat": {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "中小投资者",
+        "buy_wan": 352210.2,
+        "sell_wan": 325130.9,
+        "net_wan": 27079.3,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      },
+      "top_sell_seat": {
+        "code": "000017",
+        "name": "深中华A",
+        "seat": "机构投资者",
+        "buy_wan": 237856.7,
+        "sell_wan": 255084.0,
+        "net_wan": -17227.3,
+        "pct": 0.0,
+        "rise_prob": 34.0,
+        "buy_times": 50,
+        "reason": "严重异常期间日收盘价格涨幅偏离值累计达到100%的证券",
+        "window": "当日"
+      }
+    },
+    "note": "龙虎榜为交易所披露的公开席位数据。「机构专用」为机构席位合计口径，沪/深股通专用为北向资金席位；「3日上涨概率」为该席位历史上榜后 3 日的统计胜率，仅为历史频率，不代表未来。同一只证券触发多个上榜原因时会分行列示，「连续三个交易日内」类原因的统计窗口为 3 日、与当日口径不可相加，故合计口径仅取当日窗口并去重。",
+    "industry_map": {
+      "000017": "饰品",
+      "000019": "农产品加工",
+      "000505": "农产品加工",
+      "000545": "化学原料",
+      "000560": "房地产服务",
+      "000628": "房屋建设Ⅱ",
+      "000635": "化学原料",
+      "000713": "种植业",
+      "002084": "家居用品",
+      "002104": "通信设备",
+      "002297": "航空装备Ⅱ",
+      "002328": "汽车零部件",
+      "002412": "中药Ⅱ",
+      "002418": "家电零部件Ⅱ",
+      "002437": "化学制药",
+      "002514": "通用设备",
+      "002536": "汽车零部件",
+      "002679": "林业Ⅱ",
+      "002696": "饲料",
+      "002742": "化学制药",
+      "002855": "消费电子",
+      "002886": "塑料",
+      "002942": "农化制品",
+      "002955": "光学光电子",
+      "003005": "IT服务Ⅱ",
+      "003040": "通信设备",
+      "123258": "-",
+      "123282": "-",
+      "300164": "油服工程",
+      "300189": "种植业",
+      "301151": "通用设备",
+      "301520": "医疗服务",
+      "301591": "塑料",
+      "301655": "汽车零部件",
+      "301688": "化学制品",
+      "600121": "煤炭开采",
+      "600127": "农产品加工",
+      "600227": "农化制品",
+      "600272": "医药商业",
+      "600354": "种植业",
+      "600371": "种植业",
+      "600403": "煤炭开采",
+      "600508": "煤炭开采",
+      "600540": "种植业",
+      "600613": "化学制药",
+      "600657": "房地产开发",
+      "600721": "医疗服务",
+      "600828": "一般零售",
+      "600830": "多元金融",
+      "600892": "游戏Ⅱ",
+      "600967": "地面兵装Ⅱ",
+      "601086": "一般零售",
+      "601566": "服装家纺",
+      "603207": "化学制药",
+      "603221": "家居用品",
+      "603395": "农化制品",
+      "603778": "光伏设备",
+      "603978": "金属新材料",
+      "605068": "汽车零部件",
+      "605179": "饮料乳品"
+    }
+  },
+  "valuation": [
+    {
+      "as_of": "2026-09-02",
+      "pe": 17.87,
+      "percentile": 62.1,
+      "window_years": 10,
+      "samples": 2429,
+      "name": "中证全指",
+      "code": "000985"
+    },
+    {
+      "as_of": "2026-09-02",
+      "pe": 13.65,
+      "percentile": 58.0,
+      "window_years": 10,
+      "samples": 2428,
+      "name": "沪深300",
+      "code": "000300"
+    },
+    {
+      "as_of": "2026-09-02",
+      "pe": 8.67,
+      "percentile": 75.8,
+      "window_years": 10,
+      "samples": 2429,
+      "name": "中证红利",
+      "code": "000922"
+    }
+  ],
+  "lift_unlock": {
+    "window": "2026-09-02 ~ 2026-09-09",
+    "event_count": 59,
+    "total_cap_yi": 757.79,
+    "by_date": [
+      {
+        "date": "2026-09-02",
+        "count": 6,
+        "cap_yi": 14.44
+      },
+      {
+        "date": "2026-09-03",
+        "count": 9,
+        "cap_yi": 28.93
+      },
+      {
+        "date": "2026-09-04",
+        "count": 10,
+        "cap_yi": 39.91
+      },
+      {
+        "date": "2026-09-07",
+        "count": 17,
+        "cap_yi": 321.05
+      },
+      {
+        "date": "2026-09-08",
+        "count": 10,
+        "cap_yi": 321.0
+      },
+      {
+        "date": "2026-09-09",
+        "count": 7,
+        "cap_yi": 32.46
+      }
+    ],
+    "top": [
+      {
+        "date": "2026-09-08",
+        "code": "688549",
+        "name": "中巨芯",
+        "cap_yi": 203.34,
+        "shares_wan": 147727.6,
+        "type": "首发原股东限售股份",
+        "ratio_pct": 60.11
+      },
+      {
+        "date": "2026-09-07",
+        "code": "688795",
+        "name": "摩尔线程",
+        "cap_yi": 137.38,
+        "shares_wan": 5600.0,
+        "type": "首发机构配售股份",
+        "ratio_pct": 5.48
+      },
+      {
+        "date": "2026-09-08",
+        "code": "600961",
+        "name": "株冶集团",
+        "cap_yi": 84.28,
+        "shares_wan": 107287.3,
+        "type": "追加承诺限售股份上市流通",
+        "ratio_pct": 29.93
+      },
+      {
+        "date": "2026-09-07",
+        "code": "301251",
+        "name": "威尔高",
+        "cap_yi": 62.4,
+        "shares_wan": 18856.3,
+        "type": "首发原股东限售股份",
+        "ratio_pct": 59.91
+      },
+      {
+        "date": "2026-09-04",
+        "code": "603256",
+        "name": "宏和科技",
+        "cap_yi": 33.88,
+        "shares_wan": 90458.6,
+        "type": "定向增发机构配售股份",
+        "ratio_pct": 2.75
+      }
+    ],
+    "flagged": [
+      {
+        "name": "中巨芯",
+        "date": "2026-09-08",
+        "ratio_pct": 60.11,
+        "cap_yi": 203.34
+      },
+      {
+        "name": "摩尔线程",
+        "date": "2026-09-07",
+        "ratio_pct": 5.48,
+        "cap_yi": 137.38
+      },
+      {
+        "name": "株冶集团",
+        "date": "2026-09-08",
+        "ratio_pct": 29.93,
+        "cap_yi": 84.28
+      },
+      {
+        "name": "威尔高",
+        "date": "2026-09-07",
+        "ratio_pct": 59.91,
+        "cap_yi": 62.4
+      },
+      {
+        "name": "民生健康",
+        "date": "2026-09-07",
+        "ratio_pct": 69.0,
+        "cap_yi": 31.0
+      }
+    ],
+    "note": "解禁市值取东财数据中心披露值（按其更新时点价格计算，非最新收盘价）；占比≥5% 总股本的解禁单列为风险提示；解禁不必然导致下跌，仅为供给端参考。"
+  },
+  "etf_shares": {
+    "by_index": [],
+    "top_funds": [],
+    "total_delta": null,
+    "bootstrap": true,
+    "note": "首次采集：份额申赎变动自次一交易日起可见（本地缓存按日累积）。",
+    "method": "宽基指数 ETF 总份额按日差分；净增=申购、净减=赎回。份额数据源披露频率以基金公司为准，可能滞后一日。"
+  },
+  "events": [],
+  "scenarios": [],
+  "risk_notes": [
+    "主力资金净流入为东方财富单因子口径（超大单+大单），非交易所统一披露字段，不同供应商数值不可直接混用。",
+    "行业分类为东方财富行业板块体系，与其他平台的申万/中信行业分类不一致。",
+    "涨跌停家数以东财涨停池为准；上市首日等无涨跌幅限制个股不计入。",
+    "5日新高/新低基于本地收盘价缓存计算，缓存不足时该指标显示为「—」，连续运行数日后生效。",
+    "两市成交额 = 中证指数官网披露的上证指数成交额 + 深交所官网披露的深市股票成交额，与行情软件口径可能略有差异。",
+    "指数区间收益由腾讯行情日线收盘价直接计算（不复权，指数点位本身已含成分调整），60 日窗口需连续日线，缓存重建后首日可能缺失。",
+    "估值分位（PE 历史百分位）基于中证官网 index-perf 的 peg 字段序列自算，窗口 10 年；该口径与申万/Choice 等第三方估值口径存在差异，分位仅作相对位置参考。",
+    "解禁市值取自东财数据中心 RPT_LIFT_STAGE 披露值（按数据源更新时点价格计算，非最新收盘价），解禁数量与占比以交易所公告为准。",
+    "本页为数据整理与规则演示，不构成投资建议。",
+    "采集时刻（北京时间 2026-09-02 19:01）美股 2026-09-02 交易时段尚未收盘（美东 16:00 收盘，约北京时间次日 05:00），全球市场章节中的美股数值为最新盘中价，不是收盘价；需要收盘口径请在次日 05:00 后重跑采集。",
+    "当日涨停池中有 9 个行业归属（地面兵装、房地产开、房屋建设、旅游及景、汽车零部、照明设备等）未匹配到行业板块列表，未计入分行业涨停家数。"
+  ]
+}
